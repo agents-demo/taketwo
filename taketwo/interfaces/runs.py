@@ -79,7 +79,13 @@ def get_run(job: str) -> dict[str, Any] | None:
     obs = json_store.read_json(runtime.ARTIFACTS_DIR / f"{job}_observability.json", {})
     obs = obs if isinstance(obs, dict) else {}
     found["usage"] = summary.get("usage") or {}
-    found["calls"] = obs.get("calls", []) or []
+    calls = obs.get("calls", []) or []
+    for call in calls:
+        text = " ".join(str(m.get("content", "")) for m in (call.get("input") or []) if isinstance(m, dict))
+        # openjiuwen's image-modality probe ("What color is this image?") is a self-check,
+        # not a real step — flag it so the UI can label it.
+        call["probe"] = "what color is this image" in text.lower()
+    found["calls"] = calls
     found["tools"] = obs.get("tools", []) or []
     return found
 

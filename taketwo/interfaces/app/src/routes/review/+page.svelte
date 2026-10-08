@@ -57,6 +57,7 @@
         seq: c.seq ?? i,
         label: c.label || "call",
         model: c.model || "",
+        probe: c.probe === true,
         prompt: c.prompt_tokens,
         completion: c.completion_tokens,
         seconds: c.seconds,
@@ -174,7 +175,10 @@
         <details class="card">
           <summary class="flex cursor-pointer items-center gap-2 px-3 py-2">
             <span class="rounded-full border-2 border-line px-2 py-0.5 text-[10px] uppercase tracking-wide {e.kind === 'tool' ? 'text-good' : 'text-accent2'}">{e.kind}</span>
-            {#if e.kind === "model"}
+            {#if e.kind === "model" && e.probe}
+              <span class="text-sm font-semibold text-muted">image-support probe</span>
+              <span class="text-xs text-muted">(framework self-check — not a real step)</span>
+            {:else if e.kind === "model"}
               <span class="text-sm font-semibold">{e.label}{e.model ? ` · ${e.model}` : ""}</span>
               {#if e.prompt != null}<span class="text-xs text-muted">· {e.prompt} in / {e.completion ?? 0} out</span>{/if}
               {#if e.requested.length}<span class="truncate text-xs text-muted">→ calls {e.requested.map((r) => r.name).join(", ")}</span>{/if}

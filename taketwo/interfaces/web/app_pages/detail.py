@@ -59,11 +59,14 @@ def _render_execution(observability: dict) -> None:
 
         requested = event.get("requested") or []
         prompt, completion = event.get("prompt_tokens"), event.get("completion_tokens")
-        title = f"↳ Model call · {event.get('model') or ''}"
-        if prompt is not None:
-            title += f" · {prompt} in / {completion or 0} out"
-        if requested:
-            title += "  →  calls " + ", ".join(str(c.get("name", "")) for c in requested)
+        if event.get("probe"):
+            title = "↳ image-support probe · framework self-check (not a real step)"
+        else:
+            title = f"↳ Model call · {event.get('model') or ''}"
+            if prompt is not None:
+                title += f" · {prompt} in / {completion or 0} out"
+            if requested:
+                title += "  →  calls " + ", ".join(str(c.get("name", "")) for c in requested)
         if seconds is not None:
             title += f" · {seconds}s"
         with st.expander(title):
