@@ -9,9 +9,9 @@ interfaces  ──▶  pipeline  ──▶  backend  ──▶  domain
                      └────▶  storage / reporting / config   (neutral leaves)
 ```
 
-The pipeline also owns its **capability adapters** (`pipeline/media`, `pipeline/browser`,
-`pipeline/forge`); they are used only inside the pipeline, so they live under it rather than as
-separate top-level layers.
+The pipeline also owns its **capability adapters** — `pipeline/media`, `pipeline/forge`, and the
+reproduce stage's `pipeline/stages/reproduce/browser`; they are used only inside the pipeline, so
+they live under it rather than as separate top-level layers.
 
 ## Layers
 
@@ -19,7 +19,7 @@ separate top-level layers.
 |---|---|---|---|
 | Domain | `domain/` | Pure rules: submission/repro/fix schemas, timeline math, verify, render, evaluate, compare. No I/O, no third-party. | stdlib only |
 | Backend | `backend/` | The single home for openjiuwen: settings, models, agent builder, rails, tools, runner, logs, telemetry. Imports no application module. | stdlib, openjiuwen |
-| Pipeline | `pipeline/` | The staged workflow (understand → reproduce → repair → prove → deliver), run by two strategies, plus its capability adapters (`media/`, `browser/`, `forge/`). | backend, storage, domain, reporting, config |
+| Pipeline | `pipeline/` | The staged workflow (understand → reproduce → repair → prove → deliver), run by two strategies, plus its capability adapters (`media/`, `forge/`; the browser lives inside the reproduce stage). | backend, storage, domain, reporting, config |
 | Storage | `storage/` | Runtime path layout, JSON helpers, per-job store, repo cache. | config |
 | Reporting | `reporting.py` | Outbound artifacts: `issue.md`, `pr.md`, proof manifest. | domain, storage |
 | Interfaces | `interfaces/` | Adapters: CLI, HTTP API / GitHub webhook, MCP, Streamlit UI, service façade, worker. | anything |
@@ -75,11 +75,11 @@ pipeline/
 ├── params.py              # Params: request + run state
 ├── run_session.py         # run recorder, browser session, vision agent, media dir
 ├── media/                 # adapter: frames, cursor, ocr, clips
-├── browser/               # adapter: Playwright session
 ├── forge/                 # adapter: repo clone/search/blame + publish/PR
 ├── stages/                # order is data: pipeline.STAGES (not folder numbers)
 │   ├── understand/        # 01 recording -> timeline + failure hypothesis
 │   ├── reproduce/         # 02 timeline  -> reproduced run + evidence + before clip
+│   │   └── browser/       #    the stage's Playwright session (only playwright import)
 │   ├── repair/            # 03 evidence  -> localized cause + patch + test
 │   ├── prove/             # 04 patch     -> after clip + before/after proof video
 │   └── deliver/           # 05 artifacts -> issue + draft PR
@@ -90,8 +90,9 @@ pipeline/
 
 - **No import side effects.** `__init__.py` is imports/docstring only; `bootstrap.setup()` creates
   runtime dirs and configures logging (called by every entry point and by `conftest.py`).
-- **One façade per framework.** openjiuwen is confined to `backend/`; browser and GitHub are
-  capability adapters under `pipeline/` (`pipeline/browser`, `pipeline/forge`), used only there.
+- **One façade per framework.** openjiuwen is confined to `backend/`; GitHub is a pipeline adapter
+  (`pipeline/forge`) and the browser is confined to the reproduce stage
+  (`pipeline/stages/reproduce/browser`, the only place Playwright is imported).
 - **Single source of paths.** All generated state lives under `runtime/` via `storage.runtime`.
 - **Schema at the boundary.** `domain.*.normalize/validate` runs where artifacts are stored.
 - **Never auto-merge.** The pipeline opens a *draft* PR; approval is a human step.

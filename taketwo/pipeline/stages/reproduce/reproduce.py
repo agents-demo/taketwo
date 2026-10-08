@@ -1,9 +1,9 @@
 """Stage: reproduce the inferred bug in a real browser.
 
-Opens a session (shared with the prove stage), replays the steps, captures the
-console/network around the failure, and records the **before** clip. When no
-browser is available it degrades to an ``unclear`` verdict with one clarifying
-question rather than guessing.
+Owns the browser: opens the session (stashing it on the run session so the prove
+after-clip reuses it), replays the steps, captures the console/network around the
+failure, and records the **before** clip. When no browser is available it degrades to
+an ``unclear`` verdict with one clarifying question rather than guessing.
 """
 
 from __future__ import annotations
@@ -13,9 +13,8 @@ from pathlib import Path
 from typing import Any
 
 from taketwo.domain import repro as repro_mod
-from taketwo.pipeline.browser import open_session
 from taketwo.pipeline.progress import Progress, tick
-from taketwo.pipeline.stages.reproduce import replay_steps
+from taketwo.pipeline.stages.reproduce import browser, replay_steps
 from taketwo.storage import runtime
 
 
@@ -35,7 +34,7 @@ def reproduce(
     app_url: str,
     job: str,
     progress: Progress | None = None,
-    session: Any = None,
+    run_session: Any = None,
 ) -> dict[str, Any]:
     """Return a normalized reproduction for ``timeline`` against ``app_url``."""
     sidecar = _sidecar(video_path)
@@ -44,7 +43,12 @@ def reproduce(
 
     tick(progress, "reproducing in browser", 45)
 
-    session = session or open_session(app_url)
+    session = getattr(run_session, "browser", None)
+    if session is None:
+        session = browser.open_session(app_url)
+        if run_session is not None:
+            run_session.browser = session
+
     before_console = len(session.console)
     records = replay_steps.replay(session, timeline.get("steps", []))
     new_console = session.console[before_console:]

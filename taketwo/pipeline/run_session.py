@@ -1,9 +1,9 @@
 """Shared run state for one reproduction.
 
-Wires the run recorder, the browser session and the media dir in one place, so the
-``reproduce`` and ``prove`` stages share a single browser. Building the understand
-vision agent is best-effort: without a configured model the run degrades to the
-deterministic media path instead of failing.
+Holds the run recorder, the media dir and the slots the stages fill in. The
+understand vision agent is built here (best-effort); the browser session is opened
+by the ``reproduce`` stage, which owns the browser, and stashed on ``browser`` so the
+prove after-clip can reuse it.
 """
 
 from __future__ import annotations
@@ -13,14 +13,13 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from taketwo.pipeline.browser import open_session
 from taketwo.pipeline.stages.understand.build_agent import build_agent as build_vision_agent
 from taketwo.storage import runtime
 
 
 @dataclass
 class RunSession:
-    """The run recorder, the browser session and the media dir for a single run."""
+    """The run recorder, media dir and stage-filled slots for a single run."""
 
     job: str
     recorder: Any = None
@@ -60,8 +59,8 @@ class RunSession:
             return None
 
 
-def start_session(job: str, app_url: str = "") -> RunSession:
-    """Wire a run: build the understand agent (best-effort) and open the browser."""
+def start_session(job: str) -> RunSession:
+    """Wire a run: build the understand agent (best-effort). The browser is opened later."""
     media_dir = runtime.ARTIFACTS_DIR / job
     media_dir.mkdir(parents=True, exist_ok=True)
 
@@ -74,5 +73,4 @@ def start_session(job: str, app_url: str = "") -> RunSession:
     except Exception:
         recorder = None
 
-    browser = open_session(app_url) if app_url else None
-    return RunSession(job=job, recorder=recorder, browser=browser, media_dir=media_dir, vision_agent=vision_agent)
+    return RunSession(job=job, recorder=recorder, media_dir=media_dir, vision_agent=vision_agent)

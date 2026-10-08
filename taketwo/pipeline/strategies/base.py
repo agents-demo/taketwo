@@ -64,19 +64,18 @@ class Strategy:
         params.submission = submission
         params.job = submission_mod.job_id(submission)
         store.set_current_job(params.job)
-        params.session = start_session(params.job, params.app_url)
+        params.session = start_session(params.job)
 
     # -- shared stage sequence -------------------------------------------- #
     async def _run_stages(self, params: Params, progress: Progress | None) -> tuple[str, dict]:
         # Stage order (authoritative list: ``pipeline.STAGES``):
         # understand -> reproduce -> repair -> prove -> deliver
         agent = params.session.vision_agent if params.session else None
-        browser = params.session.browser if params.session else None
 
         params.timeline = await understand(params.video_path, progress, agent=agent)
 
         reproduction = reproduce(
-            params.video_path, params.timeline, params.app_url, params.job, progress, session=browser
+            params.video_path, params.timeline, params.app_url, params.job, progress, run_session=params.session
         )
         store.save_repro(params.job, reproduction)
         params.reproduction = reproduction

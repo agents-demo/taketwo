@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Any
 
 from taketwo import config
-from taketwo.pipeline.browser.session import BrowserSession
+from taketwo.pipeline.stages.reproduce.browser.session import BrowserSession
 
 
 def replay(session: BrowserSession, steps: list[dict[str, Any]]) -> list[dict[str, Any]]:
