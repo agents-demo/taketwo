@@ -10,10 +10,12 @@ from typing import Any
 import streamlit as st
 
 from taketwo.domain import evaluate
+from taketwo.interfaces.web.compare import before_after
 from taketwo.storage import runtime, store
 
 _ROOT = Path(__file__).resolve().parents[3]
 LOGO = _ROOT / "assets" / "taketwo.svg"
+EMPTY_ART = _ROOT / "assets" / "empty.svg"
 TAGLINE = "A screen recording in. A reproduction, a fix, and before/after proof out."
 
 ACCEPTED = ["mp4", "mov", "webm", "mkv", "png", "jpg", "jpeg", "webp"]
@@ -22,8 +24,24 @@ VERDICT_LABELS = {"All": None, "Reproduced": "reproduced", "Not reproduced": "no
 
 def empty_state(icon: str, title: str, body: str) -> None:
     with st.container(border=True):
+        if EMPTY_ART.exists():
+            cols = st.columns([1, 2, 1])
+            cols[1].image(str(EMPTY_ART), width="stretch")
         st.markdown(f"### {icon} {title}")
         st.caption(body)
+
+
+def proof_hero(repro: dict, proof: dict, job: str) -> bool:
+    """Render the before/after proof full width (video hero, else slider). True if shown."""
+    video = proof.get("proof_video")
+    before, after = repro.get("before_clip", ""), proof.get("after_clip", "")
+    if video and Path(video).exists():
+        st.video(video, autoplay=True, loop=True, muted=True, alt="The same scenario before and after the fix")
+        return True
+    if before and after and Path(before).exists() and Path(after).exists():
+        before_after(before, after, key=f"hero_{job}")
+        return True
+    return False
 
 
 def init_state() -> None:

@@ -30,17 +30,6 @@ def _chat(job: str) -> None:
         st.markdown(answer)
 
 
-def _proof_hero(repro: dict, proof: dict, job: str) -> None:
-    video = proof.get("proof_video")
-    before, after = repro.get("before_clip", ""), proof.get("after_clip", "")
-    if video and Path(video).exists():
-        st.video(video, autoplay=True, loop=True, muted=True, alt="The same scenario before and after the fix")
-    elif before and after and Path(before).exists() and Path(after).exists():
-        before_after(before, after, key=f"hero_{job}")
-    else:
-        st.caption("No proof clip yet — the re-run needs a live browser or the sandbox.")
-
-
 def render(job: str) -> None:
     """Render the full review surface for one run."""
     repro = store.get_repro(job)
@@ -55,7 +44,7 @@ def render(job: str) -> None:
     verification = proof.get("verification") or {}
     verdict = repro.get("verdict", "unclear")
 
-    _proof_hero(repro, proof, job)
+    common.proof_hero(repro, proof, job)
 
     with st.container(border=True):
         head = st.columns([5, 1])

@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import streamlit as st
 
 from taketwo.interfaces.runner import get_runner
 from taketwo.interfaces.web import common
 from taketwo.interfaces.web.app_pages import detail
-from taketwo.storage import runtime
+from taketwo.storage import runtime, store
 
 
 @st.dialog("Run review", width="large", position="right")
@@ -99,11 +101,32 @@ def _stats(all_rows: list[dict]) -> None:
     cols[3].metric("Approved", f"{approved}")
 
 
+def _latest_proof(all_rows: list[dict]) -> None:
+    if not all_rows:
+        return
+    row = all_rows[0]
+    job = row["run"]
+    repro, proof = store.get_repro(job), store.get_proof(job)
+    video, before, after = proof.get("proof_video"), repro.get("before_clip"), proof.get("after_clip")
+    has = (video and Path(video).exists()) or (before and after and Path(before).exists() and Path(after).exists())
+    if not has:
+        return
+    with st.container(border=True):
+        head = st.columns([5, 1])
+        head[0].subheader("Latest proof", icon=":material/play_circle:")
+        head[0].caption(f"{job} · {row['verdict']} · {row['when']}")
+        head[1].badge("Verified" if row["verified"] else "Unverified", color="green" if row["verified"] else "gray")
+        common.proof_hero(repro, proof, job)
+
+
 def page() -> None:
     common.init_state()
 
     st.title("Reproduce a bug from a screen recording", icon=":material/movie:")
     st.caption(common.TAGLINE)
+
+    all_rows = common.rows(None)
+    _latest_proof(all_rows)
 
     _new_run()
     live_job()
@@ -111,7 +134,6 @@ def page() -> None:
     st.space("medium")
     st.subheader("Runs", icon=":material/history:")
 
-    all_rows = common.rows(None)
     if not all_rows:
         common.empty_state(
             ":material/inbox:", "No runs yet", "Submit a recording above to see the reproduction, fix, and proof."
