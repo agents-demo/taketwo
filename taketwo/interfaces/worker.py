@@ -15,9 +15,9 @@ import time
 import traceback
 from pathlib import Path
 
-from taketwo.analysis.progress import Progress
 from taketwo.bootstrap import run as run_async
 from taketwo.bootstrap import setup
+from taketwo.pipeline.progress import Progress
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -45,7 +45,7 @@ def main(argv: list[str] | None = None) -> int:
 
     threading.Thread(target=reporter, daemon=True).start()
 
-    from taketwo.analysis import pipeline
+    from taketwo import pipeline
 
     strategy = pipeline.resolve(args.agentic)
 

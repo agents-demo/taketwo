@@ -4,9 +4,10 @@ TakeTwo is layered (hexagonal). Dependencies point **inward** only, enforced by
 `tests/unit/test_architecture.py` (an AST check), not by convention.
 
 ```
-interfaces  ──▶  analysis  ──▶  backend  ──▶  domain
+interfaces  ──▶  pipeline  ──▶  backend  ──▶  domain
                      │
-                     └────▶  storage / reporting / config
+                     ├────▶  media / browser / forge        (capability adapters)
+                     └────▶  storage / reporting / config   (neutral leaves)
 ```
 
 ## Layers
@@ -15,8 +16,8 @@ interfaces  ──▶  analysis  ──▶  backend  ──▶  domain
 |---|---|---|---|
 | Domain | `domain/` | Pure rules: submission/repro/fix schemas, timeline math, verify, render, evaluate, compare. No I/O, no third-party. | stdlib only |
 | Backend | `backend/` | The single home for openjiuwen: settings, models, agent builder, rails, tools, runner, logs, telemetry. Imports no application module. | stdlib, openjiuwen |
-| Primitives | `analysis/media/`, `analysis/browser/`, `analysis/forge/` | Shared capability building blocks (video, browser automation, git/GitHub), used by 2+ stages. | stdlib, third-party, storage, config |
-| Analysis | `analysis/stages/`, `analysis/pipeline/` | The pipeline (understand → reproduce → repair → prove → deliver), run by two strategies, over the primitives. | backend, primitives, storage, domain, reporting, config |
+| Adapters | `media/`, `browser/`, `forge/` | Shared capability adapters (video, browser automation, git/GitHub), used by 2+ stages. | stdlib, third-party, storage, config |
+| Pipeline | `pipeline/` | The staged workflow (understand → reproduce → repair → prove → deliver), run by two strategies, over the adapters. | backend, adapters, storage, domain, reporting, config |
 | Storage | `storage/` | Runtime path layout, JSON helpers, per-job store, repo cache. | config |
 | Reporting | `reporting.py` | Outbound artifacts: `issue.md`, `pr.md`, proof manifest. | domain, storage |
 | Interfaces | `interfaces/` | Adapters: CLI, HTTP API / GitHub webhook, MCP, Streamlit UI, service façade, worker. | anything |
@@ -31,13 +32,10 @@ taketwo/
 ├── reporting.py           # issue.md / pr.md / proof manifest
 ├── domain/                # pure: submission, timeline, repro, fix, verify, render, evaluate, compare
 ├── backend/               # openjiuwen only: settings, logs, agent/, telemetry/
-├── analysis/
-│   ├── progress.py        # neutral leaf: Progress + tick
-│   ├── media/             # shared: frames, cursor, ocr, clips
-│   ├── browser/           # shared: Playwright session
-│   ├── forge/             # shared: repo clone/search/blame + GitHub issue/PR
-│   ├── stages/            # understand, reproduce, repair, prove, deliver
-│   └── pipeline/          # params, run_session, strategies/{deterministic, agentic}
+├── media/                 # adapter: frames, cursor, ocr, clips
+├── browser/               # adapter: Playwright session
+├── forge/                 # adapter: repo clone/search/blame + publish/PR
+├── pipeline/              # the staged workflow (see below)
 ├── storage/               # runtime, json_store, jobs, cache
 └── interfaces/            # cli, api, service, worker, mcp/, web/
 ```
@@ -63,38 +61,35 @@ backend/
 └── telemetry/             # usage, traces, recorder
 ```
 
-## The analysis package
+## The pipeline package
 
 The pipeline runs five stages in one of two interchangeable strategies. The strategies share a base
-class (template method): `analyze` prepares the run (clone repo + understand), calls the
-mode-specific `_run`, then finalizes (usage, job patch, exports). Callers obtain a strategy from the
-`pipeline` package — they never import a concrete module.
+class (template method): `analyze` prepares the run (validate submission + start session), calls the
+mode-specific `_run`, then finalizes (usage, job summary, exports). Callers obtain a strategy from
+the `pipeline` package — they never import a concrete module.
 
 ```
-analysis/
+pipeline/
+├── __init__.py            # orchestrator façade: resolve(), get_strategy(), Params, Strategy
 ├── progress.py            # run progress (neutral leaf)
 ├── agent_reply.py         # run an agent + parse its strict JSON (understand, repair)
-├── media/                 # frames, cursor, ocr, clips
-├── browser/               # Playwright session (open, act, console, snapshot, record)
-├── forge/                 # repo + GitHub (clone, search, blame, publish_branch, open_issue, open_pr)
-├── stages/
-│   ├── understand/        # recording -> timeline + failure hypothesis
-│   ├── reproduce/         # timeline  -> reproduced run + evidence + before clip
-│   ├── repair/            # evidence  -> localized cause + patch + test
-│   ├── prove/             # patch     -> after clip + before/after proof video
-│   └── deliver/           # artifacts -> issue + draft PR
-└── pipeline/
-    ├── params.py          # Params: request + run state
-    ├── run_session.py     # run recorder, browser session, vision agent, media dir
-    └── strategies/        # base, resolve_strategy, deterministic, agentic
+├── params.py              # Params: request + run state
+├── run_session.py         # run recorder, browser session, vision agent, media dir
+├── stages/                # order is data: pipeline.STAGES (not folder numbers)
+│   ├── understand/        # 01 recording -> timeline + failure hypothesis
+│   ├── reproduce/         # 02 timeline  -> reproduced run + evidence + before clip
+│   ├── repair/            # 03 evidence  -> localized cause + patch + test
+│   ├── prove/             # 04 patch     -> after clip + before/after proof video
+│   └── deliver/           # 05 artifacts -> issue + draft PR
+└── strategies/            # base, resolve_strategy, deterministic, agentic
 ```
 
 ## Boundaries & conventions
 
 - **No import side effects.** `__init__.py` is imports/docstring only; `bootstrap.setup()` creates
   runtime dirs and configures logging (called by every entry point and by `conftest.py`).
-- **One façade per framework.** openjiuwen is confined to `backend/`; browser and GitHub are
-  capability primitives under `analysis/`, the same way media tools are.
+- **One façade per framework.** openjiuwen is confined to `backend/`; the browser and GitHub are
+  capability adapters (`browser/`, `forge/`) at the top level, like `media/` and `storage/`.
 - **Single source of paths.** All generated state lives under `runtime/` via `storage.runtime`.
 - **Schema at the boundary.** `domain.*.normalize/validate` runs where artifacts are stored.
 - **Never auto-merge.** The pipeline opens a *draft* PR; approval is a human step.
@@ -102,9 +97,9 @@ analysis/
 ## Data flow
 
 ```
-recording ─▶ analysis.stages.understand  (media: frames + cursor + ocr)      ─▶ timeline.json
-          ─▶ analysis.stages.reproduce   (browser: replay + console + record)─▶ repro.json + before.mp4
-          ─▶ analysis.stages.repair      (forge: search + blame; agent patch)─▶ fix.diff + test
-          ─▶ analysis.stages.prove       (browser + media: record + stitch)   ─▶ proof.mp4
-          ─▶ analysis.stages.deliver     (forge + reporting)                  ─▶ issue + draft PR
+recording ─▶ pipeline.stages.understand  (media: frames + cursor + ocr)      ─▶ timeline.json
+          ─▶ pipeline.stages.reproduce   (browser: replay + console + record)─▶ repro.json + before.mp4
+          ─▶ pipeline.stages.repair      (forge: search + blame; agent patch)─▶ fix.diff + test
+          ─▶ pipeline.stages.prove       (browser + media: record + stitch)   ─▶ proof.mp4
+          ─▶ pipeline.stages.deliver     (forge + reporting)                  ─▶ issue + draft PR
 ```

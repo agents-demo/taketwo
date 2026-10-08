@@ -41,7 +41,7 @@ def _print_reproduction(repro: dict) -> None:
 
 
 def cmd_record(video: str, repo: str, base_branch: str, app_url: str, agentic: bool) -> int:
-    from taketwo.analysis import pipeline
+    from taketwo import pipeline
 
     strategy = pipeline.resolve(agentic)
     try:

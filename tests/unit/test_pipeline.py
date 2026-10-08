@@ -2,13 +2,14 @@
 
 from __future__ import annotations
 
-from taketwo.analysis import agent_reply, pipeline
+from taketwo import pipeline
 from taketwo.bootstrap import run
 from taketwo.domain import evaluate
 from taketwo.domain import repro as repro_mod
 from taketwo.domain import timeline as timeline_mod
 from taketwo.domain import verify as verify_mod
 from taketwo.domain.submission import job_id
+from taketwo.pipeline import agent_reply
 
 
 def test_submission_job_id_prefers_repo():
@@ -50,12 +51,12 @@ def test_agent_reply_extracts_json_from_prose():
 
 
 def test_understand_uses_the_agent_when_present(tmp_path, monkeypatch):
-    from taketwo.analysis.stages.understand import understand
+    from taketwo.pipeline.stages.understand import understand
 
     async def fake_ask(agent, prompt):  # noqa: ARG001
         return 'prose... {"steps": [{"action": "click", "target": "#go", "timestamp": 1.0}], "failure": {}} ...'
 
-    monkeypatch.setattr("taketwo.analysis.agent_reply.ask", fake_ask)
+    monkeypatch.setattr("taketwo.pipeline.agent_reply.ask", fake_ask)
 
     video = tmp_path / "bug.mov"
     video.write_bytes(b"not a real recording")
@@ -67,7 +68,7 @@ def test_understand_uses_the_agent_when_present(tmp_path, monkeypatch):
 def test_forge_run_tests_reports_pass_and_fail(tmp_path):
     import sys
 
-    from taketwo.analysis.forge import repo as forge_repo
+    from taketwo.forge import repo as forge_repo
 
     ok = forge_repo.run_tests(tmp_path, f'"{sys.executable}" -c "import sys; sys.exit(0)"')
     bad = forge_repo.run_tests(tmp_path, f'"{sys.executable}" -c "import sys; sys.exit(1)"')
@@ -81,9 +82,9 @@ def test_forge_run_tests_reports_pass_and_fail(tmp_path):
 def test_forge_publish_branch_commits_and_dry_runs(tmp_path, monkeypatch):
     import subprocess
 
-    from taketwo.analysis.forge import repo as forge_repo
+    from taketwo.forge import repo as forge_repo
 
-    monkeypatch.setattr("taketwo.analysis.forge.auth.token", lambda: "")  # force dry-run, never push in tests
+    monkeypatch.setattr("taketwo.forge.auth.token", lambda: "")  # force dry-run, never push in tests
 
     work = tmp_path / "r"
     work.mkdir()

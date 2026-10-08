@@ -36,7 +36,7 @@ async def replay_video(
     app_url: str = "",
     agentic: bool = False,
 ) -> dict[str, Any]:
-    from taketwo.analysis import pipeline
+    from taketwo import pipeline
 
     strategy = pipeline.resolve(agentic)
     return await strategy.analyze(
