@@ -14,10 +14,9 @@ from typing import Any
 from taketwo import config
 from taketwo.domain import timeline as timeline_mod
 from taketwo.pipeline import agent_reply
-from taketwo.pipeline.media import clips, cursor
-from taketwo.pipeline.media import frames as frames_mod
 from taketwo.pipeline.progress import Progress, tick
-from taketwo.pipeline.stages.understand import prompts
+from taketwo.pipeline.stages.understand import cursor, imaging, prompts
+from taketwo.pipeline.stages.understand import frames as frames_mod
 from taketwo.storage import runtime
 
 
@@ -51,10 +50,10 @@ async def understand(video_path: str, progress: Progress | None = None, agent: A
     _meta, frames, timestamps = frames_mod.sample_frames(video_path, config.frame_fps(), config.max_frames())
     clicks = cursor.detect_clicks(frames, timestamps, config.cursor_threshold())
 
-    sheet = clips.contact_sheet(frames, timestamps)
+    sheet = imaging.contact_sheet(frames, timestamps)
     sheet_path = None
     if sheet is not None:
-        sheet_path = clips.save_image(sheet, runtime.ARTIFACTS_DIR / f"{Path(video_path).stem}_contact.png")
+        sheet_path = imaging.save_image(sheet, runtime.ARTIFACTS_DIR / f"{Path(video_path).stem}_contact.png")
 
     sidecar = _sidecar(video_path)
     if sidecar:

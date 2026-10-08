@@ -1,4 +1,4 @@
-"""Per-job frame/OCR cache, keyed by path + mtime + size."""
+"""Per-job frame cache, keyed by path + mtime + size."""
 
 from __future__ import annotations
 

@@ -24,7 +24,7 @@ design.
 ## Layout
 
 ```
-interfaces -> pipeline -> backend -> domain      (media / browser / forge / storage / reporting / config are leaves)
+interfaces -> pipeline -> backend -> domain      (forge, storage, reporting, config are leaves)
 ```
 
 `tests/unit/test_architecture.py` enforces the direction. `backend/` is the only place that imports

@@ -9,9 +9,9 @@ interfaces  ──▶  pipeline  ──▶  backend  ──▶  domain
                      └────▶  storage / reporting / config   (neutral leaves)
 ```
 
-The pipeline also owns its **capability adapters** — `pipeline/media`, `pipeline/forge`, and the
-reproduce stage's `pipeline/stages/reproduce/browser`; they are used only inside the pipeline, so
-they live under it rather than as separate top-level layers.
+The pipeline owns its **capability adapter** `pipeline/forge` (git/GitHub) and confines the browser to
+the reproduce stage (`pipeline/stages/reproduce/browser.py`); video/image helpers live with the stage
+that uses them. All of these are pipeline-only, so none is a separate top-level layer.
 
 ## Layers
 
@@ -19,7 +19,7 @@ they live under it rather than as separate top-level layers.
 |---|---|---|---|
 | Domain | `domain/` | Pure rules: submission/repro/fix schemas, timeline math, verify, render, evaluate, compare. No I/O, no third-party. | stdlib only |
 | Backend | `backend/` | The single home for openjiuwen: settings, models, agent builder, rails, tools, runner, logs, telemetry. Imports no application module. | stdlib, openjiuwen |
-| Pipeline | `pipeline/` | The staged workflow (understand → reproduce → repair → prove → deliver), run by two strategies, plus its capability adapters (`media/`, `forge/`; the browser lives inside the reproduce stage). | backend, storage, domain, reporting, config |
+| Pipeline | `pipeline/` | The staged workflow (understand → reproduce → repair → prove → deliver), run by two strategies, plus its capability adapter `forge/`; the browser lives inside the reproduce stage. | backend, storage, domain, reporting, config |
 | Storage | `storage/` | Runtime path layout, JSON helpers, per-job store, repo cache. | config |
 | Reporting | `reporting.py` | Outbound artifacts: `issue.md`, `pr.md`, proof manifest. | domain, storage |
 | Interfaces | `interfaces/` | Adapters: CLI, HTTP API / GitHub webhook, MCP, Streamlit UI, service façade, worker. | anything |
@@ -74,12 +74,11 @@ pipeline/
 ├── agent_reply.py         # run an agent + parse its strict JSON (understand, repair)
 ├── params.py              # Params: request + run state
 ├── run_session.py         # run recorder, browser session, vision agent, media dir
-├── media/                 # adapter: frames, cursor, ocr, clips
 ├── forge/                 # adapter: repo clone/search/blame + publish/PR
 ├── stages/                # order is data: pipeline.STAGES (not folder numbers)
 │   ├── understand/        # 01 recording -> timeline + failure hypothesis
 │   ├── reproduce/         # 02 timeline  -> reproduced run + evidence + before clip
-│   │   └── browser/       #    the stage's Playwright session (only playwright import)
+│   │   └── browser.py     #    the stage's Playwright session (only playwright import)
 │   ├── repair/            # 03 evidence  -> localized cause + patch + test
 │   ├── prove/             # 04 patch     -> after clip + before/after proof video
 │   └── deliver/           # 05 artifacts -> issue + draft PR
@@ -100,9 +99,9 @@ pipeline/
 ## Data flow
 
 ```
-recording ─▶ pipeline.stages.understand  (media: frames + cursor + ocr)      ─▶ timeline.json
+recording ─▶ pipeline.stages.understand  (frames + cursor + contact sheet)   ─▶ timeline.json
           ─▶ pipeline.stages.reproduce   (browser: replay + console + record)─▶ repro.json + before.mp4
           ─▶ pipeline.stages.repair      (forge: search + blame; agent patch)─▶ fix.diff + test
-          ─▶ pipeline.stages.prove       (browser + media: record + stitch)   ─▶ proof.mp4
+          ─▶ pipeline.stages.prove       (record + stitch)                    ─▶ proof.mp4
           ─▶ pipeline.stages.deliver     (forge + reporting)                  ─▶ issue + draft PR
 ```

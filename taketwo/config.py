@@ -28,10 +28,6 @@ def max_frames() -> int:
     return int(os.getenv("MAX_FRAMES", "12"))
 
 
-def ocr_lang() -> str:
-    return os.getenv("OCR_LANG", "eng")
-
-
 def cursor_threshold() -> float:
     """Pixel-shift below which a frame region is considered still (no cursor move)."""
     return float(os.getenv("CURSOR_MOTION_THRESHOLD", "6"))
