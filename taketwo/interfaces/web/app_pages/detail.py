@@ -1,4 +1,4 @@
-"""Run detail: proof (video + comparison), fix, evidence, review workflow, and a follow-up chat."""
+"""Run detail: the proof hero, the fix, the evidence, the review workflow, and a chat."""
 
 from __future__ import annotations
 
@@ -30,6 +30,17 @@ def _chat(job: str) -> None:
         st.markdown(answer)
 
 
+def _proof_hero(repro: dict, proof: dict, job: str) -> None:
+    video = proof.get("proof_video")
+    before, after = repro.get("before_clip", ""), proof.get("after_clip", "")
+    if video and Path(video).exists():
+        st.video(video, autoplay=True, loop=True, muted=True, alt="The same scenario before and after the fix")
+    elif before and after and Path(before).exists() and Path(after).exists():
+        before_after(before, after, key=f"hero_{job}")
+    else:
+        st.caption("No proof clip yet — the re-run needs a live browser or the sandbox.")
+
+
 def render(job: str) -> None:
     """Render the full review surface for one run."""
     repro = store.get_repro(job)
@@ -44,10 +55,18 @@ def render(job: str) -> None:
     verification = proof.get("verification") or {}
     verdict = repro.get("verdict", "unclear")
 
+    _proof_hero(repro, proof, job)
+
     with st.container(border=True):
         head = st.columns([5, 1])
-        head[0].markdown(f"#### `{job}` :{verdict}-badge[{verdict}]")
+        head[0].markdown(f"### `{job}`")
         head[1].badge(review.get("status", "pending").replace("_", " ").title(), color="gray")
+        badges = st.container(horizontal=True)
+        badges.badge(verdict.replace("_", " "), color={"reproduced": "green", "not_reproduced": "red"}.get(verdict, "gray"))
+        badges.badge("verified" if verification.get("verified") else "unverified",
+                     color="green" if verification.get("verified") else "gray")
+        badges.badge("grounded" if score["grounded"] else "ungrounded",
+                     color="blue" if score["grounded"] else "gray")
 
         context = " · ".join(
             part
@@ -77,16 +96,21 @@ def render(job: str) -> None:
     )
 
     with proof_tab:
-        video = proof.get("proof_video")
         before, after = repro.get("before_clip", ""), proof.get("after_clip", "")
-        if video and Path(video).exists():
-            st.caption("The same scenario, before and after the fix.")
-            st.video(video, alt="Proof video: the same scenario before and after the fix")
         if before and after and Path(before).exists() and Path(after).exists():
-            with st.expander("Compare stills (drag to reveal)", icon=":material/compare:"):
-                before_after(before, after, key=f"cmp_{job}")
-        elif not (video and Path(video).exists()):
-            st.caption("No proof yet — the re-run needs a live browser or the sandbox.")
+            st.caption("The same scenario, before and after — drag to compare.")
+            before_after(before, after, key=f"cmp_{job}")
+        else:
+            st.caption("No before/after stills — screenshots need a live browser.")
+        video = proof.get("proof_video")
+        if video and Path(video).exists():
+            st.download_button(
+                "Download the proof video",
+                data=Path(video).read_bytes(),
+                file_name=f"{job}_proof.mp4",
+                mime="video/mp4",
+                icon=":material/download:",
+            )
 
     with fix_tab:
         st.code(fix.get("diff") or "(no diff proposed)", language="diff")
@@ -175,6 +199,7 @@ def render(job: str) -> None:
             st.caption("No decisions yet.")
 
     with st.container(border=True):
+        st.subheader("Ask about this run", icon=":material/forum:")
         _chat(job)
 
 
@@ -183,7 +208,7 @@ def page() -> None:
     st.title("Run review", icon=":material/fact_check:")
     jobs = store.jobs()
     if not jobs:
-        st.info("No runs yet — submit one on the Runs page.", icon=":material/inbox:")
+        common.empty_state(":material/inbox:", "No runs yet", "Submit a recording on the Runs page.")
         return
     job = st.selectbox("Run", jobs, index=0, key="run", bind="query-params")
     render(job)

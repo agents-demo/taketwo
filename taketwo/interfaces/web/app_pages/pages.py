@@ -11,4 +11,7 @@ DETAIL = st.Page(detail.page, title="Run review", icon=":material/fact_check:", 
 
 
 def navigation() -> None:
+    with st.sidebar:
+        st.markdown("### TakeTwo")
+        st.caption("video in · proof out")
     st.navigation([RUNS, DETAIL]).run()

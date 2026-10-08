@@ -12,8 +12,18 @@ import streamlit as st
 from taketwo.domain import evaluate
 from taketwo.storage import runtime, store
 
+_ROOT = Path(__file__).resolve().parents[3]
+LOGO = _ROOT / "assets" / "taketwo.svg"
+TAGLINE = "A screen recording in. A reproduction, a fix, and before/after proof out."
+
 ACCEPTED = ["mp4", "mov", "webm", "mkv", "png", "jpg", "jpeg", "webp"]
 VERDICT_LABELS = {"All": None, "Reproduced": "reproduced", "Not reproduced": "not_reproduced", "Unclear": "unclear"}
+
+
+def empty_state(icon: str, title: str, body: str) -> None:
+    with st.container(border=True):
+        st.markdown(f"### {icon} {title}")
+        st.caption(body)
 
 
 def init_state() -> None:

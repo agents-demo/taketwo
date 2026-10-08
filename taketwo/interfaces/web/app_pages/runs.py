@@ -58,8 +58,9 @@ def live_job() -> None:
 
 def _new_run() -> None:
     with st.container(border=True):
-        st.subheader("New run", icon=":material/rocket_launch:")
-        upload = st.file_uploader("Recording — a screen recording or screenshots", type=common.ACCEPTED)
+        st.subheader("Drop a recording", icon=":material/upload:")
+        st.caption("A screen recording or screenshots — shaky is fine.")
+        upload = st.file_uploader("Recording", type=common.ACCEPTED, label_visibility="collapsed")
         if upload is not None:
             st.video(upload, alt="Preview of the recording you are about to submit")
 
@@ -86,25 +87,44 @@ def _new_run() -> None:
     st.toast(f"Queued run {job_id}", icon=":material/rocket_launch:")
 
 
+def _stats(all_rows: list[dict]) -> None:
+    total = len(all_rows)
+    reproduced = sum(1 for r in all_rows if r["verdict"] == "reproduced")
+    verified = sum(1 for r in all_rows if r["verified"])
+    approved = sum(1 for r in all_rows if r["review"] == "approved")
+    cols = st.columns(4)
+    cols[0].metric("Runs", total)
+    cols[1].metric("Reproduced", f"{reproduced}")
+    cols[2].metric("Verified", f"{verified}")
+    cols[3].metric("Approved", f"{approved}")
+
+
 def page() -> None:
     common.init_state()
 
     st.title("Reproduce a bug from a screen recording", icon=":material/movie:")
-    st.caption("Drop the clip a reporter sent, point at the repo; get an issue, a fix, and a before/after video.")
+    st.caption(common.TAGLINE)
 
     _new_run()
     live_job()
 
+    st.space("medium")
     st.subheader("Runs", icon=":material/history:")
+
+    all_rows = common.rows(None)
+    if not all_rows:
+        common.empty_state(
+            ":material/inbox:", "No runs yet", "Submit a recording above to see the reproduction, fix, and proof."
+        )
+        st.stop()
+
+    _stats(all_rows)
+
     verdict = st.segmented_control(
         "Filter runs", list(common.VERDICT_LABELS), default="All", key="verdict", bind="query-params", wrap=True
     )
-    data = common.rows(common.VERDICT_LABELS.get(verdict, None))
-    if not data:
-        with st.container(border=True):
-            st.markdown(":material/inbox: **No runs yet**")
-            st.caption("Submit a recording above to see the reproduction, fix, and proof.")
-        st.stop()
+    label = common.VERDICT_LABELS.get(verdict, None)
+    data = [row for row in all_rows if not label or row["verdict"] == label]
 
     event = common.runs_dataframe(data)
     jobs = [row["run"] for row in data]
