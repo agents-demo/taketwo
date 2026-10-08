@@ -56,6 +56,16 @@ def live_job() -> None:
             st.rerun()
 
 
+def _queue(video_path: str, repo: str, branch: str, app_url: str, agentic: bool) -> None:
+    if not video_path:
+        st.error("Upload a recording, or run `python scripts/make_sample_bug.py` for the sample clip.")
+        return
+    submission = {"video_path": video_path, "repo": repo, "base_branch": branch, "app_url": app_url, "agentic": agentic}
+    job_id = get_runner().submit(**submission)
+    st.session_state.update(job_id=job_id, last_submission=submission, refreshed_for=None)
+    st.toast(f"Queued run {job_id}", icon=":material/rocket_launch:")
+
+
 def _new_run() -> None:
     with st.container(border=True):
         st.subheader("Drop a recording", icon=":material/upload:")
@@ -71,20 +81,17 @@ def _new_run() -> None:
         agentic = cols[3].toggle("Agentic")
         submitted = cols[4].button("Record & reproduce", icon=":material/play_arrow:", type="primary")
 
-    if not submitted:
-        return
-    video_path = common.sample_path()
-    if upload is not None:
-        target = runtime.DATA_DIR / f"upload_{upload.name}"
-        target.write_bytes(upload.getbuffer())
-        video_path = str(target)
-    if not video_path:
-        st.error("Upload a recording, or run `python scripts/make_sample_bug.py` for the sample clip.")
-        return
-    submission = {"video_path": video_path, "repo": repo, "base_branch": branch, "app_url": app_url, "agentic": agentic}
-    job_id = get_runner().submit(**submission)
-    st.session_state.update(job_id=job_id, last_submission=submission, refreshed_for=None)
-    st.toast(f"Queued run {job_id}", icon=":material/rocket_launch:")
+        sample = st.button("Try the sample bug — no setup", icon=":material/science:")
+
+    if submitted:
+        video_path = common.sample_path()
+        if upload is not None:
+            target = runtime.DATA_DIR / f"upload_{upload.name}"
+            target.write_bytes(upload.getbuffer())
+            video_path = str(target)
+        _queue(video_path, repo, branch, app_url, agentic)
+    elif sample:
+        _queue(common.sample_path(), repo, branch, app_url, agentic)
 
 
 def _stats(all_rows: list[dict]) -> None:
@@ -164,3 +171,6 @@ def page() -> None:
     from taketwo.interfaces.web.app_pages import pages
 
     st.page_link(pages.DETAIL, label=f"Open review for {job}", icon=":material/fact_check:")
+
+    st.space("medium")
+    st.caption("Open source · free for open-source maintainers · built on openjiuwen")

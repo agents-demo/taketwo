@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import io
 import json
 from datetime import datetime
 from pathlib import Path
@@ -29,6 +30,67 @@ def empty_state(icon: str, title: str, body: str) -> None:
             cols[1].image(str(EMPTY_ART), width="stretch")
         st.markdown(f"### {icon} {title}")
         st.caption(body)
+
+
+def share(job: str) -> None:
+    """One-tap share: download the proof clip + copy a ready-to-post caption."""
+    repro, proof = store.get_repro(job), store.get_proof(job)
+    verification = proof.get("verification") or {}
+    video = proof.get("proof_video")
+    if video and Path(video).exists():
+        st.download_button(
+            "Download the proof clip",
+            data=Path(video).read_bytes(),
+            file_name=f"{job}_proof.mp4",
+            mime="video/mp4",
+            icon=":material/download:",
+        )
+    signal = repro.get("evidence", {}).get("summary") or "reproduced from the clip"
+    caption = (
+        "TakeTwo turned a screen recording into a fix \U0001f3ac\n"
+        f"`{job}` — {repro.get('verdict', 'unclear')} · "
+        f"{'verified' if verification.get('verified') else 'unverified'}\n"
+        f"{signal}\n\n#TakeTwo #openjiuwen"
+    )
+    st.caption("Caption — tap the copy icon:")
+    st.code(caption, language=None)
+
+
+def reproduce_rate(rows: list[dict]) -> float:
+    return (sum(1 for r in rows if r["verdict"] == "reproduced") / len(rows)) if rows else 0.0
+
+
+def share_card(rows: list[dict]) -> bytes | None:
+    """A branded PNG score card to post (reproduce rate + counts), or ``None``."""
+    if not rows:
+        return None
+    try:
+        from PIL import Image, ImageDraw, ImageFont
+
+        rate = reproduce_rate(rows)
+        verified = sum(1 for r in rows if r["verified"])
+        total = len(rows)
+
+        def font(size: int):
+            try:
+                return ImageFont.load_default(size=size)
+            except Exception:
+                return ImageFont.load_default()
+
+        img = Image.new("RGB", (1000, 560), (11, 11, 15))
+        draw = ImageDraw.Draw(img)
+        draw.rectangle([0, 0, 1000, 12], fill=(124, 58, 237))
+        draw.rectangle([0, 548, 1000, 560], fill=(52, 211, 153))
+        draw.text((60, 70), "TakeTwo", font=font(40), fill=(236, 236, 242))
+        draw.text((60, 170), f"{rate:.0%}", font=font(120), fill=(167, 139, 250))
+        draw.text((60, 320), "reproduce rate", font=font(34), fill=(156, 163, 175))
+        draw.text((60, 390), f"{verified} verified  ·  {total} runs", font=font(32), fill=(156, 163, 175))
+        draw.text((60, 470), "video in  ·  proof out", font=font(30), fill=(124, 58, 237))
+        buffer = io.BytesIO()
+        img.save(buffer, format="PNG")
+        return buffer.getvalue()
+    except Exception:
+        return None
 
 
 def proof_hero(repro: dict, proof: dict, job: str) -> bool:
@@ -93,9 +155,11 @@ def rows(verdict_filter: str | None) -> list[dict[str, Any]]:
         if verdict_filter and score["verdict"] != verdict_filter:
             continue
         proof = store.get_proof(job)
+        repo = (summary(job).get("submission") or {}).get("repo") or "local"
         out.append(
             {
                 "run": job,
+                "repo": repo,
                 "when": when(job),
                 "verdict": score["verdict"],
                 "score": float(score["score"]),
@@ -117,6 +181,7 @@ def runs_dataframe(data: list[dict]):
         selection_mode="single-row",
         column_config={
             "run": st.column_config.TextColumn("Run", width="large"),
+            "repo": st.column_config.TextColumn("Repo"),
             "when": st.column_config.TextColumn("When"),
             "verdict": st.column_config.TextColumn("Verdict"),
             "score": st.column_config.ProgressColumn("Score", min_value=0.0, max_value=1.0, format="%.2f"),

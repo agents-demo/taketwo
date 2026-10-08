@@ -80,6 +80,9 @@ def render(job: str) -> None:
         metrics[3].metric("Steps", len(repro.get("steps", [])))
         metrics[4].metric("Tokens", f"{int(usage.get('total_tokens', 0)):,}")
 
+        with st.popover("Share proof", icon=":material/ios_share:"):
+            common.share(job)
+
     proof_tab, fix_tab, evidence_tab, review_tab = st.tabs(
         [":material/movie: Proof", ":material/code: Fix", ":material/rule: Evidence", ":material/fact_check: Review"]
     )
@@ -157,6 +160,7 @@ def render(job: str) -> None:
         if approve:
             store.set_review(job, "approved", note, actor=common.actor())
             st.toast(f"Approved {job}", icon=":material/check_circle:")
+            st.balloons()
             st.rerun()
         if changes:
             store.set_review(job, "changes_requested", note, actor=common.actor())
