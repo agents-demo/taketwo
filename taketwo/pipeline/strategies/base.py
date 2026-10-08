@@ -8,6 +8,7 @@ submission, start the session), runs the mode-specific ``_run``, then finalizes
 
 from __future__ import annotations
 
+import shutil
 from pathlib import Path
 from typing import Any
 
@@ -117,6 +118,17 @@ class Strategy:
         params.state["app"] = app
         return app.url if app else ""
 
+    def _keep_source(self, params: Params) -> None:
+        """Copy the submitted recording into the run's artifacts so the UI can show it."""
+        try:
+            source = Path(params.video_path)
+            target = runtime.ARTIFACTS_DIR / params.job / f"source{source.suffix or '.mp4'}"
+            if source.exists() and not target.exists():
+                target.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copyfile(source, target)
+        except Exception:
+            pass
+
     def _summary(self, reproduction: dict, fix: dict, proof: dict) -> str:
         verdict = reproduction.get("verdict", "unclear")
         lines = [f"reproduction: {verdict}"]
@@ -135,6 +147,7 @@ class Strategy:
         extras: dict,
         progress: Progress | None,
     ) -> dict[str, Any]:
+        self._keep_source(params)
         usage = params.session.usage_summary() if params.session else {}
         if params.session is not None and (path := params.session.save_details()):
             params.artifact_paths["observability"] = path

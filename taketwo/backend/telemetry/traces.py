@@ -191,6 +191,7 @@ class CallTrace:
         usage: dict | None = None,
         started: float = 0.0,
         seq: int = 0,
+        seconds: float = 0.0,
         requested: Any = None,
     ) -> None:
         try:
@@ -199,6 +200,7 @@ class CallTrace:
                 "model": model,
                 "started": started,
                 "seq": seq,
+                "seconds": seconds,
                 "input": sanitize_messages(messages, limit=None) if self.record_io else [],
                 "output": _clip(output, None) if self.record_io else "",
             }

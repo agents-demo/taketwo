@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Any
 
 import streamlit as st
 
@@ -10,7 +11,7 @@ from taketwo.domain import evaluate
 from taketwo.interfaces import service
 from taketwo.interfaces.web import common
 from taketwo.interfaces.web.compare import before_after
-from taketwo.storage import store
+from taketwo.storage import runtime, store
 
 
 def _chat(job: str) -> None:
@@ -30,6 +31,31 @@ def _chat(job: str) -> None:
         st.markdown(answer)
 
 
+def _fmt_io(value: Any) -> str:
+    if value is None:
+        return ""
+    if isinstance(value, list):
+        return "\n\n".join(f"{m.get('role', '?')}: {m.get('content', '')}" for m in value if isinstance(m, dict))
+    return value if isinstance(value, str) else str(value)
+
+
+def _timeline(observability: dict) -> list[tuple]:
+    """Merge model calls and tool calls into one seq-ordered list of events."""
+    events: list[tuple] = []
+    for call in observability.get("calls", []):
+        events.append(
+            (call.get("seq", 0), "model", f"{call.get('label')} · {call.get('model') or ''}",
+             call.get("seconds"), call.get("total_tokens"), _fmt_io(call.get("input")), call.get("output") or "")
+        )
+    for tool in observability.get("tools", []):
+        events.append(
+            (tool.get("seq", 1000), "tool", tool.get("name") or "tool",
+             tool.get("seconds"), None, _fmt_io(tool.get("arguments")), tool.get("result") or tool.get("error") or "")
+        )
+    events.sort(key=lambda event: event[0] or 0)
+    return events
+
+
 def render(job: str) -> None:
     """Render the full review surface for one run."""
     repro = store.get_repro(job)
@@ -44,7 +70,11 @@ def render(job: str) -> None:
     verification = proof.get("verification") or {}
     verdict = repro.get("verdict", "unclear")
 
-    common.proof_hero(repro, proof, job)
+    if not common.proof_hero(repro, proof, job):
+        source = next((runtime.ARTIFACTS_DIR / job).glob("source.*"), None)
+        if source is not None:
+            st.caption("Source recording — no proof yet (this run didn't reproduce).")
+            st.video(str(source))
 
     with st.container(border=True):
         head = st.columns([5, 1])
@@ -174,6 +204,22 @@ def render(job: str) -> None:
                 width="stretch",
                 alt="Tool calls made during the run",
             )
+        events = _timeline(observability)
+        if events:
+            st.markdown("**Timeline**")
+            for _, kind, title, seconds, tokens, input_text, output_text in events:
+                parts = [f"{kind} · {title}"]
+                if seconds is not None:
+                    parts.append(f"{seconds}s")
+                if tokens:
+                    parts.append(f"{tokens} tok")
+                with st.expander(" · ".join(parts)):
+                    if input_text:
+                        st.caption("input")
+                        st.code(input_text)
+                    if output_text:
+                        st.caption("output")
+                        st.code(output_text)
         console = repro.get("evidence", {}).get("console") or []
         if console:
             st.code("\n".join(console), language="text")

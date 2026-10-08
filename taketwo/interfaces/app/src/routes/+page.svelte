@@ -88,6 +88,10 @@
             <video src={media(r.job, "proof.mp4")} autoplay loop muted playsinline class="h-full w-full object-cover"></video>
           {:else if r.has_before && r.has_after}
             <Compare before={media(r.job, "before.png")} after={media(r.job, "after.png")} />
+          {:else if r.has_before}
+            <img src={media(r.job, "before.png")} alt="captured frame" class="h-full w-full object-cover" />
+          {:else if r.source}
+            <video src={media(r.job, r.source)} muted loop autoplay playsinline class="h-full w-full object-cover"></video>
           {:else}
             <div class="grid h-full place-items-center text-muted">▶</div>
           {/if}

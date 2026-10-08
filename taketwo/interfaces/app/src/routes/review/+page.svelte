@@ -36,6 +36,38 @@
     job;
     load();
   });
+
+  function fmtInput(v) {
+    if (v == null) return "";
+    if (Array.isArray(v)) return v.map((m) => `${m.role ?? "?"}: ${m.content ?? ""}`).join("\n\n");
+    return typeof v === "string" ? v : JSON.stringify(v, null, 2);
+  }
+  const timeline = $derived.by(() => {
+    if (!run) return [];
+    const events = [];
+    (run.calls || []).forEach((c, i) =>
+      events.push({
+        kind: "model",
+        seq: c.seq ?? i,
+        title: `${c.label || "call"} · ${c.model || ""}`,
+        seconds: c.seconds,
+        tokens: c.total_tokens,
+        input: fmtInput(c.input),
+        output: c.output || "",
+      })
+    );
+    (run.tools || []).forEach((t, i) =>
+      events.push({
+        kind: "tool",
+        seq: t.seq ?? (1000 + i),
+        title: t.name || "tool",
+        seconds: t.seconds,
+        input: fmtInput(t.arguments),
+        output: t.result || t.error || "",
+      })
+    );
+    return events.sort((a, b) => (a.seq || 0) - (b.seq || 0));
+  });
 </script>
 
 {#if error}
@@ -55,10 +87,17 @@
       <Compare before={media(run.job, "before.png")} after={media(run.job, "after.png")} />
     {:else if run.has_video}
       <video src={media(run.job, "proof.mp4")} autoplay loop muted playsinline class="h-full w-full object-cover"></video>
+    {:else if run.source}
+      <video src={media(run.job, run.source)} autoplay loop muted playsinline class="h-full w-full object-cover"></video>
+    {:else if run.has_before}
+      <img src={media(run.job, "before.png")} alt="captured frame" class="h-full w-full object-cover" />
     {:else}
-      <div class="grid h-full place-items-center text-muted">no proof clip</div>
+      <div class="grid h-full place-items-center text-muted">no clip</div>
     {/if}
   </div>
+  {#if !(run.has_before && run.has_after) && !run.has_video}
+    <p class="mt-1 text-xs text-muted">Source recording — no proof yet (this run didn't reproduce).</p>
+  {/if}
 
   <div class="mt-4 grid grid-cols-3 gap-3">
     <div class="card p-3"><div class="text-xs text-muted">Score</div><div class="font-display text-2xl">{run.score}</div></div>
@@ -114,6 +153,32 @@
         </table>
       </div>
     {/if}
+  {/if}
+
+  {#if timeline.length}
+    <h2 class="mt-6 font-display text-lg">Timeline</h2>
+    <div class="mt-2 space-y-2">
+      {#each timeline as e}
+        <details class="card">
+          <summary class="flex cursor-pointer items-center gap-2 px-3 py-2">
+            <span class="rounded-full border-2 border-line px-2 py-0.5 text-[10px] uppercase tracking-wide text-muted">{e.kind}</span>
+            <span class="text-sm font-semibold">{e.title}</span>
+            {#if e.tokens != null}<span class="text-xs text-muted">· {e.tokens} tok</span>{/if}
+            {#if e.seconds != null}<span class="ml-auto text-xs text-muted">{e.seconds}s</span>{/if}
+          </summary>
+          <div class="px-3 pb-3">
+            {#if e.input}
+              <div class="mb-1 text-[11px] uppercase tracking-wide text-muted">input</div>
+              <pre class="max-h-64 overflow-auto rounded-lg border-2 border-line bg-ink p-2 text-[11px] leading-relaxed">{e.input}</pre>
+            {/if}
+            {#if e.output}
+              <div class="mb-1 mt-2 text-[11px] uppercase tracking-wide text-muted">output</div>
+              <pre class="max-h-64 overflow-auto rounded-lg border-2 border-line bg-ink p-2 text-[11px] leading-relaxed">{e.output}</pre>
+            {/if}
+          </div>
+        </details>
+      {/each}
+    </div>
   {/if}
 
   <h2 class="mt-6 font-display text-lg">Review</h2>

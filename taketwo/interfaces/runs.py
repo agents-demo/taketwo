@@ -27,6 +27,11 @@ def _exists(path: str) -> bool:
     return bool(path) and Path(path).exists()
 
 
+def _source_name(job: str) -> str:
+    """The stored source recording for a run (``source.<ext>``), or ``""``."""
+    return next((p.name for p in (runtime.ARTIFACTS_DIR / job).glob("source.*")), "")
+
+
 def list_runs() -> list[dict[str, Any]]:
     """One dict per run (newest first), with media availability flags."""
     out: list[dict[str, Any]] = []
@@ -59,6 +64,7 @@ def list_runs() -> list[dict[str, Any]]:
                 "has_video": _exists(proof.get("proof_video", "")),
                 "has_before": _exists(repro.get("before_clip", "")),
                 "has_after": _exists(proof.get("after_clip", "")),
+                "source": _source_name(job),
             }
         )
     return out

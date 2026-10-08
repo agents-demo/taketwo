@@ -59,6 +59,7 @@ def attach(
                 usage=record,
                 started=start,
                 seq=seq,
+                seconds=round(time.monotonic() - start, 2),
                 requested=getattr(result, "tool_calls", None),
             )
         return result
