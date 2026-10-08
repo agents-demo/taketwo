@@ -41,14 +41,14 @@
 {#if error}
   <p class="text-bad">{error}</p>
 {:else if !run}
-  <p class="text-[#9ca3af]">Loading…</p>
+  <p class="text-muted">Loading…</p>
 {:else}
   <div class="flex items-center gap-3">
     <h1 class="font-display text-2xl font-bold">{run.job}</h1>
     <span class="rounded-full border-2 border-line px-3 py-1 text-xs">{run.verified ? "verified" : "unverified"}</span>
-    <a href={`${base}/`} class="ml-auto text-sm text-[#9ca3af] hover:text-white">← Runs</a>
+    <a href={`${base}/`} class="ml-auto text-sm text-muted hover:text-white">← Runs</a>
   </div>
-  <p class="mt-1 text-sm text-[#9ca3af]">{run.evidence || "—"}</p>
+  <p class="mt-1 text-sm text-muted">{run.evidence || "—"}</p>
 
   <div class="card mt-4 h-[320px] overflow-hidden">
     {#if run.has_before && run.has_after}
@@ -56,14 +56,14 @@
     {:else if run.has_video}
       <video src={media(run.job, "proof.mp4")} autoplay loop muted playsinline class="h-full w-full object-cover"></video>
     {:else}
-      <div class="grid h-full place-items-center text-[#9ca3af]">no proof clip</div>
+      <div class="grid h-full place-items-center text-muted">no proof clip</div>
     {/if}
   </div>
 
   <div class="mt-4 grid grid-cols-3 gap-3">
-    <div class="card p-3"><div class="text-xs text-[#9ca3af]">Score</div><div class="font-display text-2xl">{run.score}</div></div>
-    <div class="card p-3"><div class="text-xs text-[#9ca3af]">Verdict</div><div class="font-display text-lg">{run.verdict}</div></div>
-    <div class="card p-3"><div class="text-xs text-[#9ca3af]">Steps</div><div class="font-display text-2xl">{(run.steps || []).length}</div></div>
+    <div class="card p-3"><div class="text-xs text-muted">Score</div><div class="font-display text-2xl">{run.score}</div></div>
+    <div class="card p-3"><div class="text-xs text-muted">Verdict</div><div class="font-display text-lg">{run.verdict}</div></div>
+    <div class="card p-3"><div class="text-xs text-muted">Steps</div><div class="font-display text-2xl">{(run.steps || []).length}</div></div>
   </div>
 
   <h2 class="mt-6 font-display text-lg">Fix</h2>
@@ -71,7 +71,7 @@
 
   {#if run.steps?.length}
     <h2 class="mt-6 font-display text-lg">Steps</h2>
-    <ol class="mt-2 space-y-1 text-sm text-[#9ca3af]">
+    <ol class="mt-2 space-y-1 text-sm text-muted">
       {#each run.steps as s, i}<li>{i + 1}. {s.action} {s.target || ""}</li>{/each}
     </ol>
   {/if}

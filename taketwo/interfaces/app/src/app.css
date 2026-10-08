@@ -2,16 +2,32 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Theme tokens as space-separated RGB (so Tailwind's <alpha-value> works).
+   Dark is the default; [data-theme="light"] overrides. */
 :root {
+  --c-bg: 11 11 15;
+  --c-panel: 21 21 29;
+  --c-line: 38 38 47;
+  --c-text: 236 236 242;
+  --c-muted: 156 163 175;
   color-scheme: dark;
+}
+
+[data-theme="light"] {
+  --c-bg: 251 251 253;
+  --c-panel: 244 244 248;
+  --c-line: 226 226 236;
+  --c-text: 18 18 26;
+  --c-muted: 100 116 139;
+  color-scheme: light;
 }
 
 html,
 body {
   margin: 0;
-  height: 100%;
-  background: #0b0b0f;
-  color: #ececf2;
+  min-height: 100%;
+  background: rgb(var(--c-bg));
+  color: rgb(var(--c-text));
   font-family: Inter, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
@@ -21,7 +37,7 @@ a {
 }
 
 .card {
-  border: 2px solid #26262f;
-  background: #15151d;
+  border: 2px solid rgb(var(--c-line));
+  background: rgb(var(--c-panel));
   border-radius: 20px;
 }

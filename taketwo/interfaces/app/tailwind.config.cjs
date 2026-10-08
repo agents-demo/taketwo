@@ -4,9 +4,12 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        ink: "#0b0b0f",
-        surface: "#15151d",
-        line: "#26262f",
+        // Surfaces/text are CSS variables so light & dark both work.
+        ink: "rgb(var(--c-bg) / <alpha-value>)",
+        surface: "rgb(var(--c-panel) / <alpha-value>)",
+        line: "rgb(var(--c-line) / <alpha-value>)",
+        app: "rgb(var(--c-text) / <alpha-value>)",
+        muted: "rgb(var(--c-muted) / <alpha-value>)",
         accent: "#7c3aed",
         accent2: "#a78bfa",
         good: "#34d399",

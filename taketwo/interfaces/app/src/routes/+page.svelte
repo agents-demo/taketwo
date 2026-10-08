@@ -46,24 +46,24 @@
       ? ["✅ Fixed", "text-good"]
       : r.verdict === "reproduced"
         ? ["🔧 Fix ready", "text-accent2"]
-        : ["👀 Unclear", "text-[#9ca3af]"];
+        : ["👀 Unclear", "text-muted"];
 
   onMount(load);
 </script>
 
 <h1 class="font-display text-3xl font-bold">Runs</h1>
-<p class="mt-1 text-sm text-[#9ca3af]">Turn a screen recording into a reproduction, a fix, and a before/after proof.</p>
+<p class="mt-1 text-sm text-muted">Turn a screen recording into a reproduction, a fix, and a before/after proof.</p>
 
 <section class="card mt-5 p-4">
   <h2 class="font-display text-lg">New run</h2>
   <div class="mt-3 grid gap-3 sm:grid-cols-3">
-    <label class="text-xs text-[#9ca3af]">Clip
+    <label class="text-xs text-muted">Clip
       <input bind:value={video} class="mt-1 w-full rounded-lg border-2 border-line bg-ink px-3 py-2 text-sm" />
     </label>
-    <label class="text-xs text-[#9ca3af]">Repository
+    <label class="text-xs text-muted">Repository
       <input bind:value={repo} placeholder="owner/name" class="mt-1 w-full rounded-lg border-2 border-line bg-ink px-3 py-2 text-sm" />
     </label>
-    <label class="text-xs text-[#9ca3af]">App URL
+    <label class="text-xs text-muted">App URL
       <input bind:value={app_url} placeholder="http://localhost:8130" class="mt-1 w-full rounded-lg border-2 border-line bg-ink px-3 py-2 text-sm" />
     </label>
   </div>
@@ -75,9 +75,9 @@
 </section>
 
 {#if loading}
-  <p class="mt-6 text-sm text-[#9ca3af]">Loading…</p>
+  <p class="mt-6 text-sm text-muted">Loading…</p>
 {:else if !runs.length}
-  <p class="mt-6 text-sm text-[#9ca3af]">No runs yet. Submit a clip above.</p>
+  <p class="mt-6 text-sm text-muted">No runs yet. Submit a clip above.</p>
 {:else}
   <div class="mt-5 grid gap-4 sm:grid-cols-2">
     {#each runs as r (r.job)}
@@ -89,15 +89,15 @@
           {:else if r.has_before && r.has_after}
             <Compare before={media(r.job, "before.png")} after={media(r.job, "after.png")} />
           {:else}
-            <div class="grid h-full place-items-center text-[#9ca3af]">▶</div>
+            <div class="grid h-full place-items-center text-muted">▶</div>
           {/if}
         </div>
         <div class="p-3">
           <div class="flex items-center gap-2">
             <span class="text-sm font-semibold {cls}">{label}</span>
-            <span class="ml-auto text-xs text-[#9ca3af]">{r.repo}</span>
+            <span class="ml-auto text-xs text-muted">{r.repo}</span>
           </div>
-          <p class="mt-1 truncate text-xs text-[#9ca3af]">{r.evidence || "—"}</p>
+          <p class="mt-1 truncate text-xs text-muted">{r.evidence || "—"}</p>
         </div>
       </a>
     {/each}
