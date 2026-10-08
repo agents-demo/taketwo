@@ -220,6 +220,8 @@ def test_forge_publish_branch_commits_and_dry_runs(tmp_path, monkeypatch):
         subprocess.run(["git", *args], cwd=work, capture_output=True, text=True, check=True)
 
     git("init")
+    git("config", "user.email", "test@example.com")  # CI runners have no global identity
+    git("config", "user.name", "Test")
     (work / "f.txt").write_text("old\n", encoding="utf-8")
     git("add", "-A")
     git("commit", "-m", "init")
