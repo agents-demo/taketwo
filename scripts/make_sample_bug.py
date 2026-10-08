@@ -32,6 +32,16 @@ TIMELINE = {
     "failure": {"summary": "date picker closes without selecting", "timestamp": 3.0, "signal": "blur"},
 }
 
+# A live variant: same steps, but NO repro sidecar, so the pipeline reproduces it in a
+# real browser against examples/sample_app (served locally).
+LIVE_TIMELINE = {
+    "steps": [
+        {"action": "click", "target": "#dateField", "timestamp": 1.2, "confidence": 0.9},
+        {"action": "click", "target": "button.day", "timestamp": 2.4, "confidence": 0.9},
+    ],
+    "failure": {"summary": "", "timestamp": 0.0, "signal": ""},
+}
+
 REPRO = {
     "steps": TIMELINE["steps"],
     "evidence": {
@@ -86,6 +96,9 @@ def main() -> int:
     (data / f"{STEM}_proposed.result.json").write_text(
         json.dumps({"reproduced": False, "tests_pass": True}, indent=2), encoding="utf-8"
     )
+    # The live fixture: a timeline but no repro sidecar -> reproduces in a real browser.
+    (data / f"{STEM}_live.mov").write_bytes(b"synthetic-recording-placeholder")
+    (data / f"{STEM}_live.mov.timeline.json").write_text(json.dumps(LIVE_TIMELINE, indent=2), encoding="utf-8")
     _write_clips(STEM)
     print(f"wrote synthetic submission under {data}")
     print("run: taketwo record runtime/data/sample_bug.mov")

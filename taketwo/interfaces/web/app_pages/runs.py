@@ -91,7 +91,8 @@ def _new_run() -> None:
             video_path = str(target)
         _queue(video_path, repo, branch, app_url, agentic)
     elif sample:
-        _queue(common.sample_path(), repo, branch, app_url, agentic)
+        # Demo with no setup: point at a locally served sample app so it reproduces live.
+        _queue(common.live_sample_path(), repo, branch, app_url or common.sample_app_url(), agentic)
 
 
 def _stats(all_rows: list[dict]) -> None:

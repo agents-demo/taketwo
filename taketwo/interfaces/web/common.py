@@ -170,6 +170,32 @@ def sample_path() -> str:
     return str(path) if path.exists() else ""
 
 
+def live_sample_path() -> str:
+    """The live-sample clip (timeline only, no repro sidecar → reproduces in a browser)."""
+    path = runtime.DATA_DIR / "sample_bug_live.mov"
+    return str(path) if path.exists() else sample_path()
+
+
+def sample_app_url(port: int = 8130) -> str:
+    """Serve ``examples/sample_app`` locally once and return its URL (for the live demo)."""
+    cached = st.session_state.get("_sample_app")
+    if cached is not None:
+        return getattr(cached, "url", "")
+    sample = _ROOT / "examples" / "sample_app"
+    if not sample.exists():
+        return ""
+    import sys
+
+    from taketwo.pipeline import appserver
+
+    command = f'"{sys.executable}" -m http.server {port} --directory "{sample}"'
+    app = appserver.start(command, _ROOT, f"http://localhost:{port}")
+    if app is not None:
+        st.session_state["_sample_app"] = app
+        return app.url
+    return ""
+
+
 def read_json(path: str | Path) -> dict:
     try:
         return json.loads(Path(path).read_text(encoding="utf-8"))
