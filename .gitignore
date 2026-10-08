@@ -17,3 +17,17 @@ node_modules/
 # keep the built SvelteKit app (served at /app)
 !taketwo/interfaces/app/build/
 !taketwo/interfaces/app/build/**
+
+# openjiuwen agent workspace/identity files (kept under runtime/workspace)
+/AGENT.md
+/HEARTBEAT.md
+/IDENTITY.md
+/SOUL.md
+/USER.md
+/agents/
+/coding_memory/
+/context/
+/memory/
+/messages/
+/skills/
+/todo/
