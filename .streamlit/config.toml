@@ -1,17 +1,10 @@
-# TakeTwo — an agentic console for "video in, proof out". Dark, violet accent.
+# TakeTwo — an agentic console for "video in, proof out".
+# Light + dark themes. When both variants are defined Streamlit follows the user's
+# system preference and lets them switch under the app menu (⋮ → Settings → Theme).
+# (To lock a single mode instead, define only [theme] with no .light/.dark variants.)
 
 [theme]
 base = "dark"
-primaryColor = "#7C3AED"
-backgroundColor = "#0B0B0F"
-secondaryBackgroundColor = "#15151D"
-codeBackgroundColor = "#15151D"
-textColor = "#ECECF2"
-linkColor = "#A78BFA"
-borderColor = "#26262F"
-codeTextColor = "#E6E6EE"
-dataframeBorderColor = "#26262F"
-dataframeHeaderBackgroundColor = "#15151D"
 font = "'Inter':https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
 headingFont = "'Space Grotesk':https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&display=swap"
 codeFont = "'JetBrains Mono':https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap"
@@ -34,10 +27,42 @@ yellowColor = "#FBBF24"
 orangeColor = "#FB923C"
 violetColor = "#A78BFA"
 
-[theme.sidebar]
+[theme.dark]
+primaryColor = "#7C3AED"
+backgroundColor = "#0B0B0F"
+secondaryBackgroundColor = "#15151D"
+codeBackgroundColor = "#15151D"
+textColor = "#ECECF2"
+linkColor = "#A78BFA"
+borderColor = "#26262F"
+codeTextColor = "#E6E6EE"
+dataframeBorderColor = "#26262F"
+dataframeHeaderBackgroundColor = "#15151D"
+
+[theme.dark.sidebar]
 backgroundColor = "#0E0E14"
 secondaryBackgroundColor = "#15151D"
 codeBackgroundColor = "#15151D"
 textColor = "#ECECF2"
 borderColor = "#26262F"
 primaryColor = "#7C3AED"
+
+[theme.light]
+primaryColor = "#6D28D9"
+backgroundColor = "#FBFBFD"
+secondaryBackgroundColor = "#F4F4F8"
+codeBackgroundColor = "#F4F4F8"
+textColor = "#12121A"
+linkColor = "#6D28D9"
+borderColor = "#E6E6EE"
+codeTextColor = "#12121A"
+dataframeBorderColor = "#E6E6EE"
+dataframeHeaderBackgroundColor = "#F4F4F8"
+
+[theme.light.sidebar]
+backgroundColor = "#F4F4F8"
+secondaryBackgroundColor = "#ECECF2"
+codeBackgroundColor = "#ECECF2"
+textColor = "#12121A"
+borderColor = "#E6E6EE"
+primaryColor = "#6D28D9"
