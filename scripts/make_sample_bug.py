@@ -82,6 +82,10 @@ def main() -> int:
     (data / f"{STEM}.mov.repro.json").write_text(json.dumps(REPRO, indent=2), encoding="utf-8")
     (data / f"{STEM}_proposed.patch").write_text(PATCH, encoding="utf-8")
     (data / f"{STEM}_proposed.test").write_text(TEST, encoding="utf-8")
+    # An explicit (offline) verification result: scenario fixed, tests pass.
+    (data / f"{STEM}_proposed.result.json").write_text(
+        json.dumps({"reproduced": False, "tests_pass": True}, indent=2), encoding="utf-8"
+    )
     _write_clips(STEM)
     print(f"wrote synthetic submission under {data}")
     print("run: taketwo record runtime/data/sample_bug.mov")

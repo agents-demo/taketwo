@@ -82,6 +82,10 @@ class Runner:
         self._pool.submit(self._run, job)
         return job_id
 
+    def shutdown(self, wait: bool = False) -> None:
+        """Stop accepting jobs and release the worker threads."""
+        self._pool.shutdown(wait=wait, cancel_futures=True)
+
     def status(self, job_id: str) -> dict[str, Any]:
         with self._lock:
             job = self._jobs.get(job_id)

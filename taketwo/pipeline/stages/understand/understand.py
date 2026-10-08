@@ -7,6 +7,7 @@ fallback that never claims more than the motion it measured.
 
 from __future__ import annotations
 
+import asyncio
 import json
 from pathlib import Path
 from typing import Any
@@ -31,29 +32,43 @@ def _sidecar(video_path: str) -> dict[str, Any] | None:
 
 
 def _steps_from_motion(clicks: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    if clicks:
-        return [
+    """One step per motion burst: clicks within ``_MERGE_WINDOW`` seconds are merged."""
+    if not clicks:
+        return [{"action": "wait", "timestamp": 0.0, "confidence": 0.1, "evidence": "no motion detected"}]
+
+    window = 0.8
+    merged: list[dict[str, Any]] = []
+    last = None
+    for click in sorted(clicks, key=lambda c: c["timestamp"]):
+        if last is not None and click["timestamp"] - last < window:
+            continue
+        merged.append(
             {
                 "action": "click",
                 "timestamp": click["timestamp"],
                 "confidence": 0.4,
                 "evidence": f"motion {click['score']}",
             }
-            for click in clicks
-        ]
-    return [{"action": "wait", "timestamp": 0.0, "confidence": 0.1, "evidence": "no motion detected"}]
+        )
+        last = click["timestamp"]
+    return merged[: config.max_steps()]
+
+
+def _observe(video_path: str) -> tuple[list[dict], str | None]:
+    """Blocking media work: sample frames, detect motion, render the contact sheet."""
+    _meta, frames, timestamps = frames_mod.sample_frames(video_path, config.frame_fps(), config.max_frames())
+    clicks = cursor.detect_clicks(frames, timestamps, config.cursor_threshold())
+    sheet = imaging.contact_sheet(frames, timestamps)
+    sheet_path = None
+    if sheet is not None:
+        sheet_path = imaging.save_image(sheet, runtime.ARTIFACTS_DIR / f"{Path(video_path).stem}_contact.png")
+    return clicks, sheet_path
 
 
 async def understand(video_path: str, progress: Progress | None = None, agent: Any = None) -> dict[str, Any]:
     """Return a normalized timeline for ``video_path``."""
     tick(progress, "reading recording", 8)
-    _meta, frames, timestamps = frames_mod.sample_frames(video_path, config.frame_fps(), config.max_frames())
-    clicks = cursor.detect_clicks(frames, timestamps, config.cursor_threshold())
-
-    sheet = imaging.contact_sheet(frames, timestamps)
-    sheet_path = None
-    if sheet is not None:
-        sheet_path = imaging.save_image(sheet, runtime.ARTIFACTS_DIR / f"{Path(video_path).stem}_contact.png")
+    clicks, sheet_path = await asyncio.to_thread(_observe, video_path)
 
     sidecar = _sidecar(video_path)
     if sidecar:

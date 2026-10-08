@@ -8,6 +8,7 @@ regression test.
 
 from __future__ import annotations
 
+import asyncio
 from pathlib import Path
 from typing import Any
 
@@ -46,8 +47,8 @@ async def repair(reproduction: dict[str, Any], repo: str, job: str, progress: Pr
         return fix_mod.normalize({"summary": "no fix: the bug was not reproduced"})
 
     tick(progress, "locating the cause", 70)
-    repo_dir = Path(ensure_repo(repo)) if repo else None
-    culprits = localize.localize(repo_dir, reproduction) if repo_dir else []
+    repo_dir = Path(await asyncio.to_thread(ensure_repo, repo)) if repo else None
+    culprits = await asyncio.to_thread(localize.localize, repo_dir, reproduction) if repo_dir else []
 
     staged = _staged(job)
     if staged is not None:

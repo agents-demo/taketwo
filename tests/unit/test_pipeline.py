@@ -44,10 +44,12 @@ def test_verify_requires_red_then_green():
         {"verdict": "reproduced", "evidence": {"summary": "TypeError: x is null"}, "steps": [{"action": "click"}]}
     )
     fix = {"diff": "--- a\n+++ b\n", "test": "def test_x(): ..."}
-    bad = verify_mod.verify(repro, fix, {"reproduced": True, "tests_pass": True})
-    good = verify_mod.verify(repro, fix, {"reproduced": False, "tests_pass": True})
+    bad = verify_mod.verify(repro, fix, {"verified": True, "reproduced": True, "tests_pass": True})
+    good = verify_mod.verify(repro, fix, {"verified": True, "reproduced": False, "tests_pass": True})
+    unverified = verify_mod.verify(repro, fix, {"reproduced": False, "tests_pass": True})
     assert bad["ok"] is False
     assert good["ok"] is True
+    assert unverified["ok"] is False and unverified["verified"] is False
 
 
 def test_evaluate_flags_ungrounded_reproduced():

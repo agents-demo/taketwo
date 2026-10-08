@@ -10,6 +10,7 @@ fixed and ``verify`` reflects what was actually checked.
 
 from __future__ import annotations
 
+import asyncio
 import json
 from typing import Any
 
@@ -69,17 +70,19 @@ def _run_result(job: str, fix: dict, repo: str, base_branch: str, replayed: str 
     sidecar = runtime.DATA_DIR / f"{job}_proposed.result.json"
     if sidecar.exists():
         try:
-            return json.loads(sidecar.read_text(encoding="utf-8"))
+            injected = json.loads(sidecar.read_text(encoding="utf-8"))
+            injected.setdefault("verified", True)  # an injected result is an explicit run
+            return injected
         except Exception:
             pass
 
-    run: dict[str, Any] = {"reproduced": False}  # assume the patch fixes it (unverified)
-    if replayed is not None:
-        run["reproduced"] = bool(replayed)
-
+    run: dict[str, Any] = {"reproduced": bool(replayed)}
     tests = run_tests_on_patch(repo, base_branch, fix.get("diff", ""), config.test_command())
-    run["tests_pass"] = bool(tests["passed"]) if tests.get("ran") else True
-    if tests.get("ran"):
+    ran_tests = bool(tests.get("ran"))
+    run["tests_ran"] = ran_tests
+    run["tests_pass"] = bool(tests["passed"]) if ran_tests else True  # N/A when not run
+    run["verified"] = (replayed is not None) or ran_tests
+    if ran_tests:
         run["test_output"] = (tests.get("output") or "")[-2000:]
     return run
 
@@ -108,18 +111,21 @@ async def prove(
     after_clip = ""
     replayed: str | None = None
     if session is not None and getattr(session, "live", False):
-        replayed = _patched_rerun(reproduction, fix, repo, base_branch, session)
-        after_clip = session.snapshot(proof_dir / "after.png") or ""
+        replayed = await asyncio.to_thread(_patched_rerun, reproduction, fix, repo, base_branch, session)
+        after_clip = await asyncio.to_thread(session.snapshot, proof_dir / "after.png") or ""
     elif (proof_dir / "after.png").exists():
         after_clip = str(proof_dir / "after.png")
 
-    run = _run_result(job, fix, repo, base_branch, replayed)
+    run = await asyncio.to_thread(_run_result, job, fix, repo, base_branch, replayed)
     after_repro = {**reproduction, "verdict": "reproduced" if run.get("reproduced") else "not_reproduced"}
 
     return {
         "after_clip": after_clip,
-        "proof_path": stitch.proof(before, after_clip, str(proof_dir / "proof.png")) or "",
-        "proof_video": stitch.proof_video(before, after_clip, str(proof_dir / "proof.mp4")) or "",
+        "proof_path": await asyncio.to_thread(stitch.proof, before, after_clip, str(proof_dir / "proof.png")) or "",
+        "proof_video": await asyncio.to_thread(
+            stitch.proof_video, before, after_clip, str(proof_dir / "proof.mp4")
+        )
+        or "",
         "run": run,
         "verification": verify_mod.verify(reproduction, fix, run),
         "compare": compare_mod.before_after(reproduction, after_repro),

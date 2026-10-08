@@ -9,6 +9,7 @@ and records the **before** clip. When no browser is available it degrades to an
 
 from __future__ import annotations
 
+import asyncio
 import json
 from pathlib import Path
 from typing import Any
@@ -73,7 +74,7 @@ async def reproduce(
 
     session = getattr(run_session, "browser", None)
     if session is None:
-        session = browser.open_session(app_url)
+        session = await asyncio.to_thread(browser.open_session, app_url)
         if run_session is not None:
             run_session.browser = session
 
