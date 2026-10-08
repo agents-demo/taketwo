@@ -1,9 +1,10 @@
-/* TakeTwo Reels — a swipeable proof feed over the FastAPI backend. */
+/* TakeTwo Reels — a consumer "broken → fixed" feed. Plain language by default;
+   everything technical is behind the Dev toggle. */
 const $ = (sel, root = document) => root.querySelector(sel);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const media = (job, name) => `/media/${encodeURIComponent(job)}/${name}`;
 
-const state = { feed: [], tab: "feed" };
+const state = { feed: [], tab: "feed", liked: new Set() };
 
 async function api(path, opts) {
   const res = await fetch(path, opts);
@@ -19,9 +20,19 @@ function toast(msg) {
   el._t = setTimeout(() => (el.hidden = true), 2200);
 }
 
+/* Plain-language status — no enums, no scores. */
+function statusFor(run) {
+  if (run.verdict === "reproduced" && run.verified)
+    return { cls: "fixed", label: "✅ Fixed", headline: "Broken → fixed.", sub: "We replayed it — works now." };
+  if (run.verdict === "reproduced")
+    return { cls: "wip", label: "🔧 Fix ready", headline: "Found it. Fixed it.", sub: "Same steps, before and after." };
+  if (run.verdict === "not_reproduced")
+    return { cls: "looking", label: "👀 Couldn't see it", headline: "Couldn't reproduce this.", sub: "Try a longer clip." };
+  return { cls: "looking", label: "🤖 On it", headline: "Working on it.", sub: "Hang tight." };
+}
+
 /* ---------------------------------------------------------------- feed card */
 function mediaMarkup(run) {
-  const job = esc(run.job);
   if (run.has_video) {
     return `<div class="media">
       <video src="${media(run.job, "proof.mp4")}" autoplay loop muted playsinline></video>
@@ -30,7 +41,7 @@ function mediaMarkup(run) {
   }
   if (run.has_before && run.has_after) {
     return `<div class="media">
-      <div class="compare" data-job="${job}">
+      <div class="compare" data-job="${esc(run.job)}">
         <img class="after" src="${media(run.job, "after.png")}" alt="after the fix" />
         <img class="before" src="${media(run.job, "before.png")}" alt="before the fix" />
         <div class="divider"><span class="knob">⇔</span></div>
@@ -38,30 +49,34 @@ function mediaMarkup(run) {
       <span class="chip before-chip">bug</span><span class="chip after-chip">fixed</span>
     </div>`;
   }
-  return `<div class="media" style="display:grid;place-items:center;color:var(--muted)">no proof clip yet</div>`;
+  return `<div class="media" style="display:grid;place-items:center;color:var(--muted)">▶</div>`;
+}
+
+function devMeta(run) {
+  return `<div class="dev-only line1">
+    <span class="pill">${esc(run.job)}</span>
+    <span class="pill">score ${run.score}</span>
+    <span class="pill">${esc(run.repo)}</span>
+    <span class="pill">${run.verdict.replace("_", " ")}</span>
+  </div>`;
 }
 
 function cardMarkup(run) {
-  const vclass = run.verdict === "reproduced" ? "good" : run.verdict === "not_reproduced" ? "bad" : "";
+  const st = statusFor(run);
   return `<article class="card" data-job="${esc(run.job)}">
     ${mediaMarkup(run)}
-    <div class="meta">
-      <div class="line1">
-        <span class="handle">@${esc(run.job)}</span>
-        <span class="pill ${vclass}">${esc(run.verdict.replace("_", " "))}</span>
-        <span class="pill ${run.verified ? "good" : ""}">${run.verified ? "verified" : "unverified"}</span>
-        <span class="pill">${esc(run.repo)}</span>
-      </div>
-      <div class="evidence">${esc(run.evidence || "reproduced from the clip")}</div>
-      <div class="thumbs">
-        <button class="btn" data-act="details">Details</button>
-        <button class="btn primary" data-act="approve" ${run.verified ? "" : "disabled"}>Approve &amp; merge</button>
-      </div>
-    </div>
+    <span class="statuschip ${st.cls}">${st.label}</span>
+    <div class="headline"><b>${st.headline}</b><small>${st.sub}</small></div>
     <div class="rail">
+      <button data-act="like" title="React">${state.liked.has(run.job) ? "❤️" : "🤍"}</button>
       <button data-act="share" title="Share">↗</button>
-      <button data-act="download" title="Download">⬇</button>
-      ${run.has_video || run.has_before ? `<button data-act="proof" title="Open proof">▶</button>` : ""}
+    </div>
+    <div class="meta">
+      <div class="thumbs">
+        <button class="btn primary" data-act="approve">Looks good ✅</button>
+        <button class="btn" style="flex:0 0 56px" data-act="details" title="More">⋯</button>
+      </div>
+      ${devMeta(run)}
     </div>
   </article>`;
 }
@@ -92,7 +107,12 @@ function initCompare(el) {
 function renderFeed() {
   const feed = $("#feed");
   if (!state.feed.length) {
-    feed.innerHTML = `<div class="empty"><h2>No runs yet</h2><p>Tap ＋ New to drop a clip and watch it get fixed.</p></div>`;
+    feed.innerHTML = `<div class="empty">
+      <h2>Send a broken clip 🎬</h2>
+      <p>That shaky screen recording of something misbehaving? Drop it and we'll figure it out — then show you the fix, before and after.</p>
+      <button class="btn primary" id="empty-new">Miracle this</button>
+    </div>`;
+    $("#empty-new").addEventListener("click", openNew);
     return;
   }
   feed.innerHTML = state.feed.map(cardMarkup).join("");
@@ -103,10 +123,10 @@ function renderFeed() {
     card.querySelectorAll("button[data-act]").forEach((btn) => {
       btn.addEventListener("click", () => {
         const act = btn.dataset.act;
-        if (act === "details" || act === "proof") openClip(job);
+        if (act === "details") openClip(job);
         else if (act === "approve") approve(job);
         else if (act === "share") share(run);
-        else if (act === "download") download(job, run);
+        else if (act === "like") like(job);
       });
     });
   });
@@ -116,28 +136,24 @@ function renderFeed() {
 async function approve(job) {
   try {
     await api(`/runs/${encodeURIComponent(job)}/review/approved`, { method: "POST" });
-    toast("Approved — nice one 🫡");
+    toast("Nice — approved ✅");
     confetti();
     load();
-  } catch { toast("Could not approve"); }
+  } catch { toast("Hmm, try again"); }
+}
+
+function like(job) {
+  if (state.liked.has(job)) state.liked.delete(job); else state.liked.add(job);
+  renderFeed();
+  if (state.liked.has(job)) toast("Loved ❤️");
 }
 
 async function share(run) {
-  const text = `TakeTwo fixed a bug from a screen recording 🎬\n@${run.job} — ${run.verdict} · ${run.verified ? "verified" : "unverified"}\n${run.evidence || ""}`;
+  const text = `This bug got fixed from a screen recording 🎬 ${run.evidence || ""}`.trim();
   try {
     if (navigator.share) await navigator.share({ title: "TakeTwo", text });
-    else { await navigator.clipboard.writeText(text); toast("Caption copied"); }
+    else { await navigator.clipboard.writeText(text); toast("Copied"); }
   } catch { /* cancelled */ }
-}
-
-function download(job, run) {
-  const href = run.has_video ? media(job, "proof.mp4") : media(job, "proof.png");
-  const a = document.createElement("a");
-  a.href = href;
-  a.download = `${job}_proof${run.has_video ? ".mp4" : ".png"}`;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
 }
 
 /* ------------------------------------------------------------------- sheet */
@@ -151,26 +167,27 @@ function closeSheet() { $("#sheet").hidden = true; $("#scrim").hidden = true; }
 function openClip(job) {
   const run = state.feed.find((r) => r.job === job);
   if (!run) return;
+  const st = statusFor(run);
   const steps = (run.steps || []).map((s, i) => `<li>${i + 1}. ${esc(s.action)} ${esc(s.target || "")}</li>`).join("");
   openSheet(`
-    <h2>@${esc(job)}</h2>
-    <div class="line1" style="display:flex;gap:8px;margin-bottom:10px">
-      <span class="pill ${run.verdict === "reproduced" ? "good" : "bad"}">${esc(run.verdict.replace("_", " "))}</span>
-      <span class="pill">score ${run.score}</span>
-      <span class="pill">${run.verified ? "verified" : "unverified"}</span>
-    </div>
-    ${run.has_before && run.has_after ? `<div class="media" style="height:260px;border-radius:16px;overflow:hidden;position:relative">
+    <span class="statuschip ${st.cls}" style="position:static;display:inline-block;margin-bottom:8px">${st.label}</span>
+    <h2>${st.headline}</h2>
+    <p style="color:var(--muted);margin-top:-6px">${st.sub}</p>
+    ${run.has_before && run.has_after ? `<div class="media" style="height:280px;border-radius:16px;overflow:hidden;position:relative;border:2px solid var(--line-2)">
         <div class="compare" data-job="${esc(job)}">
           <img class="after" src="${media(job, "after.png")}" alt="after" />
           <img class="before" src="${media(job, "before.png")}" alt="before" />
           <div class="divider"><span class="knob">⇔</span></div>
         </div></div>` : ""}
-    <h2 style="font-size:18px;margin-top:16px">Fix</h2>
-    <pre class="diff">${esc(run.diff || "(no diff proposed)")}</pre>
-    <h2 style="font-size:18px">Steps</h2>
-    <ul class="steps">${steps || "<li>(none inferred)</li>"}</ul>
-    <h2 style="font-size:18px">Ask about this run</h2>
-    <div class="chat"><input id="q" placeholder="why this selector?" /><button class="btn primary" id="ask">Ask</button></div>
+    <div class="dev-only">
+      <h2 style="font-size:16px;margin-top:16px">Developer detail</h2>
+      <div class="line1"><span class="pill">${esc(job)}</span><span class="pill">score ${run.score}</span><span class="pill">${esc(run.repo)}</span></div>
+      <pre class="diff">${esc(run.diff || "(no diff proposed)")}</pre>
+      <h2 style="font-size:16px">Steps</h2>
+      <ul class="steps">${steps || "<li>(none inferred)</li>"}</ul>
+    </div>
+    <h2 style="font-size:18px">Ask</h2>
+    <div class="chat"><input id="q" placeholder="Was this a real fix?" /><button class="btn primary" id="ask">Ask</button></div>
     <div class="ans" id="ans" hidden></div>
   `);
   const cmp = $("#sheet .compare");
@@ -185,16 +202,19 @@ async function askRun(job) {
   const ans = $("#ans");
   ans.hidden = false; ans.textContent = "…";
   try { ans.textContent = (await api(`/runs/${encodeURIComponent(job)}/ask?q=${encodeURIComponent(q)}`)).answer; }
-  catch { ans.textContent = "Could not answer."; }
+  catch { ans.textContent = "Couldn't answer that."; }
 }
 
 function openNew() {
   openSheet(`
-    <h2>New run</h2>
-    <label class="field"><span>Recording path</span><input id="f-video" value="runtime/data/sample_bug_live.mov" /></label>
-    <label class="field"><span>Repository (owner/name, optional)</span><input id="f-repo" placeholder="owner/name" /></label>
-    <label class="field"><span>App URL (optional)</span><input id="f-app" placeholder="http://localhost:8130" /></label>
-    <button class="btn primary" id="f-go">Record &amp; reproduce</button>
+    <h2>Send a broken clip</h2>
+    <p style="color:var(--muted);margin-top:-6px">We watch it, reproduce it, fix it, and show you the before/after.</p>
+    <label class="field"><span>Clip</span><input id="f-video" value="runtime/data/sample_bug_live.mov" /></label>
+    <div class="dev-only">
+      <label class="field"><span>Repository</span><input id="f-repo" placeholder="owner/name" /></label>
+      <label class="field"><span>App URL</span><input id="f-app" placeholder="http://localhost:8130" /></label>
+    </div>
+    <button class="btn primary" id="f-go">Fix it ✨</button>
   `);
   $("#f-go").addEventListener("click", submitNew);
 }
@@ -202,20 +222,16 @@ function openNew() {
 async function submitNew() {
   const body = {
     video_path: $("#f-video").value.trim(),
-    repo: $("#f-repo").value.trim(),
-    app_url: $("#f-app").value.trim(),
+    repo: ($("#f-repo") || {}).value || "",
+    app_url: ($("#f-app") || {}).value || "",
   };
-  if (!body.video_path) { toast("A recording path is required"); return; }
+  if (!body.video_path) { toast("Add a clip"); return; }
   closeSheet();
   try {
-    const { job_id } = await api("/replay/async", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify(body),
-    });
-    toast(`Queued ${job_id}`);
+    const { job_id } = await api("/replay/async", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
+    toast("Watching your clip…");
     watch(job_id);
-  } catch { toast("Could not start the run"); }
+  } catch { toast("Couldn't start"); }
 }
 
 function watch(jobId) {
@@ -223,11 +239,10 @@ function watch(jobId) {
     let s;
     try { s = await api(`/jobs/${encodeURIComponent(jobId)}`); } catch { return; }
     const stage = (s.progress && s.progress.stage) || s.status;
-    const pct = Math.round((s.progress && s.progress.pct) || 0);
-    toast(`${stage} · ${pct}%`);
-    if (s.status === "done" || s.status === "failed" || s.status === "cancelled") {
+    toast(`${stage}`);
+    if (["done", "failed", "cancelled"].includes(s.status)) {
       clearInterval(timer);
-      if (s.status === "done") { confetti(); toast("Done — check the feed"); }
+      if (s.status === "done") confetti();
       setTimeout(load, 800);
     }
   }, 1500);
@@ -236,20 +251,21 @@ function watch(jobId) {
 /* ------------------------------------------------------------------ scoreboard */
 function renderScore(data) {
   const pct = Math.round((data.rate || 0) * 100);
-  const repos = (data.repos || []).map((r) =>
-    `<div class="repo"><b>${esc(r.repo)}</b><small>${Math.round(r.rate * 100)}% · ${r.runs} runs · ${r.verified} verified</small></div>`
+  const repos = (data.repos || []).slice(0, 8).map((r) =>
+    `<div class="repo"><b>${esc(r.repo === "local" ? "Your clips" : r.repo)}</b><small>${Math.round(r.rate * 100)}% fixed · ${r.runs} clips</small></div>`
   ).join("");
   $("#score").innerHTML = `
-    <h1>Scoreboard</h1>
+    <h1>Fixes</h1>
     <div class="rate">${pct}%</div>
-    <div class="stats">
-      <div class="stat"><b>${data.reproduced}</b><span>reproduced</span></div>
-      <div class="stat"><b>${data.verified}</b><span>verified</span></div>
-      <div class="stat"><b>${data.total}</b><span>runs</span></div>
-    </div>
+    <p style="color:var(--muted);margin-top:-4px">of clips turned into a fix</p>
     <div class="bar"><i style="width:${pct}%"></i></div>
-    <h2 style="font-family:var(--display);margin-top:24px">Repos</h2>
-    ${repos || '<p style="color:var(--muted)">No runs yet.</p>'}
+    <div class="stats" style="margin-top:16px">
+      <div class="stat"><b>${data.reproduced}</b><span>fixed</span></div>
+      <div class="stat"><b>${data.verified}</b><span>proven</span></div>
+      <div class="stat"><b>${data.total}</b><span>clips</span></div>
+    </div>
+    <h2 style="font-family:var(--display);margin-top:20px">Projects</h2>
+    ${repos || '<p style="color:var(--muted)">Nothing yet.</p>'}
   `;
 }
 
@@ -276,6 +292,13 @@ function confetti() {
   }
 }
 
+function setDev(on) {
+  state.dev = on;
+  document.body.classList.toggle("dev", on);
+  try { localStorage.setItem("taketwo.dev", on ? "1" : "0"); } catch {}
+  renderFeed();
+}
+
 async function load() {
   try {
     const data = await api("/scoreboard");
@@ -283,12 +306,14 @@ async function load() {
     renderFeed();
     renderScore(data);
   } catch {
-    $("#feed").innerHTML = `<div class="empty"><h2>Backend not reachable</h2><p>Run <code>uvicorn taketwo.interfaces.api:app</code> and open <code>/app/</code>.</p></div>`;
+    $("#feed").innerHTML = `<div class="empty"><h2>Offline</h2><p>Start the server, then refresh.</p></div>`;
   }
 }
 
 document.querySelectorAll(".tab").forEach((b) => b.addEventListener("click", () => setTab(b.dataset.tab)));
 $("#scrim").addEventListener("click", closeSheet);
 $("#refresh").addEventListener("click", load);
+$("#dev").addEventListener("click", () => setDev(!state.dev));
 
+try { setDev(localStorage.getItem("taketwo.dev") === "1"); } catch { setDev(false); }
 load();
