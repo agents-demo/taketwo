@@ -4,8 +4,8 @@ Used by 2+ stages (``repair`` searches/blames; ``deliver`` opens the issue/PR). 
 small façade so stages never touch git or PyGithub directly.
 """
 
-from taketwo.forge.github import open_issue, open_pr
-from taketwo.forge.repo import (
+from taketwo.pipeline.forge.github import open_issue, open_pr
+from taketwo.pipeline.forge.repo import (
     blame,
     clone,
     ensure_repo,

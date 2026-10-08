@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from taketwo.forge import repo as forge_repo
+from taketwo.pipeline.forge import repo as forge_repo
 
 
 def _queries(reproduction: dict) -> list[str]:

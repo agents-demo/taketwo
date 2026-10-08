@@ -5,7 +5,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from pathlib import Path
 
-from taketwo.forge import repo as forge_repo
+from taketwo.pipeline.forge import repo as forge_repo
 
 
 def make_tools(repo_dir: str | Path) -> list[Callable]:

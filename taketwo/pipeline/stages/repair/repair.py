@@ -12,8 +12,8 @@ from pathlib import Path
 from typing import Any
 
 from taketwo.domain import fix as fix_mod
-from taketwo.forge import ensure_repo
 from taketwo.pipeline import agent_reply
+from taketwo.pipeline.forge import ensure_repo
 from taketwo.pipeline.progress import Progress, tick
 from taketwo.pipeline.stages.repair import localize, prompts
 from taketwo.storage import runtime

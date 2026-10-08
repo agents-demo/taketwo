@@ -13,9 +13,9 @@ from typing import Any
 
 from taketwo import config
 from taketwo.domain import timeline as timeline_mod
-from taketwo.media import clips, cursor
-from taketwo.media import frames as frames_mod
 from taketwo.pipeline import agent_reply
+from taketwo.pipeline.media import clips, cursor
+from taketwo.pipeline.media import frames as frames_mod
 from taketwo.pipeline.progress import Progress, tick
 from taketwo.pipeline.stages.understand import prompts
 from taketwo.storage import runtime

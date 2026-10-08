@@ -7,7 +7,7 @@ from typing import Any
 from taketwo import reporting
 from taketwo.domain import render
 from taketwo.domain.submission import job_id
-from taketwo.forge import ensure_repo, open_issue, open_pr, publish_branch
+from taketwo.pipeline.forge import ensure_repo, open_issue, open_pr, publish_branch
 from taketwo.pipeline.progress import Progress, tick
 
 

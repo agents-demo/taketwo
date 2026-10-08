@@ -11,7 +11,7 @@ import os
 import subprocess
 from pathlib import Path
 
-from taketwo.forge import auth
+from taketwo.pipeline.forge import auth
 from taketwo.storage import runtime
 
 BOT_NAME = "TakeTwo Bot"

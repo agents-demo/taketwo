@@ -15,7 +15,7 @@ from typing import Any
 from taketwo import config
 from taketwo.domain import compare as compare_mod
 from taketwo.domain import verify as verify_mod
-from taketwo.forge import run_tests_on_patch
+from taketwo.pipeline.forge import run_tests_on_patch
 from taketwo.pipeline.progress import Progress, tick
 from taketwo.pipeline.stages.prove import stitch
 from taketwo.storage import runtime

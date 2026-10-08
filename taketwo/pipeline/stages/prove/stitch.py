@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from taketwo.media import clips
+from taketwo.pipeline.media import clips
 
 
 def proof(before: str, after: str, out_path: str) -> str | None:

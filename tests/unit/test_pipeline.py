@@ -68,7 +68,7 @@ def test_understand_uses_the_agent_when_present(tmp_path, monkeypatch):
 def test_forge_run_tests_reports_pass_and_fail(tmp_path):
     import sys
 
-    from taketwo.forge import repo as forge_repo
+    from taketwo.pipeline.forge import repo as forge_repo
 
     ok = forge_repo.run_tests(tmp_path, f'"{sys.executable}" -c "import sys; sys.exit(0)"')
     bad = forge_repo.run_tests(tmp_path, f'"{sys.executable}" -c "import sys; sys.exit(1)"')
@@ -82,9 +82,9 @@ def test_forge_run_tests_reports_pass_and_fail(tmp_path):
 def test_forge_publish_branch_commits_and_dry_runs(tmp_path, monkeypatch):
     import subprocess
 
-    from taketwo.forge import repo as forge_repo
+    from taketwo.pipeline.forge import repo as forge_repo
 
-    monkeypatch.setattr("taketwo.forge.auth.token", lambda: "")  # force dry-run, never push in tests
+    monkeypatch.setattr("taketwo.pipeline.forge.auth.token", lambda: "")  # force dry-run, never push in tests
 
     work = tmp_path / "r"
     work.mkdir()

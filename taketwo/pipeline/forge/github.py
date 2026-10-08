@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from taketwo.forge import auth
+from taketwo.pipeline.forge import auth
 
 
 def _client() -> Any | None:

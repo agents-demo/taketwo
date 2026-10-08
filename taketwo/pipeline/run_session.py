@@ -13,7 +13,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from taketwo.browser import open_session
+from taketwo.pipeline.browser import open_session
 from taketwo.pipeline.stages.understand.build_agent import build_agent as build_vision_agent
 from taketwo.storage import runtime
 

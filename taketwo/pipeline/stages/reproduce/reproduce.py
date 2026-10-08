@@ -12,8 +12,8 @@ import json
 from pathlib import Path
 from typing import Any
 
-from taketwo.browser import open_session
 from taketwo.domain import repro as repro_mod
+from taketwo.pipeline.browser import open_session
 from taketwo.pipeline.progress import Progress, tick
 from taketwo.pipeline.stages.reproduce import replay_steps
 from taketwo.storage import runtime

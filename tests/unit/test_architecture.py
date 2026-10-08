@@ -2,8 +2,9 @@
 
 Dependencies may only point inward:
     interfaces -> pipeline -> backend -> domain
-with ``media`` / ``browser`` / ``forge`` (capability adapters) and ``storage`` /
-``reporting`` / ``config`` as neutral leaves.
+with ``storage`` / ``reporting`` / ``config`` as neutral leaves. The pipeline's
+capability adapters (``pipeline/media``, ``pipeline/browser``, ``pipeline/forge``)
+are used only inside the pipeline, so they are not separate top-level layers.
 """
 
 from __future__ import annotations
@@ -17,16 +18,13 @@ PKG = Path(__file__).resolve().parents[2] / "taketwo"
 TOP_LAYERS = {"reporting"}
 
 # For each layer, the app layers it must NOT import.
-#   pipeline  = the staged workflow (understand -> reproduce -> repair -> prove -> deliver)
-#   media / browser / forge = shared capability adapters (video, Playwright, git/GitHub)
+#   pipeline = the staged workflow (understand -> reproduce -> repair -> prove -> deliver)
+#              plus its capability adapters (media, browser, forge)
 FORBIDDEN: dict[str, set[str]] = {
-    "domain": {"pipeline", "media", "browser", "forge", "backend", "storage", "reporting", "interfaces"},
-    "backend": {"domain", "pipeline", "media", "browser", "forge", "reporting", "interfaces"},
-    "storage": {"domain", "pipeline", "media", "browser", "forge", "backend", "reporting", "interfaces"},
-    "reporting": {"pipeline", "media", "browser", "forge", "backend", "interfaces"},
-    "media": {"domain", "pipeline", "backend", "reporting", "interfaces"},
-    "browser": {"domain", "pipeline", "backend", "reporting", "interfaces"},
-    "forge": {"domain", "pipeline", "backend", "reporting", "interfaces"},
+    "domain": {"pipeline", "backend", "storage", "reporting", "interfaces"},
+    "backend": {"domain", "pipeline", "reporting", "interfaces"},
+    "storage": {"domain", "pipeline", "backend", "reporting", "interfaces"},
+    "reporting": {"pipeline", "backend", "interfaces"},
     "pipeline": {"interfaces"},
 }
 
