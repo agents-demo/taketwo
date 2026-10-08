@@ -68,10 +68,15 @@ def test_command() -> str:
 def app_start_command() -> str:
     """Command that serves the app from a repo checkout (``APP_START_COMMAND``).
 
-    Empty means the app is expected to be running already at ``app_url`` and the
-    patched-app re-run is skipped.
+    Empty means the app is expected to be running already at ``app_url`` and is not
+    started (and the patched-app re-run is skipped).
     """
     return os.getenv("APP_START_COMMAND", "").strip()
+
+
+def app_url() -> str:
+    """Where the app under test is served (``APP_URL``); used when auto-starting it."""
+    return os.getenv("APP_URL", "http://localhost:3000").strip()
 
 
 def patched_app_url() -> str:

@@ -11,8 +11,11 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
+from taketwo import config
 from taketwo.bootstrap import setup
 from taketwo.domain import submission as submission_mod
+from taketwo.pipeline import appserver
+from taketwo.pipeline.forge import ensure_repo
 from taketwo.pipeline.params import Params
 from taketwo.pipeline.progress import Progress, tick
 from taketwo.pipeline.run_session import start_session
@@ -32,8 +35,11 @@ class Strategy:
 
     async def analyze(self, params: Params) -> dict[str, Any]:
         self._prepare(params)
-        result, extras = await self._run(params, params.progress)
-        return await self._finalize(params, result, extras, params.progress)
+        try:
+            result, extras = await self._run(params, params.progress)
+            return await self._finalize(params, result, extras, params.progress)
+        finally:
+            appserver.stop(params.state.get("app"))
 
     # -- template steps (override _run) ----------------------------------- #
     async def _run(self, params: Params, progress: Progress | None) -> tuple[Any, dict]:
@@ -73,8 +79,9 @@ class Strategy:
 
         params.timeline = await understand(params.video_path, progress, agent=agent)
 
+        app_url = self._start_app(params)
         reproduction = await reproduce(
-            params.video_path, params.timeline, params.app_url, params.job, progress, run_session=params.session
+            params.video_path, params.timeline, app_url, params.job, progress, run_session=params.session
         )
         store.save_repro(params.job, reproduction)
         params.reproduction = reproduction
@@ -98,6 +105,17 @@ class Strategy:
         params.delivery = deliver(params.submission, reproduction, fix, proof, progress)
 
         return self._summary(reproduction, fix, proof), {"observations": params.timeline}
+
+    def _start_app(self, params: Params) -> str:
+        """Serve the app from the repo when no ``app_url`` was given (best-effort)."""
+        if params.app_url:
+            return params.app_url
+        if not (params.repo and config.app_start_command()):
+            return ""
+        repo_dir = ensure_repo(params.repo, params.base_branch)
+        app = appserver.start(config.app_start_command(), repo_dir, config.app_url())
+        params.state["app"] = app
+        return app.url if app else ""
 
     def _summary(self, reproduction: dict, fix: dict, proof: dict) -> str:
         verdict = reproduction.get("verdict", "unclear")

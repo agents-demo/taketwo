@@ -74,6 +74,7 @@ pipeline/
 ├── agent_reply.py         # run an agent + parse its strict JSON (understand, repair)
 ├── params.py              # Params: request + run state
 ├── run_session.py         # run recorder, browser session, vision agent, media dir
+├── appserver.py           # start/stop the app under test (prologue + prove)
 ├── forge/                 # adapter: repo clone/search/blame + publish/PR
 ├── stages/                # order is data: pipeline.STAGES (not folder numbers)
 │   ├── understand/        # 01 recording -> timeline + failure hypothesis

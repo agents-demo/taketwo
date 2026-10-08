@@ -7,6 +7,7 @@ concurrent and untrusted jobs are isolated from the serving process.
 
 from __future__ import annotations
 
+import json
 import os
 import subprocess
 import sys
@@ -16,6 +17,8 @@ import uuid
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Any
+
+from taketwo.storage import runtime
 
 # Environment variables forwarded into the sandbox container (``-e KEY``).
 FORWARD_ENV = (
@@ -34,6 +37,14 @@ FORWARD_ENV = (
     "APP_START_COMMAND",
     "PATCHED_APP_URL",
 )
+
+
+def _read_progress(path: str) -> dict[str, Any]:
+    try:
+        file = Path(path)
+        return json.loads(file.read_text(encoding="utf-8")) if file.exists() else {}
+    except Exception:
+        return {}
 
 
 class Runner:
@@ -74,7 +85,19 @@ class Runner:
     def status(self, job_id: str) -> dict[str, Any]:
         with self._lock:
             job = self._jobs.get(job_id)
-        return dict(job) if job else {"status": "unknown", "id": job_id}
+        if not job:
+            return {"status": "unknown", "id": job_id}
+
+        info = dict(job)
+        progress = _read_progress(job["progress_path"])
+        if progress:
+            info["progress"] = progress
+            stem = progress.get("stem")
+            if stem:
+                summary = runtime.ARTIFACTS_DIR / f"{stem}_summary.json"
+                if summary.exists():
+                    info["summary_path"] = str(summary)
+        return info
 
     def _run(self, job: dict[str, Any]) -> None:
         job["status"] = "running"

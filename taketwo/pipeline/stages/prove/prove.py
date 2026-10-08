@@ -16,9 +16,10 @@ from typing import Any
 from taketwo import config
 from taketwo.domain import compare as compare_mod
 from taketwo.domain import verify as verify_mod
+from taketwo.pipeline import appserver
 from taketwo.pipeline.forge import apply_patch, ensure_repo, reset, run_tests_on_patch
 from taketwo.pipeline.progress import Progress, tick
-from taketwo.pipeline.stages.prove import appserver, stitch
+from taketwo.pipeline.stages.prove import stitch
 from taketwo.storage import runtime
 
 

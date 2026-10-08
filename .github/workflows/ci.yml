@@ -15,3 +15,7 @@ jobs:
       - run: pip install -r requirements.txt
       - run: ruff check .
       - run: pytest -q
+      # Offline end-to-end: seed the sample bug, run it, and gate quality.
+      - run: python scripts/make_sample_bug.py
+      - run: python -m taketwo.interfaces.cli record runtime/data/sample_bug.mov
+      - run: python scripts/evaluate_repros.py
