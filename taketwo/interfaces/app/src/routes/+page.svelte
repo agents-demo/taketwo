@@ -98,6 +98,10 @@
             <span class="ml-auto text-xs text-muted">{r.repo}</span>
           </div>
           <p class="mt-1 truncate text-xs text-muted">{r.evidence || "—"}</p>
+          <div class="mt-2 flex items-center justify-between">
+            <span class="text-xs text-muted">{r.job}</span>
+            <span class="text-xs font-semibold text-accent2">Review →</span>
+          </div>
         </div>
       </a>
     {/each}
