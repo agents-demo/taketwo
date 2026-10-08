@@ -147,6 +147,7 @@ Start with `uvicorn taketwo.interfaces.api:app`. Key routes:
 & $PY scripts\make_sample_video.py      # rebuild the sample proof from REAL browser frames (needs Playwright)
 & $PY scripts\serve_sample_app.py       # serve examples/sample_app at http://localhost:3000
 & $PY scripts\seed_feed.py 5            # create several runs so the feed is swipeable
+& $PY scripts\seed_reproduced.py       # two fully reproduced scenarios (date picker + login) with proof
 & $PY scripts\dogfood.py                # live end-to-end: reproduce a real bug → before/after proof
 & $PY scripts\benchmark.py              # reproduce-rate over seeded apps (generalization)
 & $PY scripts\evaluate_repros.py        # offline quality gate (tests/eval/expected.json)

@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Northwind — Sign in</title>
+    <style>
+      :root { color-scheme: light; }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0; min-height: 100vh; display: grid; place-items: center; font-family: "Segoe UI", system-ui, sans-serif;
+        background: radial-gradient(120% 120% at 80% 0%, #eef2ff, #f8fafc 60%); color: #0f172a;
+      }
+      .app { width: 380px; background: #fff; border-radius: 18px; box-shadow: 0 24px 60px rgba(15,23,42,.18); overflow: hidden; }
+      .bar { display: flex; gap: 6px; align-items: center; padding: 12px 14px; background: #0f172a; }
+      .dot { width: 11px; height: 11px; border-radius: 50%; }
+      .r { background: #ff5f57; } .y { background: #febc2e; } .g { background: #28c840; }
+      .url { margin-left: 10px; flex: 1; background: #1e293b; color: #94a3b8; font-size: 12px; padding: 6px 12px; border-radius: 8px; }
+      .body { padding: 22px; }
+      h1 { font-size: 20px; margin: 0 0 2px; }
+      p.sub { margin: 0 0 18px; color: #64748b; font-size: 13px; }
+      label { display: block; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 6px; }
+      input { width: 100%; padding: 12px 14px; border: 1.5px solid #cbd5e1; border-radius: 10px; font-size: 15px; margin-bottom: 12px; }
+      #go { width: 100%; padding: 12px; border: none; border-radius: 10px; background: #4f46e5; color: #fff; font-weight: 600; font-size: 15px; cursor: pointer; }
+      #go:hover { background: #4338ca; }
+      .ok { margin-top: 14px; padding: 12px 14px; border-radius: 10px; background: #ecfdf5; color: #047857; font-weight: 600; font-size: 14px; display: none; }
+      .ok.show { display: block; }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <div class="bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="url">northwind.example/login</span></div>
+      <div class="body">
+        <h1>Sign in</h1>
+        <p class="sub">Welcome back — enter your details.</p>
+        <label>Email</label>
+        <input id="user" aria-label="Email" placeholder="you@example.com" />
+        <label>Password</label>
+        <input id="pass" aria-label="Password" type="password" placeholder="••••••••" />
+        <button id="go">Sign in</button>
+        <div class="ok" id="ok">Signed in — welcome back!</div>
+      </div>
+    </div>
+    <script>
+      const ok = document.getElementById("ok");
+
+      // The seeded bug: `field` is never the real input, so submitting throws
+      // "TypeError: Cannot read properties of null (reading 'value')".
+      const field = null;
+
+      document.getElementById("go").addEventListener("click", () => {
+        const email = field.value;      // <-- TypeError here
+        ok.textContent = "Signed in as " + email;
+        ok.classList.add("show");
+      });
+    </script>
+  </body>
+</html>

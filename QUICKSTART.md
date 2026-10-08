@@ -77,6 +77,7 @@ npm run dev        # or: npm run build  (writes build/, served at /app/)
 & $PY scripts\dogfood.py            # reproduce a real browser bug + before/after proof video
 & $PY scripts\benchmark.py          # reproduce-rate over seeded bugs
 & $PY scripts\make_sample_video.py  # rebuild the sample's proof from real browser frames
+& $PY scripts\seed_reproduced.py    # seed two reproduced scenarios (with proof)
 ```
 
 See the full [usage guide](docs/USAGE.md), [README.md](README.md), and [docs/architecture.md](docs/architecture.md).
