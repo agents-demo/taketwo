@@ -136,35 +136,6 @@
       <div class="card p-3"><div class="text-xs text-muted">Vision tok</div><div class="font-display text-xl">{u.vision?.total_tokens ?? 0}</div></div>
       <div class="card p-3"><div class="text-xs text-muted">Text tok</div><div class="font-display text-xl">{u.text?.total_tokens ?? 0}</div></div>
     </div>
-    {#if run.calls?.length}
-      <div class="card mt-3 overflow-x-auto">
-        <table class="w-full text-left text-xs">
-          <thead class="text-muted"><tr><th class="px-3 py-2">call</th><th>model</th><th>prompt</th><th>completion</th><th>total</th><th>s</th></tr></thead>
-          <tbody>
-            {#each run.calls as c}
-              <tr class="border-t border-line/60">
-                <td class="px-3 py-2">{c.label}</td><td>{c.model || "—"}</td>
-                <td>{c.prompt_tokens ?? "—"}</td><td>{c.completion_tokens ?? "—"}</td>
-                <td>{c.total_tokens ?? "—"}</td><td>{c.seconds ?? "—"}</td>
-              </tr>
-            {/each}
-          </tbody>
-        </table>
-      </div>
-    {/if}
-    {#if run.tools?.length}
-      <h2 class="mt-4 font-display text-base">Tool activity</h2>
-      <div class="card mt-2 overflow-x-auto">
-        <table class="w-full text-left text-xs">
-          <thead class="text-muted"><tr><th class="px-3 py-2">tool</th><th>seconds</th><th>arguments</th></tr></thead>
-          <tbody>
-            {#each run.tools as t}
-              <tr class="border-t border-line/60"><td class="px-3 py-2">{t.name}</td><td>{t.seconds ?? "—"}</td><td class="max-w-[320px] truncate">{t.arguments || ""}</td></tr>
-            {/each}
-          </tbody>
-        </table>
-      </div>
-    {/if}
   {/if}
 
   {#if timeline.length}
