@@ -4,7 +4,7 @@ Used by 2+ stages (``repair`` searches/blames; ``deliver`` opens the issue/PR). 
 small façade so stages never touch git or PyGithub directly.
 """
 
-from taketwo.pipeline.forge.github import open_issue, open_pr
+from taketwo.pipeline.forge.github import open_issue, open_pr, verify_signature
 from taketwo.pipeline.forge.repo import (
     blame,
     clone,
@@ -27,4 +27,5 @@ __all__ = [
     "run_tests",
     "run_tests_on_patch",
     "search",
+    "verify_signature",
 ]

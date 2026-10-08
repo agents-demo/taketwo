@@ -1,10 +1,11 @@
 """Stage: prove the fix by re-running the scenario and recording the after clip.
 
-Test verification is real when a repo and ``TEST_COMMAND`` are configured: the patch
-is applied to a clean checkout and the suite is run (``forge.run_tests_on_patch``). A
-sidecar ``runtime/data/<job>_proposed.result.json`` (``{"reproduced", "tests_pass"}``)
-can still inject the outcome for the offline demo; otherwise a present patch is taken
-as the (unverified) sandbox success, and ``verify`` says so.
+Re-runs the reproduction steps through the run session's browser (when live) to see
+whether the failure signal is gone, runs the repo's tests on the patched checkout
+(``TEST_COMMAND``), and stitches a labelled before/after image + video. A sidecar
+``runtime/data/<job>_proposed.result.json`` (``{"reproduced", "tests_pass"}``) can
+inject the outcome for the offline demo; otherwise an unverified patch is assumed
+fixed and ``verify`` reflects what was actually checked.
 """
 
 from __future__ import annotations
@@ -21,7 +22,23 @@ from taketwo.pipeline.stages.prove import stitch
 from taketwo.storage import runtime
 
 
-def _run_result(job: str, fix: dict, repo: str, base_branch: str) -> dict[str, Any]:
+def _signal(console: list[str]) -> str:
+    for line in console:
+        low = line.lower()
+        if "pageerror" in low or "error" in low or "uncaught" in low:
+            return line.strip()
+    return ""
+
+
+def _rerun(session: Any, reproduction: dict[str, Any]) -> str:
+    """Replay the scenario on the (patched) app; return the failure signal, if any."""
+    start = len(session.console)
+    for step in reproduction.get("steps", []):
+        session.act(step.get("action", "wait"), step.get("target", ""), step.get("value", ""))
+    return _signal(session.console[start:])
+
+
+def _run_result(job: str, fix: dict, repo: str, base_branch: str, replayed: str | None) -> dict[str, Any]:
     sidecar = runtime.DATA_DIR / f"{job}_proposed.result.json"
     if sidecar.exists():
         try:
@@ -29,21 +46,24 @@ def _run_result(job: str, fix: dict, repo: str, base_branch: str) -> dict[str, A
         except Exception:
             pass
 
-    run: dict[str, Any] = {"reproduced": False, "tests_pass": True} if fix.get("diff") else {"reproduced": True}
+    run: dict[str, Any] = {"reproduced": False}  # assume the patch fixes it (unverified)
+    if replayed is not None:
+        run["reproduced"] = bool(replayed)
+
     tests = run_tests_on_patch(repo, base_branch, fix.get("diff", ""), config.test_command())
+    run["tests_pass"] = bool(tests["passed"]) if tests.get("ran") else True
     if tests.get("ran"):
-        run["tests_pass"] = bool(tests["passed"])
         run["test_output"] = (tests.get("output") or "")[-2000:]
     return run
 
 
-def prove(
+async def prove(
     reproduction: dict[str, Any],
     fix: dict[str, Any],
     job: str,
     repo: str = "",
     base_branch: str = "main",
-    after_clip: str = "",
+    run_session: Any = None,
     progress: Progress | None = None,
 ) -> dict[str, Any]:
     """Return the proof block (empty when there is no fix to prove)."""
@@ -51,23 +71,28 @@ def prove(
         return {}
 
     tick(progress, "proving the fix", 90)
-    run = _run_result(job, fix, repo, base_branch)
-    before = reproduction.get("before_clip", "")
     proof_dir = runtime.ARTIFACTS_DIR / job
-    if not after_clip:
-        candidate = proof_dir / "after.png"
-        after_clip = str(candidate) if candidate.exists() else ""
-    if not before:
-        candidate = proof_dir / "before.png"
-        before = str(candidate) if candidate.exists() else ""
-    proof_path = stitch.proof(before, after_clip, str(proof_dir / "proof.png"))
-    proof_video = stitch.proof_video(before, after_clip, str(proof_dir / "proof.mp4"))
-    after_repro = {**reproduction, "verdict": "not_reproduced" if not run.get("reproduced") else "reproduced"}
+
+    before = reproduction.get("before_clip", "")
+    if not before and (proof_dir / "before.png").exists():
+        before = str(proof_dir / "before.png")
+
+    session = getattr(run_session, "browser", None)
+    after_clip = ""
+    replayed: str | None = None
+    if session is not None and getattr(session, "live", False):
+        replayed = _rerun(session, reproduction)
+        after_clip = session.snapshot(proof_dir / "after.png") or ""
+    elif (proof_dir / "after.png").exists():
+        after_clip = str(proof_dir / "after.png")
+
+    run = _run_result(job, fix, repo, base_branch, replayed)
+    after_repro = {**reproduction, "verdict": "reproduced" if run.get("reproduced") else "not_reproduced"}
 
     return {
         "after_clip": after_clip,
-        "proof_path": proof_path or "",
-        "proof_video": proof_video or "",
+        "proof_path": stitch.proof(before, after_clip, str(proof_dir / "proof.png")) or "",
+        "proof_video": stitch.proof_video(before, after_clip, str(proof_dir / "proof.mp4")) or "",
         "run": run,
         "verification": verify_mod.verify(reproduction, fix, run),
         "compare": compare_mod.before_after(reproduction, after_repro),

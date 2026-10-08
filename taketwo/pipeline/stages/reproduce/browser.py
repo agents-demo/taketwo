@@ -1,7 +1,8 @@
 """A thin browser session over Playwright (or a no-op session when unavailable).
 
-The session is the analogue of topspin's vision agent in the run state: opened once
-per run, shared by the ``reproduce`` and ``prove`` stages.
+Opened by the reproduce stage (the only place Playwright is imported) and stashed on
+the run session, so the prove stage re-runs the scenario through the same object
+without importing this module.
 """
 
 from __future__ import annotations
@@ -73,6 +74,16 @@ class BrowserSession:
             return StepResult(action, target, ok=True)
         except Exception as exc:
             return StepResult(action, target, ok=False, detail=str(exc))
+
+    def outline(self, limit: int = 6000) -> str:
+        """A compact accessibility outline of the current page (empty when not live)."""
+        if not self.live or self._page is None:
+            return ""
+        try:
+            text = self._page.locator("body").aria_snapshot()
+            return text[:limit]
+        except Exception:
+            return ""
 
     def snapshot(self, path: str | Path) -> str | None:
         if not self.live or self._page is None:

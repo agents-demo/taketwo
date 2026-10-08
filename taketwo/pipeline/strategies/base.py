@@ -1,10 +1,9 @@
 """The strategy base class and the shared stage orchestration.
 
 A ``Strategy`` is a template: ``analyze(params)`` prepares the run (validate the
-submission, clone nothing yet, start the session, understand the recording), runs
-the mode-specific ``_run``, then finalizes (usage, job summary, exports). The shared
-stage sequence lives in :meth:`_run_stages`; concrete strategies only decide how to
-enter it.
+submission, start the session), runs the mode-specific ``_run``, then finalizes
+(usage, job summary, exports). The shared stage sequence lives in
+:meth:`_run_stages`; concrete strategies only decide how to enter it.
 """
 
 from __future__ import annotations
@@ -74,7 +73,7 @@ class Strategy:
 
         params.timeline = await understand(params.video_path, progress, agent=agent)
 
-        reproduction = reproduce(
+        reproduction = await reproduce(
             params.video_path, params.timeline, params.app_url, params.job, progress, run_session=params.session
         )
         store.save_repro(params.job, reproduction)
@@ -84,14 +83,13 @@ class Strategy:
         store.save_fix(params.job, fix)
         params.fix = fix
 
-        after_clip = self._snapshot_after(params)
-        proof = prove(
+        proof = await prove(
             reproduction,
             fix,
             params.job,
             repo=params.repo,
             base_branch=params.base_branch,
-            after_clip=after_clip,
+            run_session=params.session,
             progress=progress,
         )
         store.save_proof(params.job, proof)
@@ -100,12 +98,6 @@ class Strategy:
         params.delivery = deliver(params.submission, reproduction, fix, proof, progress)
 
         return self._summary(reproduction, fix, proof), {"observations": params.timeline}
-
-    def _snapshot_after(self, params: Params) -> str:
-        browser = params.session.browser if params.session else None
-        if browser is None or not getattr(browser, "live", False):
-            return ""
-        return browser.snapshot(runtime.ARTIFACTS_DIR / params.job / "after.png") or ""
 
     def _summary(self, reproduction: dict, fix: dict, proof: dict) -> str:
         verdict = reproduction.get("verdict", "unclear")

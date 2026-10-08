@@ -6,9 +6,25 @@ posted, so the pipeline is testable offline and never fails on missing credentia
 
 from __future__ import annotations
 
+import hashlib
+import hmac
 from typing import Any
 
 from taketwo.pipeline.forge import auth
+
+
+def verify_signature(secret: str, body: bytes, signature: str) -> bool:
+    """Verify a GitHub webhook ``X-Hub-Signature-256`` over the raw body.
+
+    With no secret configured the webhook is accepted (dev mode); with a secret and a
+    missing/incorrect signature it is rejected.
+    """
+    if not secret:
+        return True
+    if not signature:
+        return False
+    expected = "sha256=" + hmac.new(secret.encode("utf-8"), body, hashlib.sha256).hexdigest()
+    return hmac.compare_digest(expected, signature)
 
 
 def _client() -> Any | None:

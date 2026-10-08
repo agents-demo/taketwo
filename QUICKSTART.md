@@ -36,10 +36,14 @@ $PY = "C:\Workspace\openjiuwen\jiuwenswarm\.venv\Scripts\python.exe"
 & $PY -m taketwo.interfaces.cli history
 ```
 
-No recording handy? Make the synthetic sample bug app + clip:
+No recording handy? Make a synthetic clip and serve the sample buggy app to reproduce against:
 
 ```powershell
-& $PY scripts\make_sample_bug.py
+& $PY scripts\make_sample_bug.py       # writes runtime/data/sample_bug.mov + fixtures
+& $PY scripts\serve_sample_app.py      # serves examples/sample_app at http://localhost:3000
+
+# in another terminal:
+& $PY -m taketwo.interfaces.cli record runtime/data/sample_bug.mov --app http://localhost:3000
 ```
 
 ## 3. Offline checks (no model calls)

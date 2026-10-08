@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Sample Bug — Date Picker</title>
+    <style>
+      body { font-family: system-ui, sans-serif; margin: 3rem; }
+      #dateField { display: inline-block; padding: .5rem 1rem; border: 1px solid #888;
+                   border-radius: 6px; cursor: pointer; min-width: 8rem; }
+      #picker { margin-top: .5rem; padding: .5rem; border: 1px solid #ccc; width: max-content; }
+      .day { margin: 2px; padding: .4rem .8rem; }
+    </style>
+  </head>
+  <body>
+    <h1>Booking</h1>
+    <p>Choose a date:</p>
+
+    <div id="dateField" role="textbox" aria-label="Pick a date" tabindex="0">Pick a date</div>
+    <div id="picker" hidden>
+      <button class="day">14</button>
+      <button class="day">15</button>
+      <button class="day">16</button>
+    </div>
+
+    <script>
+      const field = document.getElementById("dateField");
+      const picker = document.getElementById("picker");
+
+      // The seeded bug: `input` is never the real field, so selecting a date throws
+      // "TypeError: Cannot read properties of null (reading 'value')" and the picker
+      // closes without setting a value.
+      const input = null;
+
+      field.addEventListener("click", () => { picker.hidden = false; });
+
+      document.querySelectorAll(".day").forEach((button) => {
+        button.addEventListener("click", () => {
+          const value = input.value;      // <-- TypeError here
+          field.textContent = value;
+          picker.hidden = true;           // closes by itself
+        });
+      });
+    </script>
+  </body>
+</html>

@@ -36,7 +36,7 @@ taketwo/
 ├── backend/               # openjiuwen only: settings, logs, agent/, telemetry/
 ├── pipeline/              # the staged workflow + its capability adapters (see below)
 ├── storage/               # runtime, json_store, jobs, cache
-└── interfaces/            # cli, api, service, worker, mcp/, web/
+└── interfaces/            # cli, api, service, worker, runner (sandbox queue), mcp/, web/
 ```
 
 ## The backend package

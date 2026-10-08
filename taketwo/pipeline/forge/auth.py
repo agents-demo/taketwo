@@ -13,9 +13,8 @@ def token() -> str:
     return os.getenv("GITHUB_TOKEN", "")
 
 
-def default_repo() -> str:
-    owner, name = os.getenv("GITHUB_OWNER", ""), os.getenv("GITHUB_REPO", "")
-    return f"{owner}/{name}" if owner and name else ""
+def webhook_secret() -> str:
+    return os.getenv("GITHUB_WEBHOOK_SECRET", "")
 
 
 def configured() -> bool:

@@ -65,6 +65,45 @@ def test_understand_uses_the_agent_when_present(tmp_path, monkeypatch):
     assert timeline["steps"][0]["target"] == "#go"
 
 
+def test_forge_verify_signature():
+    import hashlib
+    import hmac
+
+    from taketwo.pipeline.forge import verify_signature
+
+    body = b'{"action": "opened"}'
+    secret = "s3cret"
+    good = "sha256=" + hmac.new(secret.encode(), body, hashlib.sha256).hexdigest()
+    assert verify_signature(secret, body, good) is True
+    assert verify_signature(secret, body, "sha256=deadbeef") is False
+    assert verify_signature(secret, body, "") is False
+    assert verify_signature("", body, "") is True  # no secret => dev mode
+
+
+def test_runner_command_local_and_docker(monkeypatch):
+    import sys
+
+    from taketwo.interfaces.runner import Runner
+
+    runner = Runner(max_workers=1)
+    job = {
+        "video_path": "v.mov",
+        "progress_path": "p.json",
+        "repo": "o/n",
+        "base_branch": "main",
+        "app_url": "",
+        "agentic": False,
+    }
+
+    monkeypatch.delenv("SANDBOX_IMAGE", raising=False)
+    local = runner._command(job)
+    assert local[0] == sys.executable and local[1:3] == ["-m", "taketwo.interfaces.worker"]
+
+    monkeypatch.setenv("SANDBOX_IMAGE", "taketwo:latest")
+    docker = runner._command(job)
+    assert docker[0] == "docker" and "taketwo:latest" in docker
+
+
 def test_forge_run_tests_reports_pass_and_fail(tmp_path):
     import sys
 

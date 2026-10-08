@@ -10,7 +10,7 @@ from taketwo.pipeline.stages.reproduce import prompts
 from taketwo.storage import runtime
 
 
-def build_agent(*, accumulator: dict | None = None, max_iterations: int = 8) -> Any:
+def build_agent(*, recorder: Any = None, max_iterations: int = 8) -> Any:
     """Build the reproduction agent (returns the build result: agent + recorder)."""
     setup()
     return build(
@@ -20,6 +20,6 @@ def build_agent(*, accumulator: dict | None = None, max_iterations: int = 8) -> 
             rails=[],
             max_iterations=max_iterations,
             workspace=runtime.workspace(),
-            recorder=accumulator,
+            recorder=recorder,
         )
     )

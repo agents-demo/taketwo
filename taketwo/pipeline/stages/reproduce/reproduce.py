@@ -1,9 +1,10 @@
 """Stage: reproduce the inferred bug in a real browser.
 
-Owns the browser: opens the session (stashing it on the run session so the prove
-after-clip reuses it), replays the steps, captures the console/network around the
-failure, and records the **before** clip. When no browser is available it degrades to
-an ``unclear`` verdict with one clarifying question rather than guessing.
+Owns the browser: opens the session (stashing it on the run session so the prove stage
+re-runs through the same object), grounds the inferred steps on the live page's
+accessibility outline with the stage agent when a model is configured, replays them,
+and records the **before** clip. When no browser is available it degrades to an
+``unclear`` verdict with one clarifying question rather than guessing.
 """
 
 from __future__ import annotations
@@ -13,8 +14,9 @@ from pathlib import Path
 from typing import Any
 
 from taketwo.domain import repro as repro_mod
+from taketwo.pipeline import agent_reply
 from taketwo.pipeline.progress import Progress, tick
-from taketwo.pipeline.stages.reproduce import browser, replay_steps
+from taketwo.pipeline.stages.reproduce import browser, prompts, replay_steps
 from taketwo.storage import runtime
 
 
@@ -28,7 +30,33 @@ def _sidecar(video_path: str) -> dict[str, Any] | None:
         return None
 
 
-def reproduce(
+def _ground_agent(run_session: Any) -> Any:
+    """Build the grounding agent (best-effort; ``None`` without a configured model)."""
+    try:
+        from taketwo.pipeline.stages.reproduce.build_agent import build_agent
+
+        recorder = getattr(run_session, "recorder", None)
+        return build_agent(recorder=recorder).agent
+    except Exception:
+        return None
+
+
+async def _ground(steps: list[dict], outline: str, run_session: Any) -> list[dict]:
+    """Map inferred steps onto live selectors via the model (falls back to raw steps)."""
+    if not steps or not outline:
+        return steps
+    agent = _ground_agent(run_session)
+    if agent is None:
+        return steps
+    try:
+        text = await agent_reply.ask(agent, prompts.build_user({"steps": steps}, outline))
+        grounded = agent_reply.extract_json(text).get("steps")
+        return grounded if grounded else steps
+    except Exception:
+        return steps
+
+
+async def reproduce(
     video_path: str,
     timeline: dict[str, Any],
     app_url: str,
@@ -49,8 +77,12 @@ def reproduce(
         if run_session is not None:
             run_session.browser = session
 
+    steps = timeline.get("steps", [])
+    if session.live:
+        steps = await _ground(steps, session.outline(), run_session)
+
     before_console = len(session.console)
-    records = replay_steps.replay(session, timeline.get("steps", []))
+    records = replay_steps.replay(session, steps)
     new_console = session.console[before_console:]
     signal = replay_steps.failure_signal(new_console)
 
