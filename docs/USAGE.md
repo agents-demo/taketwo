@@ -59,7 +59,7 @@ A SvelteKit single-page app served by the API.
 Pages:
 - **Runs** — submit a clip (or repo/app), see past runs as cards with a thumbnail; live job status.
 - **Review** — the before/after **compare slider** (or proof video), the score/verdict/steps, the diff,
-  **Approve / Request changes**, and an **Ask** box.
+  a **Usage** panel (model calls, tokens, latency, tool activity), **Approve / Request changes**, and an **Ask** box.
 - **Scoreboard** — the reproduce rate, counts, and a per-repo leaderboard.
 
 A **☀️/🌙 toggle** in the header switches light/dark (defaults to your OS).

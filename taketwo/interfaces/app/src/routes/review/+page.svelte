@@ -76,6 +76,46 @@
     </ol>
   {/if}
 
+  {@const u = run.usage || {}}
+  {#if u.calls || run.calls?.length || run.tools?.length}
+    <h2 class="mt-6 font-display text-lg">Usage</h2>
+    <div class="mt-2 grid grid-cols-4 gap-3">
+      <div class="card p-3"><div class="text-xs text-muted">Calls</div><div class="font-display text-xl">{u.calls ?? run.calls?.length ?? 0}</div></div>
+      <div class="card p-3"><div class="text-xs text-muted">Tokens</div><div class="font-display text-xl">{u.total_tokens ?? 0}</div></div>
+      <div class="card p-3"><div class="text-xs text-muted">Vision tok</div><div class="font-display text-xl">{u.vision?.total_tokens ?? 0}</div></div>
+      <div class="card p-3"><div class="text-xs text-muted">Text tok</div><div class="font-display text-xl">{u.text?.total_tokens ?? 0}</div></div>
+    </div>
+    {#if run.calls?.length}
+      <div class="card mt-3 overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead class="text-muted"><tr><th class="px-3 py-2">call</th><th>model</th><th>prompt</th><th>completion</th><th>total</th><th>s</th></tr></thead>
+          <tbody>
+            {#each run.calls as c}
+              <tr class="border-t border-line/60">
+                <td class="px-3 py-2">{c.label}</td><td>{c.model || "—"}</td>
+                <td>{c.prompt_tokens ?? "—"}</td><td>{c.completion_tokens ?? "—"}</td>
+                <td>{c.total_tokens ?? "—"}</td><td>{c.seconds ?? "—"}</td>
+              </tr>
+            {/each}
+          </tbody>
+        </table>
+      </div>
+    {/if}
+    {#if run.tools?.length}
+      <h2 class="mt-4 font-display text-base">Tool activity</h2>
+      <div class="card mt-2 overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead class="text-muted"><tr><th class="px-3 py-2">tool</th><th>seconds</th><th>arguments</th></tr></thead>
+          <tbody>
+            {#each run.tools as t}
+              <tr class="border-t border-line/60"><td class="px-3 py-2">{t.name}</td><td>{t.seconds ?? "—"}</td><td class="max-w-[320px] truncate">{t.arguments || ""}</td></tr>
+            {/each}
+          </tbody>
+        </table>
+      </div>
+    {/if}
+  {/if}
+
   <h2 class="mt-6 font-display text-lg">Review</h2>
   <input bind:value={note} placeholder="why approve or send back" class="mt-2 w-full rounded-lg border-2 border-line bg-ink px-3 py-2 text-sm" />
   <div class="mt-3 flex gap-3">

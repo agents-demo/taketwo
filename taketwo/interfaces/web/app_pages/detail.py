@@ -145,7 +145,27 @@ def render(job: str) -> None:
         if chart is not None:
             st.markdown("**Pipeline timeline**")
             st.altair_chart(chart, width="stretch")
-        tools = common.read_json(summary.get("artifacts", {}).get("observability", "")).get("tools", [])
+        observability = common.read_json(summary.get("artifacts", {}).get("observability", ""))
+        calls = observability.get("calls", [])
+        if calls:
+            st.markdown("**Model calls**")
+            st.dataframe(
+                [
+                    {
+                        "call": c.get("label"),
+                        "model": c.get("model"),
+                        "prompt": c.get("prompt_tokens"),
+                        "completion": c.get("completion_tokens"),
+                        "total": c.get("total_tokens"),
+                        "seconds": c.get("seconds"),
+                    }
+                    for c in calls
+                ],
+                hide_index=True,
+                width="stretch",
+                alt="Model calls with token usage and latency",
+            )
+        tools = observability.get("tools", [])
         if tools:
             st.markdown("**Model & tool activity**")
             st.dataframe(

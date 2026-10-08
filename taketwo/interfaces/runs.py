@@ -65,7 +65,17 @@ def list_runs() -> list[dict[str, Any]]:
 
 
 def get_run(job: str) -> dict[str, Any] | None:
-    return next((r for r in list_runs() if r["job"] == job), None)
+    """One run, including its model/tool observability (usage, calls, tools)."""
+    found = next((r for r in list_runs() if r["job"] == job), None)
+    if found is None:
+        return None
+    summary = _summary(job)
+    obs = json_store.read_json(runtime.ARTIFACTS_DIR / f"{job}_observability.json", {})
+    obs = obs if isinstance(obs, dict) else {}
+    found["usage"] = summary.get("usage") or {}
+    found["calls"] = obs.get("calls", []) or []
+    found["tools"] = obs.get("tools", []) or []
+    return found
 
 
 def scoreboard() -> dict[str, Any]:
