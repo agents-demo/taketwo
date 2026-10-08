@@ -31,6 +31,10 @@ def page() -> None:
     metrics[3].metric("Runs", total)
     st.progress(rate, text=f"Reproduce rate — {rate:.0%} of clips became a reproduction")
 
+    trend = common.rate_trend(rows)
+    if trend is not None:
+        st.altair_chart(trend, width="stretch")
+
     st.space("medium")
     st.subheader("Hall of fame", icon=":material/military_tech:")
     top = sorted(rows, key=lambda r: (r["verified"], r["score"]), reverse=True)[:10]

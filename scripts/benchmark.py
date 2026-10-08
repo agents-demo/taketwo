@@ -1,8 +1,8 @@
-"""Reproduction-success benchmark over seeded browser bugs.
+"""Reproduction-success benchmark over seeded browser bugs in two different apps.
 
-Serves a set of seeded pages (three that throw on a click, one control that does not),
-drives the real reproduce path in a live browser, and reports the reproduce rate — the
-"does it generalize" number to watch.
+Serves seeded pages (a date picker and a login form), drives the real reproduce path in a
+live browser using **label-based** steps (exercising the selector fallback ladder), and
+reports the reproduce rate — the "does it generalize" number to watch.
 
     python scripts/benchmark.py
 """
@@ -21,11 +21,8 @@ from taketwo.bootstrap import run, setup  # noqa: E402
 from taketwo.pipeline import appserver  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
-STEPS = [
-    {"action": "click", "target": "#dateField", "timestamp": 1.0, "confidence": 0.9},
-    {"action": "click", "target": "button.day", "timestamp": 2.0, "confidence": 0.9},
-]
-TEMPLATE = """<!doctype html>
+
+PICKER = """<!doctype html>
 <html><body>
   <div id="dateField" role="textbox" aria-label="Pick a date" tabindex="0">Pick a date</div>
   <div id="picker" hidden><button class="day">15</button></div>
@@ -42,16 +39,40 @@ TEMPLATE = """<!doctype html>
 </body></html>
 """
 
+FORM = """<!doctype html>
+<html><body>
+  <form id="login">
+    <input id="user" aria-label="Username" />
+    <button id="go">Sign in</button>
+  </form>
+  <script>
+    document.getElementById('go').addEventListener('click', (event) => {
+      event.preventDefault();
+      /*BUG*/
+      document.getElementById('user').value = 'ok';
+    });
+  </script>
+</body></html>
+"""
+
+STEPS_PICKER = [
+    {"action": "click", "target": "Pick a date", "timestamp": 1.0, "confidence": 0.9},
+    {"action": "click", "target": "15", "timestamp": 2.0, "confidence": 0.9},
+]
+STEPS_FORM = [{"action": "click", "target": "Sign in", "timestamp": 1.0, "confidence": 0.9}]
+
 CASES = [
-    ("throw", "throw new Error('boom on select');", True),
-    ("null_read", "const value = null.value;", True),
-    ("undefined_call", "notDefinedFunction();", True),
-    ("control_no_bug", "", False),
+    ("picker_throw", PICKER, STEPS_PICKER, "throw new Error('boom on select');", True),
+    ("picker_null", PICKER, STEPS_PICKER, "const value = null.value;", True),
+    ("picker_control", PICKER, STEPS_PICKER, "", False),
+    ("form_throw", FORM, STEPS_FORM, "throw new Error('bad login');", True),
+    ("form_reference", FORM, STEPS_FORM, "missingFn();", True),
+    ("form_control", FORM, STEPS_FORM, "", False),
 ]
 
 
-async def _one(url: str, job: str, video: str) -> str:
-    result = await live_reproduce(url, STEPS, job, video)
+async def _one(url: str, steps: list[dict], job: str, video: str) -> str:
+    result = await live_reproduce(url, steps, job, video)
     return result["reproduction"].get("verdict", "unclear")
 
 
@@ -68,16 +89,16 @@ def main() -> int:
 
     correct, live_seen = 0, False
     print(f"{'case':<18} {'verdict':<16} {'expected':<10} result")
-    for index, (name, bug, expected_reproduced) in enumerate(CASES):
+    for index, (name, template, steps, bug, expected_reproduced) in enumerate(CASES):
         case_dir = work / name
         case_dir.mkdir()
-        (case_dir / "index.html").write_text(TEMPLATE.replace("/*BUG*/", bug), encoding="utf-8")
+        (case_dir / "index.html").write_text(template.replace("/*BUG*/", bug), encoding="utf-8")
         app = serve(case_dir, 8140 + index, ROOT)
         try:
             if not app:
                 print(f"{name:<18} {'(no app)':<16} {'-':<10} FAIL")
                 continue
-            verdict = run(_one(app.url, f"bench_{name}", str(video)))
+            verdict = run(_one(app.url, steps, f"bench_{name}", str(video)))
         finally:
             appserver.stop(app)
         live_seen = live_seen or verdict in ("reproduced", "not_reproduced")

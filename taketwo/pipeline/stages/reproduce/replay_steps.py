@@ -12,7 +12,12 @@ async def replay(session: BrowserSession, steps: list[dict[str, Any]]) -> list[d
     """Perform each step in order (capped) and return the step records."""
     records: list[dict[str, Any]] = []
     for step in steps[: config.max_steps()]:
-        result = await session.act(step.get("action", "wait"), step.get("target", ""), step.get("value", ""))
+        result = await session.act(
+            step.get("action", "wait"),
+            step.get("target", ""),
+            step.get("value", ""),
+            alts=step.get("targets"),
+        )
         records.append(
             {
                 "index": step.get("index", len(records)),

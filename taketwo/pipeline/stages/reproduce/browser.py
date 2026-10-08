@@ -22,6 +22,21 @@ class StepResult:
     detail: str = ""
 
 
+_SPACY = set("#.[]:=>")
+
+
+def click_candidates(target: str) -> list[str]:
+    """Ordered selector ladder for a click: exact, then accessible/text fallbacks.
+
+    A CSS/id selector is used as-is; a plain label gets ``text=`` / ``aria-label`` /
+    ``placeholder`` fallbacks so a step grounded on a word still finds its element.
+    """
+    candidates = [target] if target else []
+    if target and not (_SPACY & set(target)):
+        candidates += [f"text={target}", f'[aria-label="{target}"]', f'[placeholder="{target}"]']
+    return candidates
+
+
 @dataclass
 class BrowserSession:
     """Drive a real browser, or record steps without one when Playwright is absent."""
@@ -58,14 +73,29 @@ class BrowserSession:
             self.console.append(f"browser unavailable: {exc}")
             return False
 
-    async def act(self, action: str, target: str = "", value: str = "") -> StepResult:
-        """Perform one step; a no-op success when there is no live browser."""
+    async def act(
+        self, action: str, target: str = "", value: str = "", alts: list[str] | None = None
+    ) -> StepResult:
+        """Perform one step; a no-op success when there is no live browser.
+
+        For clicks, tries the target, any extra ``alts``, then the accessible/text
+        fallback ladder so a grounded label still resolves to a real element.
+        """
         if not self.live or self._page is None:
             return StepResult(action, target, ok=True, detail="no-browser")
+        timeout = int(config.step_timeout() * 1000)
         try:
-            if action == "click" and target:
-                await self._page.click(target, timeout=int(config.step_timeout() * 1000))
-            elif action == "type" and target:
+            if action == "click":
+                candidates = click_candidates(target) + [alt for alt in (alts or []) if alt]
+                last = "no selector"
+                for selector in candidates:
+                    try:
+                        await self._page.click(selector, timeout=timeout)
+                        return StepResult(action, target, ok=True)
+                    except Exception as exc:
+                        last = str(exc)
+                return StepResult(action, target, ok=False, detail=last)
+            if action == "type" and target:
                 await self._page.fill(target, value)
             elif action == "navigate" and value:
                 await self._page.goto(value, wait_until="domcontentloaded")

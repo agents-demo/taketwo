@@ -111,6 +111,14 @@ def test_understand_uses_the_agent_when_present(tmp_path, monkeypatch):
     assert timeline["steps"][0]["target"] == "#go"
 
 
+def test_click_candidates_ladder():
+    from taketwo.pipeline.stages.reproduce.browser import click_candidates
+
+    assert click_candidates("#dateField") == ["#dateField"]  # css used as-is
+    label = click_candidates("15")
+    assert label[0] == "15" and "text=15" in label
+
+
 def test_forge_verify_signature():
     import hashlib
     import hmac

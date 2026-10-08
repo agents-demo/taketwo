@@ -245,6 +245,33 @@ def runs_dataframe(data: list[dict]):
     )
 
 
+def rate_trend(rows: list[dict]) -> Any:
+    """A line of the cumulative reproduce rate over runs (oldest → newest), or ``None``."""
+    if not rows:
+        return None
+    try:
+        import altair as alt
+        import pandas as pd
+
+        seen, data = 0, []
+        for index, row in enumerate(reversed(rows), start=1):
+            seen += int(row["verdict"] == "reproduced")
+            data.append({"run": index, "rate": seen / index})
+        frame = pd.DataFrame(data)
+        return (
+            alt.Chart(frame)
+            .mark_line(point=True, color="#7C3AED")
+            .encode(
+                x=alt.X("run:Q", title="run #"),
+                y=alt.Y("rate:Q", title="cumulative reproduce rate", axis=alt.Axis(format="%"), scale=alt.Scale(domain=[0, 1])),
+                tooltip=["run", "rate"],
+            )
+            .properties(height=220)
+        )
+    except Exception:
+        return None
+
+
 def activity_chart(timings: list[dict]) -> Any:
     """A horizontal timeline of pipeline stages (``[{stage, seconds}]``) or ``None``."""
     items = [t for t in (timings or []) if t.get("stage")]
