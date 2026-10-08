@@ -74,8 +74,9 @@ npm run dev        # or: npm run build  (writes build/, served at /app/)
 ## 5. Live checks (need Playwright: `python -m playwright install chromium`)
 
 ```powershell
-& $PY scripts\dogfood.py     # reproduce a real browser bug + before/after proof video
-& $PY scripts\benchmark.py   # reproduce-rate over seeded bugs
+& $PY scripts\dogfood.py            # reproduce a real browser bug + before/after proof video
+& $PY scripts\benchmark.py          # reproduce-rate over seeded bugs
+& $PY scripts\make_sample_video.py  # rebuild the sample's proof from real browser frames
 ```
 
 See [README.md](README.md) and [docs/architecture.md](docs/architecture.md).

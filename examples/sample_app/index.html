@@ -3,29 +3,57 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Sample Bug — Date Picker</title>
+    <title>Northwind — Book a table</title>
     <style>
-      body { font-family: system-ui, sans-serif; margin: 3rem; }
-      #dateField { display: inline-block; padding: .5rem 1rem; border: 1px solid #888;
-                   border-radius: 6px; cursor: pointer; min-width: 8rem; }
-      #picker { margin-top: .5rem; padding: .5rem; border: 1px solid #ccc; width: max-content; }
-      .day { margin: 2px; padding: .4rem .8rem; }
+      :root { color-scheme: light; }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0; min-height: 100vh; display: grid; place-items: center; font-family: "Segoe UI", system-ui, sans-serif;
+        background: radial-gradient(120% 120% at 20% 0%, #eef2ff, #f8fafc 60%); color: #0f172a;
+      }
+      .app { width: 380px; background: #fff; border-radius: 18px; box-shadow: 0 24px 60px rgba(15,23,42,.18); overflow: hidden; }
+      .bar { display: flex; gap: 6px; align-items: center; padding: 12px 14px; background: #0f172a; }
+      .dot { width: 11px; height: 11px; border-radius: 50%; }
+      .r { background: #ff5f57; } .y { background: #febc2e; } .g { background: #28c840; }
+      .url { margin-left: 10px; flex: 1; background: #1e293b; color: #94a3b8; font-size: 12px; padding: 6px 12px; border-radius: 8px; }
+      .body { padding: 22px; }
+      h1 { font-size: 20px; margin: 0 0 2px; }
+      p.sub { margin: 0 0 18px; color: #64748b; font-size: 13px; }
+      label { display: block; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 6px; }
+      #dateField {
+        display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; border: 1.5px solid #cbd5e1;
+        border-radius: 10px; cursor: pointer; font-size: 15px; background: #fff;
+      }
+      #dateField:hover { border-color: #6366f1; }
+      #dateField .ph { color: #94a3b8; }
+      #picker { margin-top: 10px; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 8px; display: grid; gap: 4px; }
+      #picker[hidden] { display: none; }
+      .day { padding: 10px; border: none; border-radius: 8px; background: #f1f5f9; font-size: 14px; cursor: pointer; }
+      .day:hover { background: #e0e7ff; }
+      .booked { margin-top: 14px; padding: 12px 14px; border-radius: 10px; background: #ecfdf5; color: #047857; font-weight: 600; font-size: 14px; display: none; }
+      .booked.show { display: block; }
     </style>
   </head>
   <body>
-    <h1>Booking</h1>
-    <p>Choose a date:</p>
-
-    <div id="dateField" role="textbox" aria-label="Pick a date" tabindex="0">Pick a date</div>
-    <div id="picker" hidden>
-      <button class="day">14</button>
-      <button class="day">15</button>
-      <button class="day">16</button>
+    <div class="app">
+      <div class="bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="url">northwind.example/booking</span></div>
+      <div class="body">
+        <h1>Book a table</h1>
+        <p class="sub">Pick a date for your reservation.</p>
+        <label>Date</label>
+        <div id="dateField" role="textbox" aria-label="Pick a date" tabindex="0"><span class="ph">Pick a date</span><span>📅</span></div>
+        <div id="picker" hidden>
+          <button class="day">14 Jan</button>
+          <button class="day">15 Jan</button>
+          <button class="day">16 Jan</button>
+        </div>
+        <div class="booked" id="booked">Booked — see you then!</div>
+      </div>
     </div>
-
     <script>
       const field = document.getElementById("dateField");
       const picker = document.getElementById("picker");
+      const booked = document.getElementById("booked");
 
       // The seeded bug: `input` is never the real field, so selecting a date throws
       // "TypeError: Cannot read properties of null (reading 'value')" and the picker
@@ -37,8 +65,9 @@
       document.querySelectorAll(".day").forEach((button) => {
         button.addEventListener("click", () => {
           const value = input.value;      // <-- TypeError here
-          field.textContent = value;
+          field.innerHTML = value + " <span>📅</span>";
           picker.hidden = true;           // closes by itself
+          booked.classList.add("show");
         });
       });
     </script>
