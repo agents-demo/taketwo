@@ -112,9 +112,10 @@ recording ─▶ pipeline.stages.understand  (frames + cursor + contact sheet)  
 
 Both are inbound adapters over the same engine; keep them independent.
 
-**Reels** (`interfaces/reels/`) — a mobile-first, swipeable proof feed (vanilla HTML/CSS/JS, no
-build step), served by the API at `/app/` and reading `/scoreboard`, `/runs`, `/jobs`, `/media`.
-This is the consumer surface: one clip per screen, video as the hero, dev concepts hidden.
+**App** (`interfaces/app/`) — a **SvelteKit** single-page app, served by the API at `/app/`
+(adapter-static, base `/app`; the FastAPI `spa()` route falls back to `index.html` for client
+routes). Uses `/scoreboard`, `/runs`, `/jobs`, `/media`. `npm run dev` (5173) is CORS-enabled by the
+API for development. This is the consumer surface.
 
 **Console** (`interfaces/web/`) — a Streamlit app for maintainers/operators:
 

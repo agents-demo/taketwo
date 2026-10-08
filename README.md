@@ -25,8 +25,8 @@ design.
 
 Same engine, two surfaces:
 
-- **Reels** — a mobile-first, swipeable **proof feed** (consumer-facing). Serve it with the API and
-  open `http://localhost:8000/app/`.
+- **App** — a **SvelteKit** web app (`interfaces/app/`), served by the API at `/app/`
+  (`http://localhost:8000/app/`). Runs, review, scoreboard, with the before/after compare.
 - **Console** — a Streamlit dashboard for maintainers/operators (submit, review, scoreboard).
 
 ## Layout

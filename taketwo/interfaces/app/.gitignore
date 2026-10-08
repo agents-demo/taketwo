@@ -1,0 +1,4 @@
+node_modules/
+.svelte-kit/
+.DS_Store
+# build/ is committed so the API can serve /app without a Node toolchain at runtime.

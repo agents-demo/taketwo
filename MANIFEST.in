@@ -1,3 +1,2 @@
-recursive-include taketwo/interfaces/reels *.html *.css *.js
-recursive-include taketwo/interfaces/feed *.html *.css *.js
+recursive-include taketwo/interfaces/app/build *
 recursive-include assets *.svg

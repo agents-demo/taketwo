@@ -54,11 +54,21 @@ No recording handy? Make a synthetic clip and serve the sample buggy app to repr
 & $PY scripts\evaluate_repros.py   # quality gate against tests/eval/expected.json
 ```
 
-## 4. Reels (consumer feed)
+## 4. App (SvelteKit web UI)
+
+Built assets are committed, so the API serves it directly:
 
 ```powershell
 & $PY -m uvicorn taketwo.interfaces.api:app --port 8000
-# open http://localhost:8000/app/  (swipeable proof feed + scoreboard)
+# open http://localhost:8000/app/   (Runs · Review · Scoreboard)
+```
+
+To develop it (hot reload on http://localhost:5173, calling the API on 8000):
+
+```powershell
+cd taketwo\interfaces\app
+npm install
+npm run dev        # or: npm run build  (writes build/, served at /app/)
 ```
 
 ## 5. Live checks (need Playwright: `python -m playwright install chromium`)

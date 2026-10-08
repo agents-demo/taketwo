@@ -9,8 +9,8 @@ from __future__ import annotations
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, RedirectResponse
-from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from taketwo.bootstrap import setup
@@ -20,9 +20,16 @@ from taketwo.storage import runtime
 
 app = FastAPI(title="TakeTwo")
 
+# Allow the SvelteKit dev server (5173) to call the API during development.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 _HERE = Path(__file__).resolve().parent
-_WEB_APP = _HERE / "reels"  # cinematic SPA
-_FEED_APP = _HERE / "feed"  # intuitive swipeable feed SPA
+_APP = _HERE / "app" / "build"  # the SvelteKit app (built static assets)
 
 
 class ReplayRequest(BaseModel):
@@ -176,13 +183,17 @@ async def webhook(request: Request) -> dict:
     return {"accepted": True, "event": payload.get("action", "unknown")}
 
 
-if _WEB_APP.exists():
-    app.mount("/app", StaticFiles(directory=str(_WEB_APP), html=True), name="app")
-
-if _FEED_APP.exists():
-    app.mount("/feed", StaticFiles(directory=str(_FEED_APP), html=True), name="feed")
-
-
 @app.get("/")
 def index() -> RedirectResponse:
-    return RedirectResponse("/feed/" if _FEED_APP.exists() else "/app/")
+    return RedirectResponse("/app/" if _APP.exists() else "/health")
+
+
+@app.get("/app/{path:path}")
+@app.get("/app")
+def spa(path: str = "") -> FileResponse:
+    """Serve the built SvelteKit app, falling back to index.html for client routes."""
+    root = _APP.resolve()
+    candidate = (root / path).resolve()
+    if path and candidate.is_file() and str(candidate).startswith(str(root)):
+        return FileResponse(candidate)
+    return FileResponse(root / "index.html")
