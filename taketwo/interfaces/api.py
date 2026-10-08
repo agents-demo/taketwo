@@ -20,7 +20,9 @@ from taketwo.storage import runtime
 
 app = FastAPI(title="TakeTwo")
 
-_WEB_APP = Path(__file__).resolve().parent / "reels"  # the Reels SPA (static assets)
+_HERE = Path(__file__).resolve().parent
+_WEB_APP = _HERE / "reels"  # cinematic SPA
+_FEED_APP = _HERE / "feed"  # intuitive swipeable feed SPA
 
 
 class ReplayRequest(BaseModel):
@@ -177,6 +179,10 @@ async def webhook(request: Request) -> dict:
 if _WEB_APP.exists():
     app.mount("/app", StaticFiles(directory=str(_WEB_APP), html=True), name="app")
 
-    @app.get("/")
-    def index() -> RedirectResponse:
-        return RedirectResponse("/app/")
+if _FEED_APP.exists():
+    app.mount("/feed", StaticFiles(directory=str(_FEED_APP), html=True), name="feed")
+
+
+@app.get("/")
+def index() -> RedirectResponse:
+    return RedirectResponse("/feed/" if _FEED_APP.exists() else "/app/")
