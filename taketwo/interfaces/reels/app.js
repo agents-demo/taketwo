@@ -60,14 +60,23 @@ function initCompare(el) {
     setX(((clientX - rect.left) / rect.width) * 100);
   };
   setX(50);
-  el.addEventListener("pointerdown", (e) => {
-    el.setPointerCapture(e.pointerId);
-    at(e.clientX);
-    const move = (ev) => at(ev.clientX);
-    const up = () => { el.removeEventListener("pointermove", move); el.removeEventListener("pointerup", up); };
-    el.addEventListener("pointermove", move);
-    el.addEventListener("pointerup", up);
+  // Horizontal drag only; don't capture the pointer, so a vertical swipe still scrolls.
+  let axis = null;
+  let start = null;
+  el.addEventListener("pointerdown", (e) => { axis = null; start = { x: e.clientX, y: e.clientY }; });
+  el.addEventListener("pointermove", (e) => {
+    if (!start) return;
+    const dx = e.clientX - start.x;
+    const dy = e.clientY - start.y;
+    if (axis === null) {
+      if (Math.abs(dx) < 6 && Math.abs(dy) < 6) return;
+      axis = Math.abs(dx) > Math.abs(dy) ? "x" : "y";
+    }
+    if (axis === "x") at(e.clientX);
   });
+  const end = () => { start = null; axis = null; };
+  el.addEventListener("pointerup", end);
+  el.addEventListener("pointercancel", end);
 }
 
 function activate(slide) {
@@ -95,6 +104,24 @@ function renderDeck() {
   deck.innerHTML = state.feed.map(slideMarkup).join("");
   $$(".compare", deck).forEach(initCompare);
 
+  // Tap a clip (without dragging) to open its detail.
+  $$(".slide", deck).forEach((slide) => {
+    let down = null;
+    slide.addEventListener("pointerdown", (e) => { down = { x: e.clientX, y: e.clientY }; });
+    slide.addEventListener("pointerup", (e) => {
+      if (!down) return;
+      const dx = Math.abs(e.clientX - down.x);
+      const dy = Math.abs(e.clientY - down.y);
+      down = null;
+      if (dx < 8 && dy < 8) {
+        const run = state.feed.find((r) => r.job === slide.dataset.job);
+        if (run) openClip(run);
+      }
+    });
+  });
+
+  $(".swipe-hint").textContent = state.feed.length > 1 ? "▲ swipe" : "tap for details";
+
   const io = new IntersectionObserver(
     (entries) => {
       for (const entry of entries) {
@@ -119,8 +146,9 @@ async function approve(job) {
 function flash() {
   const el = $("#flash");
   el.hidden = false;
-  el.style.animation = "none"; void el.offsetWidth; el.style.animation = "";
-  setTimeout(() => (el.hidden = true), 1200);
+  el.style.animation = "none"; void el.offsetWidth; el.style.animation = ""; // restart
+  clearTimeout(el._t);
+  el._t = setTimeout(() => { el.hidden = true; }, 1250);
 }
 function like(job) {
   if (!job) return;
