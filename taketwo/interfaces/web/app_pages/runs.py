@@ -139,6 +139,9 @@ def page() -> None:
 
     _new_run()
     live_job()
+    active = get_runner().active()
+    if active:
+        st.caption(f"{len(active)} run(s) in flight")
 
     st.space("medium")
     st.subheader("Runs", icon=":material/history:")

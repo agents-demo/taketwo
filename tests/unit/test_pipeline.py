@@ -111,6 +111,24 @@ def test_understand_uses_the_agent_when_present(tmp_path, monkeypatch):
     assert timeline["steps"][0]["target"] == "#go"
 
 
+def test_agent_ask_retries_transient(monkeypatch):
+    import taketwo.backend as backend
+    from taketwo.bootstrap import run as run_sync
+    from taketwo.pipeline import agent_reply
+
+    calls = {"n": 0}
+
+    async def flaky(agent, prompt):  # noqa: ARG001
+        calls["n"] += 1
+        if calls["n"] < 2:
+            raise RuntimeError("transient")
+        return {"output": "recovered"}
+
+    monkeypatch.setattr(backend, "run_agent", flaky)
+    assert run_sync(agent_reply.ask(object(), "hi")) == "recovered"
+    assert calls["n"] == 2
+
+
 def test_click_candidates_ladder():
     from taketwo.pipeline.stages.reproduce.browser import click_candidates
 

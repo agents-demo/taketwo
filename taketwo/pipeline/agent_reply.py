@@ -8,16 +8,29 @@ backend, and it does so through the backend façade.
 
 from __future__ import annotations
 
+import asyncio
 import json
 from typing import Any
 
 
-async def ask(agent: Any, user_prompt: str) -> str:
-    """Run ``agent`` on ``user_prompt`` and return its text output."""
-    from taketwo.backend import run_agent
+async def ask(agent: Any, user_prompt: str, *, attempts: int | None = None) -> str:
+    """Run ``agent`` on ``user_prompt`` and return its text output.
 
-    result = await run_agent(agent, user_prompt)
-    return reply_text(result)
+    Retries transient failures with exponential backoff (``LLM_RETRIES`` + 1 tries).
+    """
+    from taketwo.backend import run_agent
+    from taketwo.backend import settings as backend_settings
+
+    tries = attempts if attempts is not None else max(1, backend_settings.llm_retries() + 1)
+    last: Exception | None = None
+    for attempt in range(tries):
+        try:
+            return reply_text(await run_agent(agent, user_prompt))
+        except Exception as exc:  # noqa: BLE001 - retry any transient failure
+            last = exc
+            if attempt + 1 < tries:
+                await asyncio.sleep(0.3 * (2**attempt))
+    raise last if last else RuntimeError("agent call failed")
 
 
 def reply_text(result: Any) -> str:

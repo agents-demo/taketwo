@@ -108,6 +108,14 @@ class Runner:
         """Stop accepting jobs and release the worker threads."""
         self._pool.shutdown(wait=wait, cancel_futures=True)
 
+    def jobs(self) -> list[dict[str, Any]]:
+        """All known jobs (public fields), newest first."""
+        with self._lock:
+            return [{k: v for k, v in job.items() if not k.startswith("_")} for job in self._jobs.values()]
+
+    def active(self) -> list[dict[str, Any]]:
+        return [job for job in self.jobs() if job["status"] in ("queued", "running")]
+
     def status(self, job_id: str) -> dict[str, Any]:
         with self._lock:
             job = self._jobs.get(job_id)
