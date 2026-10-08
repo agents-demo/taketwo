@@ -15,7 +15,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from _harness import live_reproduce, playwright_available, serve  # noqa: E402
+from _harness import free_port, live_reproduce, playwright_available, serve  # noqa: E402
 
 from taketwo.bootstrap import run, setup  # noqa: E402
 from taketwo.pipeline import appserver  # noqa: E402
@@ -55,11 +55,29 @@ FORM = """<!doctype html>
 </body></html>
 """
 
+TODO = """<!doctype html>
+<html><body>
+  <div id="app">
+    <button id="add" aria-label="Add task">Add</button>
+    <ul id="list"></ul>
+  </div>
+  <script>
+    document.getElementById('add').addEventListener('click', () => {
+      /*BUG*/
+      const li = document.createElement('li');
+      li.textContent = 'task';
+      document.getElementById('list').appendChild(li);
+    });
+  </script>
+</body></html>
+"""
+
 STEPS_PICKER = [
     {"action": "click", "target": "Pick a date", "timestamp": 1.0, "confidence": 0.9},
     {"action": "click", "target": "15", "timestamp": 2.0, "confidence": 0.9},
 ]
 STEPS_FORM = [{"action": "click", "target": "Sign in", "timestamp": 1.0, "confidence": 0.9}]
+STEPS_TODO = [{"action": "click", "target": "Add", "timestamp": 1.0, "confidence": 0.9}]
 
 CASES = [
     ("picker_throw", PICKER, STEPS_PICKER, "throw new Error('boom on select');", True),
@@ -68,6 +86,9 @@ CASES = [
     ("form_throw", FORM, STEPS_FORM, "throw new Error('bad login');", True),
     ("form_reference", FORM, STEPS_FORM, "missingFn();", True),
     ("form_control", FORM, STEPS_FORM, "", False),
+    ("todo_throw", TODO, STEPS_TODO, "throw new Error('add failed');", True),
+    ("todo_null", TODO, STEPS_TODO, "const x = null.value;", True),
+    ("todo_control", TODO, STEPS_TODO, "", False),
 ]
 
 
@@ -89,11 +110,11 @@ def main() -> int:
 
     correct, live_seen = 0, False
     print(f"{'case':<18} {'verdict':<16} {'expected':<10} result")
-    for index, (name, template, steps, bug, expected_reproduced) in enumerate(CASES):
+    for name, template, steps, bug, expected_reproduced in CASES:
         case_dir = work / name
         case_dir.mkdir()
         (case_dir / "index.html").write_text(template.replace("/*BUG*/", bug), encoding="utf-8")
-        app = serve(case_dir, 8140 + index, ROOT)
+        app = serve(case_dir, free_port(), ROOT)
         try:
             if not app:
                 print(f"{name:<18} {'(no app)':<16} {'-':<10} FAIL")

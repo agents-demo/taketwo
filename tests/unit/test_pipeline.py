@@ -129,6 +129,22 @@ def test_agent_ask_retries_transient(monkeypatch):
     assert calls["n"] == 2
 
 
+def test_localize_parses_console_frames():
+    from taketwo.pipeline.stages.repair import localize
+
+    repro = {
+        "evidence": {
+            "console": [
+                "pageerror: TypeError at http://localhost/static/app.js:12:5",
+                'Traceback (most recent call last): File "server.py", line 42, in handler',
+            ]
+        }
+    }
+    frames = localize._console_frames(repro)
+    assert ("app.js", 12) in frames
+    assert ("server.py", 42) in frames
+
+
 def test_click_candidates_ladder():
     from taketwo.pipeline.stages.reproduce.browser import click_candidates
 

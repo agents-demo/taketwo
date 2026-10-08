@@ -28,4 +28,5 @@ interfaces -> pipeline -> backend -> domain      (forge, storage, reporting, con
 ```
 
 `tests/unit/test_architecture.py` enforces the direction. `backend/` is the only place that imports
-openjiuwen. See the architecture doc for the full package map.
+openjiuwen. See the architecture doc for the full package map, and [CONTRIBUTING.md](CONTRIBUTING.md)
+to develop.

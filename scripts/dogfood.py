@@ -17,7 +17,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from _harness import live_reproduce, playwright_available, rerun, serve  # noqa: E402
+from _harness import free_port, live_reproduce, playwright_available, rerun, serve  # noqa: E402
 
 from taketwo.bootstrap import run, setup  # noqa: E402
 from taketwo.pipeline import appserver  # noqa: E402
@@ -71,8 +71,8 @@ def main() -> int:
     video = work / "bug.mov"
     video.write_bytes(b"")
 
-    buggy = serve(APP, 8137, ROOT)
-    fixed = serve(fixed_dir, 8138, ROOT)
+    buggy = serve(APP, free_port(), ROOT)
+    fixed = serve(fixed_dir, free_port(), ROOT)
     try:
         if not buggy:
             print("could not start the sample app")

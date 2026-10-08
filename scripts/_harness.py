@@ -6,6 +6,7 @@ Not a product module: dev tooling under ``scripts/``. Requires the browser extra
 
 from __future__ import annotations
 
+import socket
 import sys
 from pathlib import Path
 from typing import Any
@@ -25,6 +26,13 @@ def playwright_available() -> bool:
         return True
     except Exception:
         return False
+
+
+def free_port() -> int:
+    """An OS-assigned free TCP port (avoids clashing with lingering servers)."""
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+        sock.bind(("127.0.0.1", 0))
+        return int(sock.getsockname()[1])
 
 
 def serve(directory: str | Path, port: int, cwd: str | Path) -> Any:
