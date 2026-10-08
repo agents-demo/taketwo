@@ -13,3 +13,7 @@ logs/
 node_modules/
 .idea/
 .vscode/
+
+# keep the built SvelteKit app (served at /app)
+!taketwo/interfaces/app/build/
+!taketwo/interfaces/app/build/**
