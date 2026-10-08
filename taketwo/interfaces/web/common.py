@@ -60,34 +60,86 @@ def reproduce_rate(rows: list[dict]) -> float:
     return (sum(1 for r in rows if r["verdict"] == "reproduced") / len(rows)) if rows else 0.0
 
 
+def _font(size: int):
+    from PIL import ImageFont
+
+    try:
+        return ImageFont.load_default(size=size)
+    except Exception:
+        return ImageFont.load_default()
+
+
 def share_card(rows: list[dict]) -> bytes | None:
     """A branded PNG score card to post (reproduce rate + counts), or ``None``."""
     if not rows:
         return None
     try:
-        from PIL import Image, ImageDraw, ImageFont
+        from PIL import Image, ImageDraw
 
         rate = reproduce_rate(rows)
         verified = sum(1 for r in rows if r["verified"])
         total = len(rows)
 
-        def font(size: int):
-            try:
-                return ImageFont.load_default(size=size)
-            except Exception:
-                return ImageFont.load_default()
-
         img = Image.new("RGB", (1000, 560), (11, 11, 15))
         draw = ImageDraw.Draw(img)
         draw.rectangle([0, 0, 1000, 12], fill=(124, 58, 237))
         draw.rectangle([0, 548, 1000, 560], fill=(52, 211, 153))
-        draw.text((60, 70), "TakeTwo", font=font(40), fill=(236, 236, 242))
-        draw.text((60, 170), f"{rate:.0%}", font=font(120), fill=(167, 139, 250))
-        draw.text((60, 320), "reproduce rate", font=font(34), fill=(156, 163, 175))
-        draw.text((60, 390), f"{verified} verified  ·  {total} runs", font=font(32), fill=(156, 163, 175))
-        draw.text((60, 470), "video in  ·  proof out", font=font(30), fill=(124, 58, 237))
+        draw.text((60, 70), "TakeTwo", font=_font(40), fill=(236, 236, 242))
+        draw.text((60, 170), f"{rate:.0%}", font=_font(120), fill=(167, 139, 250))
+        draw.text((60, 320), "reproduce rate", font=_font(34), fill=(156, 163, 175))
+        draw.text((60, 390), f"{verified} verified  ·  {total} runs", font=_font(32), fill=(156, 163, 175))
+        draw.text((60, 470), "video in  ·  proof out", font=_font(30), fill=(124, 58, 237))
         buffer = io.BytesIO()
         img.save(buffer, format="PNG")
+        return buffer.getvalue()
+    except Exception:
+        return None
+
+
+def proof_card(job: str) -> bytes | None:
+    """A square, post-ready proof card (before | after + verdict/score), or ``None``."""
+    repro, proof = store.get_repro(job), store.get_proof(job)
+    before, after = repro.get("before_clip", ""), proof.get("after_clip", "")
+    image = proof.get("proof_path", "")
+    if before and after and Path(before).exists() and Path(after).exists():
+        sources = [before, after]
+    elif image and Path(image).exists():
+        sources = [image]
+    else:
+        return None
+    try:
+        from PIL import Image, ImageDraw
+
+        width, height = 1080, 1080
+        canvas = Image.new("RGB", (width, height), (11, 11, 15))
+        draw = ImageDraw.Draw(canvas)
+        area_top, area_h = 150, 700
+
+        if len(sources) == 2:
+            half = width // 2
+            for index, source in enumerate(sources):
+                shot = Image.open(source).convert("RGB")
+                shot.thumbnail((half - 24, area_h))
+                canvas.paste(shot, (index * half + (half - shot.width) // 2, area_top + (area_h - shot.height) // 2))
+            draw.rectangle([half - 2, area_top, half + 2, area_top + area_h], fill=(124, 58, 237))
+            draw.text((30, area_top + 12), "BEFORE", font=_font(26), fill=(251, 113, 133))
+            draw.text((half + 30, area_top + 12), "AFTER", font=_font(26), fill=(52, 211, 153))
+        else:
+            shot = Image.open(sources[0]).convert("RGB")
+            shot.thumbnail((width - 48, area_h))
+            canvas.paste(shot, ((width - shot.width) // 2, area_top + (area_h - shot.height) // 2))
+
+        draw.rectangle([0, 0, width, 12], fill=(124, 58, 237))
+        draw.text((30, 40), "TakeTwo", font=_font(46), fill=(236, 236, 242))
+        draw.text((30, 100), job[:44], font=_font(26), fill=(156, 163, 175))
+
+        verdict = repro.get("verdict", "unclear")
+        colour = (52, 211, 153) if verdict == "reproduced" else (251, 113, 133)
+        draw.text((30, height - 150), verdict.replace("_", " ").upper(), font=_font(42), fill=colour)
+        draw.text((30, height - 90), f"score {evaluate.score(repro)['score']:.2f}", font=_font(30), fill=(156, 163, 175))
+        draw.text((width - 340, height - 90), "video in  ·  proof out", font=_font(26), fill=(124, 58, 237))
+        buffer = io.BytesIO()
+        canvas.save(buffer, format="PNG")
         return buffer.getvalue()
     except Exception:
         return None

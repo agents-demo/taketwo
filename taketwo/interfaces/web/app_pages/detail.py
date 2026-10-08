@@ -82,6 +82,17 @@ def render(job: str) -> None:
 
         with st.popover("Share proof", icon=":material/ios_share:"):
             common.share(job)
+            card = common.proof_card(job)
+            if card:
+                st.caption("Proof card — post-ready:")
+                st.image(card, width="stretch", alt="Proof card: before and after with the verdict")
+                st.download_button(
+                    "Download the proof card",
+                    data=card,
+                    file_name=f"{job}_proof.png",
+                    mime="image/png",
+                    icon=":material/download:",
+                )
 
     proof_tab, fix_tab, evidence_tab, review_tab = st.tabs(
         [":material/movie: Proof", ":material/code: Fix", ":material/rule: Evidence", ":material/fact_check: Review"]
