@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Any
 
 from taketwo import reporting
-from taketwo.analysis.forge import open_issue, open_pr
+from taketwo.analysis.forge import ensure_repo, open_issue, open_pr, publish_branch
 from taketwo.analysis.progress import Progress, tick
 from taketwo.domain import render
 from taketwo.domain.submission import job_id
@@ -30,10 +30,13 @@ def deliver(
 
     job = job_id(submission)
     title = f"[TakeTwo] {fix.get('summary') or 'fix a reproduced bug'}"
+    branch = f"taketwo/{job}"
+    repo_dir = ensure_repo(repo, submission.get("base_branch", "main"))
+    out["branch"] = publish_branch(repo_dir, branch=branch, diff=fix["diff"], message=title, repo=repo)
     out["issue"] = open_issue(repo, title, render.issue_markdown(submission, reproduction))
     out["pr"] = open_pr(
         repo,
-        branch=f"taketwo/{job}",
+        branch=branch,
         title=title,
         body=render.pr_markdown(submission, reproduction, fix, proof),
         base=submission.get("base_branch", "main"),

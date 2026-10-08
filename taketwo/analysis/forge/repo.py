@@ -1,20 +1,38 @@
-"""Local repository access: clone, search, blame, read.
+"""Local repository access: clone, search, blame, read, and publish a branch.
 
 Git is called through subprocess; a missing repo/git degrades to empty results
-rather than raising, so a run never dies on infrastructure.
+rather than raising, so a run never dies on infrastructure. Commits use bot
+identity from the environment (never the user's git config).
 """
 
 from __future__ import annotations
 
+import os
 import subprocess
 from pathlib import Path
 
+from taketwo.analysis.forge import auth
 from taketwo.storage import runtime
 
+BOT_NAME = "TakeTwo Bot"
+BOT_EMAIL = "taketwo@users.noreply.github.com"
 
-def _run(args: list[str], cwd: Path | None = None) -> tuple[int, str]:
+
+def _identity_env() -> dict[str, str]:
+    return {
+        "GIT_AUTHOR_NAME": BOT_NAME,
+        "GIT_AUTHOR_EMAIL": BOT_EMAIL,
+        "GIT_COMMITTER_NAME": BOT_NAME,
+        "GIT_COMMITTER_EMAIL": BOT_EMAIL,
+    }
+
+
+def _run(args: list[str], cwd: Path | None = None, env: dict[str, str] | None = None) -> tuple[int, str]:
+    full_env = {**os.environ, **(env or {})}
     try:
-        proc = subprocess.run(args, cwd=str(cwd) if cwd else None, capture_output=True, text=True, timeout=120)
+        proc = subprocess.run(
+            args, cwd=str(cwd) if cwd else None, capture_output=True, text=True, timeout=120, env=full_env
+        )
         return proc.returncode, (proc.stdout or "") + (proc.stderr or "")
     except Exception as exc:
         return 1, str(exc)
@@ -70,3 +88,51 @@ def apply_patch(repo_dir: str | Path, diff: str) -> bool:
         patch_path = handle.name
     code, _ = _run(["git", "apply", patch_path], cwd=Path(repo_dir))
     return code == 0
+
+
+def _rev_parse(repo_dir: str | Path) -> str:
+    code, out = _run(["git", "rev-parse", "--short", "HEAD"], cwd=Path(repo_dir))
+    return out.strip().splitlines()[0] if code == 0 and out.strip() else ""
+
+
+def _token_url(repo: str) -> str:
+    token = auth.token()
+    return f"https://x-access-token:{token}@github.com/{repo}.git" if repo and token else ""
+
+
+def publish_branch(
+    repo_dir: str | Path,
+    branch: str,
+    diff: str,
+    message: str,
+    repo: str = "",
+) -> dict:
+    """Apply ``diff`` on a fresh ``branch``, commit it, and push when a token exists.
+
+    Returns ``{branch, commit, pushed, dry_run}``; ``pushed`` is ``False`` (dry-run)
+    when no GitHub token is configured, so the pipeline works fully offline.
+    """
+    repo_dir = Path(repo_dir)
+    if not (repo_dir / ".git").exists():
+        return {"branch": branch, "commit": "", "pushed": False, "error": "not a git repository"}
+
+    env = _identity_env()
+    code, out = _run(["git", "checkout", "-B", branch], cwd=repo_dir, env=env)
+    if code != 0:
+        return {"branch": branch, "commit": "", "pushed": False, "error": out.strip()[:200]}
+
+    if diff and not apply_patch(repo_dir, diff):
+        return {"branch": branch, "commit": "", "pushed": False, "error": "patch did not apply"}
+
+    _run(["git", "add", "-A"], cwd=repo_dir, env=env)
+    code, out = _run(["git", "commit", "-m", message or "fix: reproduce scenario"], cwd=repo_dir, env=env)
+    commit = _rev_parse(repo_dir)
+    if code != 0:
+        return {"branch": branch, "commit": commit, "pushed": False, "error": out.strip()[:200]}
+
+    url = _token_url(repo)
+    pushed = False
+    if url:
+        code, _ = _run(["git", "push", "-u", url, f"{branch}:{branch}"], cwd=repo_dir, env=env)
+        pushed = code == 0
+    return {"branch": branch, "commit": commit, "pushed": pushed, "dry_run": not url}

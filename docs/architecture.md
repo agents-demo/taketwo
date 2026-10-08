@@ -76,7 +76,7 @@ analysis/
 ├── agent_reply.py         # run an agent + parse its strict JSON (understand, repair)
 ├── media/                 # frames, cursor, ocr, clips
 ├── browser/               # Playwright session (open, act, console, snapshot, record)
-├── forge/                 # repo + GitHub (clone, search, blame, open_issue, open_pr)
+├── forge/                 # repo + GitHub (clone, search, blame, publish_branch, open_issue, open_pr)
 ├── stages/
 │   ├── understand/        # recording -> timeline + failure hypothesis
 │   ├── reproduce/         # timeline  -> reproduced run + evidence + before clip

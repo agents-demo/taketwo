@@ -64,6 +64,35 @@ def test_understand_uses_the_agent_when_present(tmp_path, monkeypatch):
     assert timeline["steps"][0]["target"] == "#go"
 
 
+def test_forge_publish_branch_commits_and_dry_runs(tmp_path, monkeypatch):
+    import subprocess
+
+    from taketwo.analysis.forge import repo as forge_repo
+
+    monkeypatch.setattr("taketwo.analysis.forge.auth.token", lambda: "")  # force dry-run, never push in tests
+
+    work = tmp_path / "r"
+    work.mkdir()
+
+    def git(*args):
+        subprocess.run(["git", *args], cwd=work, capture_output=True, text=True, check=True)
+
+    git("init")
+    (work / "f.txt").write_text("old\n", encoding="utf-8")
+    git("add", "-A")
+    git("commit", "-m", "init")
+
+    diff = "--- a/f.txt\n+++ b/f.txt\n@@ -1 +1 @@\n-old\n+new\n"
+    out = forge_repo.publish_branch(work, branch="taketwo/fix", diff=diff, message="fix: scenario", repo="")
+
+    assert out["branch"] == "taketwo/fix"
+    assert out["commit"]
+    assert out["pushed"] is False and out["dry_run"] is True
+    assert (work / "f.txt").read_text(encoding="utf-8") == "new\n"
+    branch = subprocess.run(["git", "rev-parse", "--abbrev-ref", "HEAD"], cwd=work, capture_output=True, text=True)
+    assert branch.stdout.strip() == "taketwo/fix"
+
+
 def test_deterministic_pipeline_runs_offline(tmp_path):
     video = tmp_path / "bug.mov"
     video.write_bytes(b"not a real recording")
