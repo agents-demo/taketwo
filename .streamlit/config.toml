@@ -1,62 +1,65 @@
+# TakeTwo — an agentic console for "video in, proof out". Dark-first, violet accent.
+
 [theme]
-base = "light"
+base = "dark"
 font = "'Inter':https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+headingFont = "'Space Grotesk':https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&display=swap"
 codeFont = "'JetBrains Mono':https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap"
-codeFontSize = "0.875rem"
-baseFontSize = 14
+codeFontSize = "0.85rem"
+baseFontSize = 15
 baseFontWeight = 400
-headingFontSizes = ["34px", "26px", "20px", "17px", "15px", "13px"]
-headingFontWeights = [600, 600, 600, 600, 600, 600]
-baseRadius = "8px"
-buttonRadius = "8px"
+headingFontSizes = ["40px", "30px", "23px", "19px", "16px", "14px"]
+headingFontWeights = [700, 700, 600, 600, 600, 600]
+baseRadius = "12px"
+buttonRadius = "10px"
 showWidgetBorder = true
-showSidebarBorder = true
+showSidebarBorder = false
 linkUnderline = false
-chartCategoricalColors = ["#3B82F6", "#22C55E", "#8B5CF6", "#F97316", "#EF4444", "#EAB308", "#71717A"]
-grayColor = "#71717A"
-blueColor = "#3B82F6"
-greenColor = "#22C55E"
-redColor = "#EF4444"
-yellowColor = "#EAB308"
-orangeColor = "#F97316"
-violetColor = "#8B5CF6"
-
-[theme.light]
-primaryColor = "#18181B"
-backgroundColor = "#FFFFFF"
-secondaryBackgroundColor = "#FAFAFA"
-codeBackgroundColor = "#F4F4F5"
-textColor = "#09090B"
-linkColor = "#18181B"
-borderColor = "#E4E4E7"
-codeTextColor = "#18181B"
-dataframeBorderColor = "#E4E4E7"
-dataframeHeaderBackgroundColor = "#FAFAFA"
-
-[theme.light.sidebar]
-backgroundColor = "#FAFAFA"
-secondaryBackgroundColor = "#F4F4F5"
-codeBackgroundColor = "#E4E4E7"
-textColor = "#09090B"
-borderColor = "#E4E4E7"
-primaryColor = "#18181B"
+chartCategoricalColors = ["#7C3AED", "#34D399", "#60A5FA", "#FB7185", "#FBBF24", "#A78BFA", "#9CA3AF"]
+grayColor = "#9CA3AF"
+blueColor = "#60A5FA"
+greenColor = "#34D399"
+redColor = "#FB7185"
+yellowColor = "#FBBF24"
+orangeColor = "#FB923C"
+violetColor = "#A78BFA"
 
 [theme.dark]
-primaryColor = "#6366F1"
-backgroundColor = "#09090B"
-secondaryBackgroundColor = "#18181B"
-codeBackgroundColor = "#18181B"
-textColor = "#FAFAFA"
-linkColor = "#A5B4FC"
-borderColor = "#27272A"
-codeTextColor = "#E4E4E7"
-dataframeBorderColor = "#27272A"
-dataframeHeaderBackgroundColor = "#18181B"
+primaryColor = "#7C3AED"
+backgroundColor = "#0B0B0F"
+secondaryBackgroundColor = "#15151D"
+codeBackgroundColor = "#15151D"
+textColor = "#ECECF2"
+linkColor = "#A78BFA"
+borderColor = "#26262F"
+codeTextColor = "#E6E6EE"
+dataframeBorderColor = "#26262F"
+dataframeHeaderBackgroundColor = "#15151D"
 
 [theme.dark.sidebar]
-backgroundColor = "#0C0C0E"
-secondaryBackgroundColor = "#18181B"
-codeBackgroundColor = "#18181B"
-textColor = "#FAFAFA"
-borderColor = "#27272A"
-primaryColor = "#6366F1"
+backgroundColor = "#0E0E14"
+secondaryBackgroundColor = "#15151D"
+codeBackgroundColor = "#15151D"
+textColor = "#ECECF2"
+borderColor = "#26262F"
+primaryColor = "#7C3AED"
+
+[theme.light]
+primaryColor = "#6D28D9"
+backgroundColor = "#FBFBFD"
+secondaryBackgroundColor = "#F4F4F8"
+codeBackgroundColor = "#F4F4F8"
+textColor = "#12121A"
+linkColor = "#6D28D9"
+borderColor = "#E6E6EE"
+codeTextColor = "#12121A"
+dataframeBorderColor = "#E6E6EE"
+dataframeHeaderBackgroundColor = "#F4F4F8"
+
+[theme.light.sidebar]
+backgroundColor = "#F4F4F8"
+secondaryBackgroundColor = "#ECECF2"
+codeBackgroundColor = "#ECECF2"
+textColor = "#12121A"
+borderColor = "#E6E6EE"
+primaryColor = "#6D28D9"

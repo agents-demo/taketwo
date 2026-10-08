@@ -1,0 +1,14 @@
+<svg width="220" height="48" viewBox="0 0 220 48" xmlns="http://www.w3.org/2000/svg" fill="none">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#7C3AED"/>
+      <stop offset="1" stop-color="#A78BFA"/>
+    </linearGradient>
+  </defs>
+  <g>
+    <rect x="2" y="8" width="32" height="32" rx="10" fill="url(#g)"/>
+    <path d="M16 17.5 26 24l-10 6.5z" fill="#ffffff"/>
+    <circle cx="30" cy="18" r="3" fill="#34D399"/>
+  </g>
+  <text x="46" y="32" font-family="'Space Grotesk','Segoe UI',sans-serif" font-size="24" font-weight="700" fill="#ECECF2">TakeTwo</text>
+</svg>

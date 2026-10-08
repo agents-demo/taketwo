@@ -9,7 +9,6 @@ and records the **before** clip. When no browser is available it degrades to an
 
 from __future__ import annotations
 
-import asyncio
 import json
 from pathlib import Path
 from typing import Any
@@ -72,22 +71,24 @@ async def reproduce(
 
     tick(progress, "reproducing in browser", 45)
 
+    # Playwright is thread-affine: the browser must be opened and driven on the same
+    # thread (this event-loop thread). Do not offload these calls to a worker thread.
     session = getattr(run_session, "browser", None)
     if session is None:
-        session = await asyncio.to_thread(browser.open_session, app_url)
+        session = await browser.open_session(app_url)
         if run_session is not None:
             run_session.browser = session
 
     steps = timeline.get("steps", [])
     if session.live:
-        steps = await _ground(steps, session.outline(), run_session)
+        steps = await _ground(steps, await session.outline(), run_session)
 
     before_console = len(session.console)
-    records = replay_steps.replay(session, steps)
+    records = await replay_steps.replay(session, steps)
     new_console = session.console[before_console:]
     signal = replay_steps.failure_signal(new_console)
 
-    before_clip = session.snapshot(runtime.ARTIFACTS_DIR / job / "before.png") if session.live else None
+    before_clip = await session.snapshot(runtime.ARTIFACTS_DIR / job / "before.png") if session.live else None
 
     if signal:
         verdict = "reproduced"

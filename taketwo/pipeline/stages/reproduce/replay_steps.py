@@ -8,11 +8,11 @@ from taketwo import config
 from taketwo.pipeline.stages.reproduce.browser import BrowserSession
 
 
-def replay(session: BrowserSession, steps: list[dict[str, Any]]) -> list[dict[str, Any]]:
+async def replay(session: BrowserSession, steps: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """Perform each step in order (capped) and return the step records."""
     records: list[dict[str, Any]] = []
     for step in steps[: config.max_steps()]:
-        result = session.act(step.get("action", "wait"), step.get("target", ""), step.get("value", ""))
+        result = await session.act(step.get("action", "wait"), step.get("target", ""), step.get("value", ""))
         records.append(
             {
                 "index": step.get("index", len(records)),

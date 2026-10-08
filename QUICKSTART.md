@@ -54,4 +54,11 @@ No recording handy? Make a synthetic clip and serve the sample buggy app to repr
 & $PY scripts\evaluate_repros.py   # quality gate against tests/eval/expected.json
 ```
 
+## 4. Live checks (need Playwright: `python -m playwright install chromium`)
+
+```powershell
+& $PY scripts\dogfood.py     # reproduce a real browser bug + before/after proof video
+& $PY scripts\benchmark.py   # reproduce-rate over seeded bugs
+```
+
 See [README.md](README.md) and [docs/architecture.md](docs/architecture.md).
