@@ -155,7 +155,8 @@ def media(job: str, name: str) -> FileResponse:
     path = runtime.ARTIFACTS_DIR / job / name
     if not path.exists():
         raise HTTPException(status_code=404, detail="not found")
-    return FileResponse(path)
+    # Artifacts are regenerated in place; never let the browser cache a stale copy.
+    return FileResponse(path, headers={"Cache-Control": "no-store, max-age=0"})
 
 
 @app.post("/webhook")
