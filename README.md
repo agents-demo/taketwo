@@ -1,0 +1,31 @@
+# TakeTwo
+
+Turn a bug report that is just a **shaky screen recording** and the words *"it's broken"* into a
+reproduction, a fix, and a **before/after proof video**. Built on [openjiuwen](https://github.com/openJiuwen-ai/agent-core).
+
+- **In:** a screen recording (or screenshots) and the repo.
+- **Out:** an issue with reproduction steps, a **draft** PR, and a before/after video. A human
+  maintainer approves the merge.
+
+## What it does
+
+1. **Understand.** Extract frames, detect the cursor and clicks, OCR the visible labels, and infer
+   the ordered steps the reporter took and where it went wrong.
+2. **Reproduce.** Replay those steps in a real sandboxed browser, capturing the console/network at
+   the failure, and record the **before** clip.
+3. **Repair.** Localize the cause in the repo and propose a minimal patch plus a regression test.
+4. **Prove.** Re-run the same steps on the patched branch, record the **after** clip, and stitch a
+   labelled before/after video.
+5. **Deliver.** Open an issue (steps + evidence) and a draft PR (diff + test + proof).
+
+See [QUICKSTART.md](QUICKSTART.md) to run it and [docs/architecture.md](docs/architecture.md) for the
+design.
+
+## Layout
+
+```
+interfaces -> analysis -> backend -> domain      (storage / reporting / config are neutral leaves)
+```
+
+`tests/unit/test_architecture.py` enforces the direction. `backend/` is the only place that imports
+openjiuwen. See the architecture doc for the full package map.

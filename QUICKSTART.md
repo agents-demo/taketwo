@@ -1,0 +1,53 @@
+# Quick start
+
+Turn a screen recording of a bug into a reproduction, a fix, and a before/after proof video.
+
+Run every command **from the `taketwo` folder**. On this machine `pip`/`python` are not on PATH, so
+use the repo venv's python (or just `.\run.ps1`):
+
+```powershell
+$PY = "C:\Workspace\openjiuwen\jiuwenswarm\.venv\Scripts\python.exe"
+```
+
+## 1. Install (once)
+
+```powershell
+& $PY -m pip install -r requirements.txt
+& $PY -m playwright install chromium      # for real browser reproduction
+```
+
+`.env` is filled in with the model endpoint. If you reuse this elsewhere, copy `.env.example`.
+
+## 2. Run
+
+**Web UI (recommended)** — opens http://localhost:8501:
+
+```powershell
+& $PY -m streamlit run taketwo/interfaces/web/ui.py
+```
+
+**CLI** — record a bug, then reproduce + fix it:
+
+```powershell
+# record a bug from a video against a repo/app
+& $PY -m taketwo.interfaces.cli record runtime/data/sample_bug.mov --repo owner/name --app http://localhost:3000
+
+# past runs
+& $PY -m taketwo.interfaces.cli history
+```
+
+No recording handy? Make the synthetic sample bug app + clip:
+
+```powershell
+& $PY scripts\make_sample_bug.py
+```
+
+## 3. Offline checks (no model calls)
+
+```powershell
+& $PY -m pytest -q                 # architecture + pipeline tests
+& $PY -m ruff check .
+& $PY scripts\evaluate_repros.py   # quality gate against tests/eval/expected.json
+```
+
+See [README.md](README.md) and [docs/architecture.md](docs/architecture.md).

@@ -1,0 +1,18 @@
+# Everything the demo uses: video, OCR, browser, forge (GitHub), API, MCP, web, tests.
+# The core CLI only needs: python-dotenv numpy Pillow imageio imageio-ffmpeg
+# everything else degrades gracefully when missing.
+python-dotenv
+numpy
+Pillow
+imageio
+imageio-ffmpeg
+opencv-python
+pytesseract
+playwright
+PyGithub
+fastapi
+uvicorn
+mcp
+streamlit
+pytest
+ruff
