@@ -11,6 +11,8 @@ from taketwo.analysis.forge.repo import (
     ensure_repo,
     publish_branch,
     read_file,
+    run_tests,
+    run_tests_on_patch,
     search,
 )
 
@@ -22,5 +24,7 @@ __all__ = [
     "open_pr",
     "publish_branch",
     "read_file",
+    "run_tests",
+    "run_tests_on_patch",
     "search",
 ]

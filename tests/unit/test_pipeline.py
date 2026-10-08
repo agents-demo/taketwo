@@ -64,6 +64,20 @@ def test_understand_uses_the_agent_when_present(tmp_path, monkeypatch):
     assert timeline["steps"][0]["target"] == "#go"
 
 
+def test_forge_run_tests_reports_pass_and_fail(tmp_path):
+    import sys
+
+    from taketwo.analysis.forge import repo as forge_repo
+
+    ok = forge_repo.run_tests(tmp_path, f'"{sys.executable}" -c "import sys; sys.exit(0)"')
+    bad = forge_repo.run_tests(tmp_path, f'"{sys.executable}" -c "import sys; sys.exit(1)"')
+    skipped = forge_repo.run_tests(tmp_path, "")
+
+    assert ok["ran"] and ok["passed"]
+    assert bad["ran"] and not bad["passed"]
+    assert skipped["ran"] is False
+
+
 def test_forge_publish_branch_commits_and_dry_runs(tmp_path, monkeypatch):
     import subprocess
 

@@ -90,6 +90,34 @@ def apply_patch(repo_dir: str | Path, diff: str) -> bool:
     return code == 0
 
 
+def run_tests(repo_dir: str | Path, command: str, timeout: int = 600) -> dict:
+    """Run ``command`` in ``repo_dir``; returns ``{ran, passed, output}``."""
+    if not command:
+        return {"ran": False, "passed": False, "output": ""}
+    try:
+        proc = subprocess.run(
+            command, cwd=str(repo_dir), shell=True, capture_output=True, text=True, timeout=timeout
+        )
+        return {"ran": True, "passed": proc.returncode == 0, "output": (proc.stdout or "") + (proc.stderr or "")}
+    except Exception as exc:
+        return {"ran": False, "passed": False, "output": str(exc)}
+
+
+def run_tests_on_patch(repo: str, base_branch: str, diff: str, command: str) -> dict:
+    """Check out the base, apply ``diff``, run ``command``, then leave the tree clean."""
+    if not repo or not command:
+        return {"ran": False, "passed": False, "output": ""}
+    try:
+        repo_dir = ensure_repo(repo, base_branch)
+        _run(["git", "checkout", "-f", base_branch], cwd=repo_dir)
+        _run(["git", "reset", "--hard", "HEAD"], cwd=repo_dir)
+        if diff and not apply_patch(repo_dir, diff):
+            return {"ran": False, "passed": False, "output": "patch did not apply"}
+        return run_tests(repo_dir, command)
+    except Exception as exc:
+        return {"ran": False, "passed": False, "output": str(exc)}
+
+
 def _rev_parse(repo_dir: str | Path) -> str:
     code, out = _run(["git", "rev-parse", "--short", "HEAD"], cwd=Path(repo_dir))
     return out.strip().splitlines()[0] if code == 0 and out.strip() else ""

@@ -63,6 +63,11 @@ def proof_width() -> int:
     return int(os.getenv("PROOF_WIDTH", "720"))
 
 
+def test_command() -> str:
+    """Command run in the patched repo to verify the fix (``TEST_COMMAND``; empty = skip)."""
+    return os.getenv("TEST_COMMAND", "").strip()
+
+
 def rails() -> list[str]:
     """Names of the backend rails to enable on agents (``RAILS`` env)."""
     raw = os.getenv("RAILS", "true").strip().lower()

@@ -84,7 +84,15 @@ class Strategy:
         params.fix = fix
 
         after_clip = self._snapshot_after(params)
-        proof = prove(reproduction, fix, params.job, after_clip=after_clip, progress=progress)
+        proof = prove(
+            reproduction,
+            fix,
+            params.job,
+            repo=params.repo,
+            base_branch=params.base_branch,
+            after_clip=after_clip,
+            progress=progress,
+        )
         store.save_proof(params.job, proof)
         params.proof = proof
 
