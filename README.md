@@ -21,6 +21,14 @@ reproduction, a fix, and a **before/after proof video**. Built on [openjiuwen](h
 See [QUICKSTART.md](QUICKSTART.md) to run it and [docs/architecture.md](docs/architecture.md) for the
 design.
 
+## Two front-ends
+
+Same engine, two surfaces:
+
+- **Reels** — a mobile-first, swipeable **proof feed** (consumer-facing). Serve it with the API and
+  open `http://localhost:8000/app/`.
+- **Console** — a Streamlit dashboard for maintainers/operators (submit, review, scoreboard).
+
 ## Layout
 
 ```

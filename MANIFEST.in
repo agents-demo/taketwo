@@ -1,0 +1,2 @@
+recursive-include taketwo/interfaces/reels *.html *.css *.js
+recursive-include assets *.svg

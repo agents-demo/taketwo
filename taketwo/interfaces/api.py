@@ -1,18 +1,26 @@
-"""HTTP API: submit a recording, track the job, and receive verified webhooks.
+"""HTTP API: submit recordings, track jobs, read runs/scoreboard, serve media + the web app.
 
     uvicorn taketwo.interfaces.api:app
+    # then open http://localhost:8000/app/
 """
 
 from __future__ import annotations
 
+from pathlib import Path
+
 from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import FileResponse, RedirectResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from taketwo.bootstrap import setup
 from taketwo.pipeline.forge import auth as forge_auth
 from taketwo.pipeline.forge import verify_signature
+from taketwo.storage import runtime
 
 app = FastAPI(title="TakeTwo")
+
+_WEB_APP = Path(__file__).resolve().parent / "reels"  # the Reels SPA (static assets)
 
 
 class ReplayRequest(BaseModel):
@@ -80,6 +88,67 @@ def job_status(job_id: str) -> dict:
     return status
 
 
+@app.get("/runs")
+def runs() -> dict:
+    from taketwo.interfaces import runs as runs_mod
+
+    return {"runs": runs_mod.list_runs()}
+
+
+@app.get("/runs/{job}")
+def run(job: str) -> dict:
+    from taketwo.interfaces import runs as runs_mod
+
+    found = runs_mod.get_run(job)
+    if found is None:
+        raise HTTPException(status_code=404, detail="unknown run")
+    return found
+
+
+@app.get("/scoreboard")
+def scoreboard() -> dict:
+    from taketwo.interfaces import runs as runs_mod
+
+    return runs_mod.scoreboard()
+
+
+@app.get("/runs/{job}/ask")
+def ask(job: str, q: str) -> dict:
+    from taketwo.interfaces import runs as runs_mod
+    from taketwo.interfaces import service
+
+    if not q.strip():
+        raise HTTPException(status_code=400, detail="empty question")
+    if runs_mod.get_run(job) is None:
+        raise HTTPException(status_code=404, detail="unknown run")
+    setup()
+    return {"answer": service.ask_sync(job, q)}
+
+
+@app.post("/runs/{job}/review/{decision}")
+def review(job: str, decision: str, note: str = "") -> dict:
+    from taketwo.interfaces import runs as runs_mod
+    from taketwo.storage import store
+
+    if decision not in ("approved", "changes_requested", "pending"):
+        raise HTTPException(status_code=400, detail="invalid decision")
+    if runs_mod.get_run(job) is None:
+        raise HTTPException(status_code=404, detail="unknown run")
+    store.set_review(job, decision, note, actor="web")
+    return store.get_review(job)
+
+
+@app.get("/media/{job}/{name}")
+def media(job: str, name: str) -> FileResponse:
+    """Serve a run's proof artifact (video/still); names are validated (no traversal)."""
+    if "/" in name or "\\" in name or name in ("", ".", ".."):
+        raise HTTPException(status_code=400, detail="invalid name")
+    path = runtime.ARTIFACTS_DIR / job / name
+    if not path.exists():
+        raise HTTPException(status_code=404, detail="not found")
+    return FileResponse(path)
+
+
 @app.post("/webhook")
 async def webhook(request: Request) -> dict:
     """GitHub webhook: verify the HMAC signature, then accept (or enqueue) the event."""
@@ -103,3 +172,11 @@ async def webhook(request: Request) -> dict:
         job_id = get_runner().submit(video_path=video_path, repo=payload.get("repo", ""))
         return {"accepted": True, "job_id": job_id}
     return {"accepted": True, "event": payload.get("action", "unknown")}
+
+
+if _WEB_APP.exists():
+    app.mount("/app", StaticFiles(directory=str(_WEB_APP), html=True), name="app")
+
+    @app.get("/")
+    def index() -> RedirectResponse:
+        return RedirectResponse("/app/")

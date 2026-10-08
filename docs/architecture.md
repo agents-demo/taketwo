@@ -108,9 +108,16 @@ recording ─▶ pipeline.stages.understand  (frames + cursor + contact sheet)  
           ─▶ pipeline.stages.deliver     (forge + reporting)                  ─▶ issue + draft PR
 ```
 
-## The web console
+## Interfaces: two front-ends
 
-`interfaces/web/` is a Streamlit app (mobile-friendly, light/dark):
+Both are inbound adapters over the same engine; keep them independent.
+
+**Reels** (`interfaces/reels/`) — a mobile-first, swipeable proof feed (vanilla HTML/CSS/JS, no
+build step), served by the API at `/app/` and reading `/scoreboard`, `/runs`, `/jobs`, `/media`.
+This is the consumer surface: one clip per screen, video as the hero, dev concepts hidden.
+
+**Console** (`interfaces/web/`) — a Streamlit app for maintainers/operators:
+
 
 - `ui.py` — entry point: page config, logo, `st.navigation`.
 - `app_pages/pages.py` — the `st.Page` registry (single source of truth for nav + links).

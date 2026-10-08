@@ -59,11 +59,13 @@ interfaces  ->  pipeline  ->  backend  ->  domain
 - New **config knob**: application behaviour in `config.py`; endpoint/credentials in
   `backend/settings.py`.
 
-## Web UI
+## Front-ends (both under `interfaces/`)
 
-`interfaces/web/` is a Streamlit app: `ui.py` (entry) → `app_pages/pages.py` (registry) →
-`app_pages/{runs,detail,scoreboard}.py`, with shared helpers in `common.py` and the two custom
-components (`compare.py` compare slider, cards in `common.py`). Theme lives in `.streamlit/config.toml`.
+- **`interfaces/reels/`** — the consumer proof feed (vanilla HTML/CSS/JS, no build). Served by the API
+  at `/app/`; reads `/scoreboard`, `/runs`, `/jobs`, `/media`. Edit `index.html` / `styles.css` / `app.js`.
+- **`interfaces/web/`** — the Streamlit console: `ui.py` (entry) → `app_pages/pages.py` (registry) →
+  `app_pages/{runs,detail,scoreboard}.py`, shared helpers in `common.py`, components in `compare.py`.
+  Theme lives in `.streamlit/config.toml`.
 
 ## Commits & PRs
 

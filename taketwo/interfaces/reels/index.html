@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#0B0B0F" />
+    <title>TakeTwo — video in, proof out</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div id="app">
+      <header class="topbar">
+        <div class="brand"><span class="mark">▶</span> TakeTwo</div>
+        <button class="ghost" id="refresh" title="Refresh">↻</button>
+      </header>
+
+      <main id="feed" class="feed" aria-live="polite"></main>
+
+      <section id="score" class="score" hidden></section>
+
+      <nav class="tabbar">
+        <button class="tab active" data-tab="feed"><span>▶</span>Feed</button>
+        <button class="tab" data-tab="score"><span>🏆</span>Score</button>
+        <button class="tab" data-tab="new"><span>＋</span>New</button>
+      </nav>
+
+      <div id="scrim" class="scrim" hidden></div>
+      <div id="sheet" class="sheet" hidden></div>
+      <div id="toast" class="toast" hidden></div>
+    </div>
+    <script src="app.js"></script>
+  </body>
+</html>
