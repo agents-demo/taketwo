@@ -90,6 +90,12 @@ def apply_patch(repo_dir: str | Path, diff: str) -> bool:
     return code == 0
 
 
+def reset(repo_dir: str | Path, base_branch: str = "main") -> None:
+    """Force the checkout back to a clean ``base_branch`` (best-effort)."""
+    _run(["git", "checkout", "-f", base_branch], cwd=Path(repo_dir))
+    _run(["git", "reset", "--hard", "HEAD"], cwd=Path(repo_dir))
+
+
 def run_tests(repo_dir: str | Path, command: str, timeout: int = 600) -> dict:
     """Run ``command`` in ``repo_dir``; returns ``{ran, passed, output}``."""
     if not command:

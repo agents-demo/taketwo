@@ -64,6 +64,21 @@ def test_command() -> str:
     return os.getenv("TEST_COMMAND", "").strip()
 
 
+# --- app under test -------------------------------------------------------- #
+def app_start_command() -> str:
+    """Command that serves the app from a repo checkout (``APP_START_COMMAND``).
+
+    Empty means the app is expected to be running already at ``app_url`` and the
+    patched-app re-run is skipped.
+    """
+    return os.getenv("APP_START_COMMAND", "").strip()
+
+
+def patched_app_url() -> str:
+    """Where the patched app is served for the proof re-run (``PATCHED_APP_URL``)."""
+    return os.getenv("PATCHED_APP_URL", "http://localhost:3000").strip()
+
+
 def rails() -> list[str]:
     """Names of the backend rails to enable on agents (``RAILS`` env)."""
     raw = os.getenv("RAILS", "true").strip().lower()

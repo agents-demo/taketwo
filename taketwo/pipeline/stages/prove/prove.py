@@ -16,9 +16,9 @@ from typing import Any
 from taketwo import config
 from taketwo.domain import compare as compare_mod
 from taketwo.domain import verify as verify_mod
-from taketwo.pipeline.forge import run_tests_on_patch
+from taketwo.pipeline.forge import apply_patch, ensure_repo, reset, run_tests_on_patch
 from taketwo.pipeline.progress import Progress, tick
-from taketwo.pipeline.stages.prove import stitch
+from taketwo.pipeline.stages.prove import appserver, stitch
 from taketwo.storage import runtime
 
 
@@ -36,6 +36,32 @@ def _rerun(session: Any, reproduction: dict[str, Any]) -> str:
     for step in reproduction.get("steps", []):
         session.act(step.get("action", "wait"), step.get("target", ""), step.get("value", ""))
     return _signal(session.console[start:])
+
+
+def _patched_rerun(reproduction: dict, fix: dict, repo: str, base_branch: str, session: Any) -> str:
+    """Serve the fix from a fresh checkout, point the browser there, and re-run.
+
+    Without ``APP_START_COMMAND`` it re-runs against the current session (the app is
+    assumed to pick up the change). The checkout is always restored afterwards.
+    """
+    app = None
+    command = config.app_start_command()
+    try:
+        if repo and command:
+            repo_dir = ensure_repo(repo, base_branch)
+            reset(repo_dir, base_branch)
+            if apply_patch(repo_dir, fix.get("diff", "")):
+                app = appserver.start(command, repo_dir, config.patched_app_url())
+        if app is not None:
+            session.navigate(app.url)
+        return _rerun(session, reproduction)
+    finally:
+        appserver.stop(app)
+        if repo and command:
+            try:
+                reset(ensure_repo(repo, base_branch), base_branch)
+            except Exception:
+                pass
 
 
 def _run_result(job: str, fix: dict, repo: str, base_branch: str, replayed: str | None) -> dict[str, Any]:
@@ -81,7 +107,7 @@ async def prove(
     after_clip = ""
     replayed: str | None = None
     if session is not None and getattr(session, "live", False):
-        replayed = _rerun(session, reproduction)
+        replayed = _patched_rerun(reproduction, fix, repo, base_branch, session)
         after_clip = session.snapshot(proof_dir / "after.png") or ""
     elif (proof_dir / "after.png").exists():
         after_clip = str(proof_dir / "after.png")

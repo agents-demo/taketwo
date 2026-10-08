@@ -17,6 +17,24 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Any
 
+# Environment variables forwarded into the sandbox container (``-e KEY``).
+FORWARD_ENV = (
+    "API_KEY",
+    "API_BASE",
+    "MODEL_NAME",
+    "MODEL_PROVIDER",
+    "VISION_MODEL_NAME",
+    "LLM_TEMPERATURE",
+    "VISION_TEMPERATURE",
+    "LLM_TIMEOUT",
+    "LLM_RETRIES",
+    "GITHUB_TOKEN",
+    "GITHUB_WEBHOOK_SECRET",
+    "TEST_COMMAND",
+    "APP_START_COMMAND",
+    "PATCHED_APP_URL",
+)
+
 
 class Runner:
     """A small job queue that runs workers in a bounded thread pool of subprocesses."""
@@ -91,12 +109,15 @@ class Runner:
             return [sys.executable, *worker]
 
         cwd = str(Path.cwd())
+        env_args: list[str] = []
+        for key in FORWARD_ENV:
+            env_args += ["-e", key]
         return [
             "docker", "run", "--rm",
             "--cpus", os.getenv("SANDBOX_CPU", "1"),
             "--memory", os.getenv("SANDBOX_MEMORY", "1g"),
             "-v", f"{cwd}:{cwd}", "-w", cwd,
-            "-e", "API_KEY", "-e", "API_BASE", "-e", "MODEL_NAME", "-e", "VISION_MODEL_NAME",
+            *env_args,
             image, "python", *worker,
         ]
 

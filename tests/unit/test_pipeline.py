@@ -24,6 +24,21 @@ def test_timeline_normalize_coerces_actions():
     assert "1." in timeline_mod.describe(tl)
 
 
+def test_evaluate_scores_grounded_repro_high():
+    repro = repro_mod.normalize(
+        {
+            "verdict": "reproduced",
+            "evidence": {"summary": "TypeError: x is null"},
+            "steps": [
+                {"action": "click", "target": "text=Pick a date", "confidence": 0.8},
+                {"action": "click", "target": "button=15", "confidence": 0.7},
+            ],
+        }
+    )
+    score = evaluate.score(repro)
+    assert score["grounded"] is True and score["score"] >= 0.5
+
+
 def test_verify_requires_red_then_green():
     repro = repro_mod.normalize(
         {"verdict": "reproduced", "evidence": {"summary": "TypeError: x is null"}, "steps": [{"action": "click"}]}

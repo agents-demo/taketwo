@@ -75,6 +75,16 @@ class BrowserSession:
         except Exception as exc:
             return StepResult(action, target, ok=False, detail=str(exc))
 
+    def navigate(self, url: str) -> bool:
+        """Point the open page at ``url`` (used by the prove re-run on the patched app)."""
+        if not self.live or self._page is None or not url:
+            return False
+        try:
+            self._page.goto(url, wait_until="domcontentloaded", timeout=int(config.step_timeout() * 1000))
+            return True
+        except Exception:
+            return False
+
     def outline(self, limit: int = 6000) -> str:
         """A compact accessibility outline of the current page (empty when not live)."""
         if not self.live or self._page is None:
