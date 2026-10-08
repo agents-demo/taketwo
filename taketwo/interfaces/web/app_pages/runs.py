@@ -2,14 +2,12 @@
 
 from __future__ import annotations
 
-from pathlib import Path
-
 import streamlit as st
 
 from taketwo.interfaces.runner import get_runner
 from taketwo.interfaces.web import common
 from taketwo.interfaces.web.app_pages import detail
-from taketwo.storage import runtime, store
+from taketwo.storage import runtime
 
 
 @st.dialog("Run review", width="large", position="right")
@@ -101,22 +99,26 @@ def _stats(all_rows: list[dict]) -> None:
     cols[3].metric("Approved", f"{approved}")
 
 
-def _latest_proof(all_rows: list[dict]) -> None:
+def _latest_run(all_rows: list[dict]) -> None:
+    """A summary card for the newest run, with a jump to its full review."""
     if not all_rows:
         return
     row = all_rows[0]
     job = row["run"]
-    repro, proof = store.get_repro(job), store.get_proof(job)
-    video, before, after = proof.get("proof_video"), repro.get("before_clip"), proof.get("after_clip")
-    has = (video and Path(video).exists()) or (before and after and Path(before).exists() and Path(after).exists())
-    if not has:
-        return
+    from taketwo.interfaces.web.app_pages import pages
+
     with st.container(border=True):
-        head = st.columns([5, 1])
-        head[0].subheader("Latest proof", icon=":material/play_circle:")
-        head[0].caption(f"{job} · {row['verdict']} · {row['when']}")
-        head[1].badge("Verified" if row["verified"] else "Unverified", color="green" if row["verified"] else "gray")
-        common.proof_hero(repro, proof, job)
+        st.subheader("Latest run", icon=":material/bolt:")
+        st.caption(f"`{job}` · {row['when']}")
+        badges = st.container(horizontal=True)
+        badges.badge(row["verdict"].replace("_", " "), color="green" if row["verdict"] == "reproduced" else "gray")
+        badges.badge("verified" if row["verified"] else "unverified", color="green" if row["verified"] else "gray")
+        badges.badge("grounded" if row["grounded"] else "ungrounded", color="blue" if row["grounded"] else "gray")
+        metrics = st.columns(3)
+        metrics[0].metric("Score", f"{row['score']:.2f}")
+        metrics[1].metric("Review", row["review"])
+        metrics[2].metric("Verdict", row["verdict"])
+        st.page_link(pages.DETAIL, label="Open the full review", icon=":material/fact_check:")
 
 
 def page() -> None:
@@ -126,7 +128,7 @@ def page() -> None:
     st.caption(common.TAGLINE)
 
     all_rows = common.rows(None)
-    _latest_proof(all_rows)
+    _latest_run(all_rows)
 
     _new_run()
     live_job()

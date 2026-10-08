@@ -117,4 +117,8 @@ def before_after(before: str, after: str, *, height: int = 460, key: str | None 
     """The drag-to-compare hero (renders nothing if either image is missing)."""
     if not (before and after and Path(before).exists() and Path(after).exists()):
         return
-    _HERO(data={"before": _data_url(before), "after": _data_url(after)}, width="stretch", height=height, key=key)
+    try:
+        _HERO(data={"before": _data_url(before), "after": _data_url(after)}, width="stretch", height=height, key=key)
+    except Exception:
+        # The component registers at import; if unavailable, fall back to static stills.
+        st.image([before, after], width="stretch", alt=["Before the fix", "After the fix"])

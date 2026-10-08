@@ -194,6 +194,8 @@ def test_forge_publish_branch_commits_and_dry_runs(tmp_path, monkeypatch):
 
 
 def test_deterministic_pipeline_runs_offline(tmp_path):
+    from taketwo.storage import store
+
     video = tmp_path / "bug.mov"
     video.write_bytes(b"not a real recording")
     strategy = pipeline.resolve()
@@ -202,3 +204,5 @@ def test_deterministic_pipeline_runs_offline(tmp_path):
     assert outcome["job"]
     assert outcome["reproduction"]["verdict"] in repro_mod.VERDICTS
     assert "result" in outcome and "fix" in outcome and "proof" in outcome
+
+    store.delete_job(outcome["job"])  # don't pollute the runtime store used by the demo/UI

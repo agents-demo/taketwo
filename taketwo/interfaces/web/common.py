@@ -36,7 +36,7 @@ def proof_hero(repro: dict, proof: dict, job: str) -> bool:
     video = proof.get("proof_video")
     before, after = repro.get("before_clip", ""), proof.get("after_clip", "")
     if video and Path(video).exists():
-        st.video(video, autoplay=True, loop=True, muted=True, alt="The same scenario before and after the fix")
+        st.video(video, alt="The same scenario before and after the fix")
         return True
     if before and after and Path(before).exists() and Path(after).exists():
         before_after(before, after, key=f"hero_{job}")
