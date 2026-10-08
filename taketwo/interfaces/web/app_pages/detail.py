@@ -31,29 +31,64 @@ def _chat(job: str) -> None:
         st.markdown(answer)
 
 
-def _fmt_io(value: Any) -> str:
-    if value is None:
-        return ""
-    if isinstance(value, list):
-        return "\n\n".join(f"{m.get('role', '?')}: {m.get('content', '')}" for m in value if isinstance(m, dict))
-    return value if isinstance(value, str) else str(value)
-
-
-def _timeline(observability: dict) -> list[tuple]:
-    """Merge model calls and tool calls into one seq-ordered list of events."""
-    events: list[tuple] = []
+def _render_execution(observability: dict) -> None:
+    """The execution timeline: model + tool calls in order, with I/O and latency."""
+    events: list[tuple[str, Any, dict]] = []
     for call in observability.get("calls", []):
-        events.append(
-            (call.get("seq", 0), "model", f"{call.get('label')} · {call.get('model') or ''}",
-             call.get("seconds"), call.get("total_tokens"), _fmt_io(call.get("input")), call.get("output") or "")
-        )
+        events.append(("model", call.get("seq", 0), call))
     for tool in observability.get("tools", []):
-        events.append(
-            (tool.get("seq", 1000), "tool", tool.get("name") or "tool",
-             tool.get("seconds"), None, _fmt_io(tool.get("arguments")), tool.get("result") or tool.get("error") or "")
-        )
-    events.sort(key=lambda event: event[0] or 0)
-    return events
+        events.append(("tool", tool.get("seq", 1000), tool))
+    if not events:
+        return
+    events.sort(key=lambda event: event[1] or 0)
+
+    st.markdown("**Execution**")
+    st.caption("Ordered by when each model/tool call started.")
+    for kind, _seq, event in events:
+        seconds = event.get("seconds")
+        if kind == "tool":
+            title = f"Tool · {event.get('name', '')}" + (f" · {seconds}s" if seconds is not None else "")
+            with st.expander(title):
+                st.markdown("**Input — arguments passed to the tool**")
+                st.code(str(event.get("arguments") or "{}"), language="json")
+                if event.get("error"):
+                    st.error(str(event["error"]))
+                st.markdown("**Output — result the tool returned**")
+                st.code(str(event.get("result", "")), language="text")
+            continue
+
+        requested = event.get("requested") or []
+        prompt, completion = event.get("prompt_tokens"), event.get("completion_tokens")
+        title = f"↳ Model call · {event.get('model') or ''}"
+        if prompt is not None:
+            title += f" · {prompt} in / {completion or 0} out"
+        if requested:
+            title += "  →  calls " + ", ".join(str(c.get("name", "")) for c in requested)
+        if seconds is not None:
+            title += f" · {seconds}s"
+        with st.expander(title):
+            offered = event.get("tools") or []
+            if offered:
+                st.caption("Tools offered to the model: " + ", ".join(offered))
+            st.markdown("**Input — everything sent to the model**")
+            messages = event.get("input") or []
+            if not messages:
+                st.caption("Input not saved (SAVE_CALL_IO is off) or unavailable.")
+            for message in messages:
+                role = message.get("role", "")
+                content = message.get("content", "")
+                if role == "assistant" and not str(content).strip():
+                    content = "(no text — the model called a tool here)"
+                st.markdown(f"*{role}*")
+                st.code(content, language="text")
+            st.markdown("**Output — what the model produced**")
+            for call in requested:
+                st.markdown(f"↳ requested tool `{call.get('name', '')}` with:")
+                st.code(str(call.get("arguments") or "{}"), language="json")
+            if event.get("output"):
+                st.code(event["output"], language="text")
+            elif requested:
+                st.caption("No text — the model only requested tool calls on this turn.")
 
 
 def render(job: str) -> None:
@@ -176,50 +211,7 @@ def render(job: str) -> None:
             st.markdown("**Pipeline timeline**")
             st.altair_chart(chart, width="stretch")
         observability = common.read_json(summary.get("artifacts", {}).get("observability", ""))
-        calls = observability.get("calls", [])
-        if calls:
-            st.markdown("**Model calls**")
-            st.dataframe(
-                [
-                    {
-                        "call": c.get("label"),
-                        "model": c.get("model"),
-                        "prompt": c.get("prompt_tokens"),
-                        "completion": c.get("completion_tokens"),
-                        "total": c.get("total_tokens"),
-                        "seconds": c.get("seconds"),
-                    }
-                    for c in calls
-                ],
-                hide_index=True,
-                width="stretch",
-                alt="Model calls with token usage and latency",
-            )
-        tools = observability.get("tools", [])
-        if tools:
-            st.markdown("**Model & tool activity**")
-            st.dataframe(
-                [{"tool": t.get("name"), "seconds": t.get("seconds"), "arguments": t.get("arguments")} for t in tools],
-                hide_index=True,
-                width="stretch",
-                alt="Tool calls made during the run",
-            )
-        events = _timeline(observability)
-        if events:
-            st.markdown("**Timeline**")
-            for _, kind, title, seconds, tokens, input_text, output_text in events:
-                parts = [f"{kind} · {title}"]
-                if seconds is not None:
-                    parts.append(f"{seconds}s")
-                if tokens:
-                    parts.append(f"{tokens} tok")
-                with st.expander(" · ".join(parts)):
-                    if input_text:
-                        st.caption("input")
-                        st.code(input_text)
-                    if output_text:
-                        st.caption("output")
-                        st.code(output_text)
+        _render_execution(observability)
         console = repro.get("evidence", {}).get("console") or []
         if console:
             st.code("\n".join(console), language="text")
