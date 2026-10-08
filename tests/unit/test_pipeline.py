@@ -39,6 +39,35 @@ def test_evaluate_scores_grounded_repro_high():
     assert score["grounded"] is True and score["score"] >= 0.5
 
 
+def test_service_grounded_answer_from_data():
+    from taketwo.interfaces import service
+
+    context = {
+        "reproduction": {
+            "verdict": "reproduced",
+            "steps": [{"action": "click", "target": "#go"}],
+            "evidence": {"summary": "boom"},
+        },
+        "fix": {},
+        "proof": {},
+        "review": {},
+    }
+    assert "#go" in service._answer_from_data("job", "what steps did you take?", context)
+    assert "boom" in service._answer_from_data("job", "summarize", context)
+
+
+def test_store_review_records_audit():
+    from taketwo.storage import store
+
+    job = "pytest_review_tmp"
+    store.set_review(job, "approved", "looks good")
+    store.set_review(job, "changes_requested", "one nit")
+    review = store.get_review(job)
+    assert review["status"] == "changes_requested"
+    assert [a["action"] for a in review["audit"]] == ["approved", "changes_requested"]
+    store.delete_job(job)
+
+
 def test_verify_requires_red_then_green():
     repro = repro_mod.normalize(
         {"verdict": "reproduced", "evidence": {"summary": "TypeError: x is null"}, "steps": [{"action": "click"}]}

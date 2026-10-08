@@ -2,7 +2,8 @@
 
 Each job runs ``taketwo.interfaces.worker`` in its own subprocess (progress streamed to
 a temp JSON file), optionally wrapped in Docker when ``SANDBOX_IMAGE`` is set, so
-concurrent and untrusted jobs are isolated from the serving process.
+concurrent and untrusted jobs are isolated from the serving process. Jobs can be
+cancelled while queued or running.
 """
 
 from __future__ import annotations
@@ -76,11 +77,32 @@ class Runner:
             "agentic": agentic,
             "progress_path": str(Path(tempfile.gettempdir()) / f"taketwo_{job_id}.json"),
             "error": None,
+            "cancel_requested": False,
+            "_proc": None,
         }
         with self._lock:
             self._jobs[job_id] = job
         self._pool.submit(self._run, job)
         return job_id
+
+    def cancel(self, job_id: str) -> bool:
+        """Request cancellation; terminate the worker if it is already running."""
+        with self._lock:
+            job = self._jobs.get(job_id)
+            if not job or job["status"] not in ("queued", "running"):
+                return False
+            job["cancel_requested"] = True
+            proc = job.get("_proc")
+        if proc is not None and proc.poll() is None:
+            try:
+                proc.terminate()
+                proc.wait(timeout=10)
+            except Exception:
+                try:
+                    proc.kill()
+                except Exception:
+                    pass
+        return True
 
     def shutdown(self, wait: bool = False) -> None:
         """Stop accepting jobs and release the worker threads."""
@@ -92,7 +114,7 @@ class Runner:
         if not job:
             return {"status": "unknown", "id": job_id}
 
-        info = dict(job)
+        info = {key: value for key, value in job.items() if not key.startswith("_")}
         progress = _read_progress(job["progress_path"])
         if progress:
             info["progress"] = progress
@@ -106,13 +128,20 @@ class Runner:
     def _run(self, job: dict[str, Any]) -> None:
         job["status"] = "running"
         try:
-            code = subprocess.run(self._command(job), check=False).returncode
-            job["status"] = "done" if code == 0 else "failed"
-            if code != 0:
-                job["error"] = f"worker exited {code}"
+            proc = subprocess.Popen(self._command(job))
+            job["_proc"] = proc
+            code = proc.wait()
+            if job.get("cancel_requested"):
+                job["status"] = "cancelled"
+            else:
+                job["status"] = "done" if code == 0 else "failed"
+                if code != 0:
+                    job["error"] = f"worker exited {code}"
         except Exception as exc:  # pragma: no cover - depends on environment
-            job["status"] = "failed"
+            job["status"] = "cancelled" if job.get("cancel_requested") else "failed"
             job["error"] = str(exc)
+        finally:
+            job["_proc"] = None
 
     def _command(self, job: dict[str, Any]) -> list[str]:
         worker = [

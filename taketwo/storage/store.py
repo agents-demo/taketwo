@@ -16,6 +16,7 @@ DATA_DIR = runtime.DATA_DIR
 REPRO_SUFFIX = "_repro.json"
 FIX_SUFFIX = "_fix.json"
 PROOF_SUFFIX = "_proof.json"
+REVIEW_SUFFIX = "_review.json"
 
 _current_job: str | None = None
 
@@ -64,6 +65,24 @@ def get_proof(job: str) -> dict[str, Any]:
     return json_store.read_json(_path(job, PROOF_SUFFIX), {})
 
 
+def get_review(job: str) -> dict[str, Any]:
+    """The persisted review (``{"status", "audit"}``) for a job."""
+    review = json_store.read_json(_path(job, REVIEW_SUFFIX), {})
+    return review if isinstance(review, dict) else {}
+
+
+def set_review(job: str, status: str, note: str = "", actor: str = "maintainer") -> dict[str, Any]:
+    """Record a review decision, appending to the job's audit trail."""
+    from datetime import UTC, datetime
+
+    review = get_review(job)
+    review["status"] = status
+    review.setdefault("audit", []).append(
+        {"action": status, "note": note, "actor": actor, "when": datetime.now(UTC).isoformat(timespec="seconds")}
+    )
+    return _save(job, REVIEW_SUFFIX, review)
+
+
 def patch_repro(job: str, patch: dict[str, Any]) -> dict[str, Any] | None:
     """Merge ``patch`` into a job's reproduction file, if it exists."""
     path = _path(job, REPRO_SUFFIX)
@@ -102,7 +121,7 @@ def find(job: str) -> dict[str, Any] | None:
 def delete_job(job: str) -> bool:
     """Delete a job's JSON state, artifacts and cache."""
     removed = False
-    for suffix in (REPRO_SUFFIX, FIX_SUFFIX, PROOF_SUFFIX):
+    for suffix in (REPRO_SUFFIX, FIX_SUFFIX, PROOF_SUFFIX, REVIEW_SUFFIX):
         path = _path(job, suffix)
         if path.exists():
             path.unlink()
@@ -115,6 +134,6 @@ def delete_job(job: str) -> bool:
 
 
 def reset() -> None:
-    for suffix in (REPRO_SUFFIX, FIX_SUFFIX, PROOF_SUFFIX):
+    for suffix in (REPRO_SUFFIX, FIX_SUFFIX, PROOF_SUFFIX, REVIEW_SUFFIX):
         for path in DATA_DIR.glob(f"*{suffix}"):
             path.unlink()
