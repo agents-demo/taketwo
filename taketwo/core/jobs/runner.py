@@ -11,7 +11,6 @@ from __future__ import annotations
 import json
 import os
 import subprocess
-import sys
 import tempfile
 import threading
 import uuid
@@ -19,25 +18,8 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Any
 
+from taketwo.core.jobs import sandbox
 from taketwo.integrations.storage import runtime
-
-# Environment variables forwarded into the sandbox container (``-e KEY``).
-FORWARD_ENV = (
-    "API_KEY",
-    "API_BASE",
-    "MODEL_NAME",
-    "MODEL_PROVIDER",
-    "VISION_MODEL_NAME",
-    "LLM_TEMPERATURE",
-    "VISION_TEMPERATURE",
-    "LLM_TIMEOUT",
-    "LLM_RETRIES",
-    "GITHUB_TOKEN",
-    "GITHUB_WEBHOOK_SECRET",
-    "TEST_COMMAND",
-    "APP_START_COMMAND",
-    "PATCHED_APP_URL",
-)
 
 
 def _read_progress(path: str) -> dict[str, Any]:
@@ -151,7 +133,7 @@ class Runner:
     def _run(self, job: dict[str, Any]) -> None:
         job["status"] = "running"
         try:
-            proc = subprocess.Popen(self._command(job))
+            proc = subprocess.Popen(sandbox.command(job))
             job["_proc"] = proc
             code = proc.wait()
             if job.get("cancel_requested"):
@@ -165,43 +147,6 @@ class Runner:
             job["error"] = str(exc)
         finally:
             job["_proc"] = None
-
-    def _command(self, job: dict[str, Any]) -> list[str]:
-        worker = [
-            "-m",
-            "taketwo.core.jobs.worker",
-            job["video_path"],
-            "--progress",
-            job["progress_path"],
-            "--repo",
-            job["repo"],
-            "--branch",
-            job["base_branch"],
-            "--app",
-            job["app_url"],
-        ]
-        if job["agentic"]:
-            worker.append("--agentic")
-
-        image = os.getenv("SANDBOX_IMAGE", "").strip()
-        if not image:
-            return [sys.executable, *worker]
-
-        cwd = str(Path.cwd())
-        env_args: list[str] = []
-        for key in FORWARD_ENV:
-            env_args += ["-e", key]
-        return [
-            "docker", "run", "--rm",
-            "--cpus", os.getenv("SANDBOX_CPU", "1"),
-            "--memory", os.getenv("SANDBOX_MEMORY", "1g"),
-            "--pids-limit", os.getenv("SANDBOX_PIDS", "512"),
-            "--cap-drop", "ALL",
-            "--security-opt", "no-new-privileges",
-            "-v", f"{cwd}:{cwd}", "-w", cwd,
-            *env_args,
-            image, "python", *worker,
-        ]
 
 
 _runner: Runner | None = None

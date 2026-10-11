@@ -6,7 +6,10 @@ import time
 from pathlib import Path
 from typing import Any
 
-from taketwo.integrations.agents.telemetry.traces import CallbackTrace, CallTrace, ToolTrace, next_seq
+from taketwo.integrations.agents.telemetry.call_trace import CallTrace
+from taketwo.integrations.agents.telemetry.callback_trace import CallbackTrace
+from taketwo.integrations.agents.telemetry.sequence import next_seq
+from taketwo.integrations.agents.telemetry.tool_trace import ToolTrace
 from taketwo.integrations.agents.telemetry.usage import UsageCollector, extract_usage
 
 

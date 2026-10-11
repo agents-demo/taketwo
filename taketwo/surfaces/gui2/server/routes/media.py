@@ -5,7 +5,7 @@ from __future__ import annotations
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import FileResponse, Response
 
-from taketwo.integrations.reporting import proof_card, share_card
+from taketwo.integrations.cards import proof_card, share_card
 from taketwo.integrations.storage import runtime
 from taketwo.surfaces.gui2.server import runs as read_model
 

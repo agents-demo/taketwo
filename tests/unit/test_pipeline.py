@@ -171,9 +171,8 @@ def test_forge_verify_signature():
 def test_runner_command_local_and_docker(monkeypatch):
     import sys
 
-    from taketwo.core.jobs import Runner
+    from taketwo.core.jobs import sandbox
 
-    runner = Runner(max_workers=1)
     job = {
         "video_path": "v.mov",
         "progress_path": "p.json",
@@ -184,11 +183,11 @@ def test_runner_command_local_and_docker(monkeypatch):
     }
 
     monkeypatch.delenv("SANDBOX_IMAGE", raising=False)
-    local = runner._command(job)
+    local = sandbox.command(job)
     assert local[0] == sys.executable and local[1:3] == ["-m", "taketwo.core.jobs.worker"]
 
     monkeypatch.setenv("SANDBOX_IMAGE", "taketwo:latest")
-    docker = runner._command(job)
+    docker = sandbox.command(job)
     assert docker[0] == "docker" and "taketwo:latest" in docker
 
 

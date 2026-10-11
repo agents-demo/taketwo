@@ -6,7 +6,7 @@ from pathlib import Path
 
 import streamlit as st
 
-from taketwo.integrations.reporting import proof_card, share_card  # noqa: F401  (re-exported for the pages)
+from taketwo.integrations.cards import proof_card, share_card  # noqa: F401  (re-exported for the pages)
 from taketwo.integrations.storage import store
 
 
