@@ -101,7 +101,7 @@ difference is the shell they run in.
 ## 5. Command line
 
 ```powershell
-& $PY -m taketwo.surfaces.cli record runtime/data/sample_bug.mov   # reproduce + fix a clip
+& $PY -m taketwo.surfaces.cli record demos\scenarios\booking\clip.mp4   # reproduce + fix a clip
 & $PY -m taketwo.surfaces.cli history                              # recent runs
 & $PY -m taketwo.surfaces.cli show                                 # latest run's issue text
 & $PY -m taketwo.surfaces.cli reset                                # clear saved runs
@@ -110,7 +110,7 @@ difference is the shell they run in.
 Run the analysis in its own process (used by the UI, useful in scripts):
 
 ```powershell
-& $PY -m taketwo.core.jobs.worker runtime/data/sample_bug.mov --progress progress.json --app http://localhost:8130
+& $PY -m taketwo.core.jobs.worker demos\scenarios\booking\clip.mp4 --progress progress.json --app http://localhost:8130
 ```
 
 MCP (exposes `reproduce_bug_from_video` to MCP clients):
@@ -152,19 +152,18 @@ Start with `uvicorn taketwo.surfaces.gui2:app`. Key routes:
 ## 7. Demo & dev scripts
 
 ```powershell
-& $PY scripts\make_sample_bug.py        # synthetic fixtures (clip + sidecars) for the offline demo
-& $PY demos\serve_scenario.py       # serve demos/scenarios/booking/app at http://localhost:3000
-& $PY scripts\seed_feed.py 5            # create several runs so the feed is swipeable
-& $PY tests\integration\check_reproduce.py                # live end-to-end: reproduce a real bug → before/after proof
-& $PY tests\integration\benchmark_reproduce.py              # reproduce-rate over seeded apps (generalization)
-& $PY tests\integration\evaluate_repros.py        # offline quality gate (tests/eval/expected.json)
+& $PY demos\serve_scenario.py booking      # serve demos/scenarios/booking/app at http://localhost:3000
+& $PY demos\maintenance\record_video.py cart   # (re)record a scenario's clip (needs Playwright)
+& $PY tests\integration\check_reproduce.py     # live end-to-end: reproduce a real bug → before/after proof
+& $PY tests\integration\benchmark_reproduce.py # reproduce-rate over seeded apps (generalization)
+& $PY tests\integration\evaluate_repros.py     # offline quality gate (tests/eval/expected.json)
 ```
 
 Typical first run:
 
 ```powershell
-& $PY scripts\make_sample_bug.py
-& $PY -m taketwo.surfaces.cli record runtime/data/sample_bug.mov
+& $PY demos\serve_scenario.py booking
+& $PY -m taketwo.surfaces.cli record demos\scenarios\booking\clip.mp4 --app http://localhost:3000
 & $PY -m uvicorn taketwo.surfaces.gui2:app --port 8000
 # http://localhost:8000/gui2/
 ```
@@ -217,8 +216,8 @@ runtime/
   restart the server and hard-refresh (Ctrl+Shift+R).
 - **`Playwright not installed` / no browser** → `pip install -r requirements.txt` && `python -m playwright install chromium`.
 - **`Missing required environment variables`** → fill `API_KEY`/`API_BASE`/`MODEL_NAME` in `.env`
-  (or run offline against the sample fixtures).
-- **App looks empty** → run `scripts\seed_feed.py 5` (or `make_sample_bug.py`) to create runs.
+  (or reproduce a demo clip — the run degrades gracefully without a model).
+- **App looks empty** → run a demo (see §7) to create runs.
 - **Changed the SvelteKit app but nothing changed** → `cd taketwo\surfaces\app; npm run build`.
 - **`APP_START_COMMAND` set but the fix re-run shows the bug** → the app didn't restart; check
   `PATCHED_APP_URL` and that the command serves the patched checkout.

@@ -137,7 +137,6 @@ CORS-enabled).
 
 ## Tools & scripts
 
-- `scripts/make_sample_bug.py` — synthetic fixtures (offline demo + a `_live` variant).
 - `demos/serve_scenario.py` — serve `demos/scenarios/booking/app` for a live reproduction.
 - `tests/integration/check_reproduce.py` — live end-to-end: reproduce a real browser bug → before/after proof.
 - `tests/integration/benchmark_reproduce.py` — reproduce rate over seeded apps (generalization signal).

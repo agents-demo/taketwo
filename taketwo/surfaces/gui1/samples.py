@@ -1,4 +1,4 @@
-"""Sample clip + sample-app helpers for the one-tap live demo."""
+"""Sample clip + sample-app helpers for the one-tap demo (the booking scenario)."""
 
 from __future__ import annotations
 
@@ -6,23 +6,20 @@ import sys
 
 import streamlit as st
 
-from taketwo.integrations.storage import runtime
 from taketwo.surfaces.gui1 import config
 
 
 def sample_path() -> str:
-    path = runtime.DATA_DIR / "sample_bug.mov"
-    return str(path) if path.exists() else ""
+    """The demo recording (``demos/scenarios/booking/clip.mp4``), or ``""`` if missing."""
+    return str(config.SAMPLE_CLIP) if config.SAMPLE_CLIP.exists() else ""
 
 
 def live_sample_path() -> str:
-    """The live-sample clip (timeline only, no repro sidecar → reproduces in a browser)."""
-    path = runtime.DATA_DIR / "sample_bug_live.mov"
-    return str(path) if path.exists() else sample_path()
+    return sample_path()
 
 
 def sample_app_url(port: int = 8130) -> str:
-    """Serve ``demos/scenarios/booking/app`` locally once and return its URL (for the live demo)."""
+    """Serve ``demos/scenarios/booking/app`` locally once and return its URL."""
     cached = st.session_state.get("_sample_app")
     if cached is not None:
         return getattr(cached, "url", "")

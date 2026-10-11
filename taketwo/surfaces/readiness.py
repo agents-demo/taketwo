@@ -25,7 +25,7 @@ def checks() -> list[dict]:
     model_ok = _model_ok()
     browser_ok = importlib.util.find_spec("playwright") is not None
     github_ok = bool(os.getenv("GITHUB_TOKEN"))
-    clip = runtime.DATA_DIR / "sample_bug_live.mov"
+    clip = runtime.PROJECT_ROOT / "demos" / "scenarios" / "booking" / "clip.mp4"
     return [
         {
             "name": "model",
@@ -45,7 +45,7 @@ def checks() -> list[dict]:
         {
             "name": "sample",
             "ok": clip.exists(),
-            "detail": "sample clip ready" if clip.exists() else "run: python scripts/make_sample_bug.py",
+            "detail": "demo clip ready" if clip.exists() else "missing demos/scenarios/booking/clip.mp4",
         },
     ]
 

@@ -33,7 +33,12 @@ def main(argv: list[str] | None = None) -> int:
     sub = parser.add_subparsers(dest="command", required=True)
 
     p_record = sub.add_parser("record", help="reproduce and fix a bug from a recording")
-    p_record.add_argument("video", nargs="?", default=str(runtime.DATA_DIR / "sample_bug.mov"), help="recording path")
+    p_record.add_argument(
+        "video",
+        nargs="?",
+        default=str(runtime.PROJECT_ROOT / "demos" / "scenarios" / "booking" / "clip.mp4"),
+        help="recording path",
+    )
     p_record.add_argument("--repo", default="", help="repository as owner/name")
     p_record.add_argument("--branch", default="main", help="base branch")
     p_record.add_argument("--app", default="", help="URL of the running app")

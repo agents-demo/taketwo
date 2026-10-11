@@ -29,21 +29,20 @@ $PY = "C:\Workspace\openjiuwen\jiuwenswarm\.venv\Scripts\python.exe"
 **CLI** — record a bug, then reproduce + fix it:
 
 ```powershell
-# record a bug from a video against a repo/app
-& $PY -m taketwo.surfaces.cli record runtime/data/sample_bug.mov --repo owner/name --app http://localhost:3000
+# reproduce + fix a clip against a running app
+& $PY -m taketwo.surfaces.cli record demos\scenarios\booking\clip.mp4 --app http://localhost:3000
 
 # past runs
 & $PY -m taketwo.surfaces.cli history
 ```
 
-No recording handy? Make a synthetic clip and serve the sample buggy app to reproduce against:
+No app handy? Serve the bundled demo to reproduce against:
 
 ```powershell
-& $PY scripts\make_sample_bug.py       # writes runtime/data/sample_bug.mov + fixtures
 & $PY demos\serve_scenario.py      # serves demos/scenarios/booking/app at http://localhost:3000
 
 # in another terminal:
-& $PY -m taketwo.surfaces.cli record runtime/data/sample_bug.mov --app http://localhost:3000
+& $PY -m taketwo.surfaces.cli record demos\scenarios\booking\clip.mp4 --app http://localhost:3000
 ```
 
 ## 3. Offline checks (no model calls)

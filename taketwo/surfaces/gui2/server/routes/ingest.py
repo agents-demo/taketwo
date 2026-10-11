@@ -12,7 +12,6 @@ from fastapi import APIRouter, File, HTTPException, Request, UploadFile
 from taketwo.core.bootstrap import setup
 from taketwo.integrations.forge import auth as forge_auth
 from taketwo.integrations.forge import verify_signature
-from taketwo.integrations.storage import runtime
 from taketwo.surfaces.gui2.server import config
 
 router = APIRouter()
@@ -37,9 +36,7 @@ def upload(file: UploadFile = File(...)) -> dict:  # noqa: B008  (FastAPI depend
 @router.get("/sample")
 def sample(request: Request) -> dict:
     """Paths for the one-tap sample: the bundled clip and the served sample app URL."""
-    clip = runtime.DATA_DIR / "sample_bug_live.mov"
-    if not clip.exists():
-        clip = runtime.DATA_DIR / "sample_bug.mov"
+    clip = config.SAMPLE_CLIP
     app_url = f"{str(request.base_url).rstrip('/')}/sampleapp/" if config.SAMPLE_APP.is_dir() else ""
     return {"clip": str(clip) if clip.exists() else "", "app_url": app_url}
 

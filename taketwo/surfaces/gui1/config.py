@@ -11,6 +11,7 @@ ASSETS = _HERE / "assets"
 LOGO = ASSETS / "taketwo.svg"
 EMPTY_ART = ASSETS / "empty.svg"
 SAMPLE_APP = _ROOT / "demos" / "scenarios" / "booking" / "app"
+SAMPLE_CLIP = _ROOT / "demos" / "scenarios" / "booking" / "clip.mp4"
 
 TAGLINE = "A screen recording in. A reproduction, a fix, and before/after proof out."
 
