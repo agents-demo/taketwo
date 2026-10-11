@@ -27,7 +27,7 @@ export const cancel = (id) => api(`/jobs/${encodeURIComponent(id)}/cancel`, { me
 export const retry = (id) => api(`/jobs/${encodeURIComponent(id)}/retry`, { method: "POST" });
 export const jobs = () => api("/jobs");
 export const readiness = () => api("/ready");
-export const sample = () => api("/sample");
+export const scenarios = () => api("/scenarios");
 
 export const cardScore = () => "/cards/score";
 export const cardProof = (job) => `/cards/${encodeURIComponent(job)}/proof`;

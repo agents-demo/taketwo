@@ -62,10 +62,10 @@ On the **Runs** page, the small **Readiness** line shows:
 
 ### 4. Start a run
 
-1. Click **Try the sample bug - no setup**. This serves the demo app and submits the
-   demo clip for you.
-2. Watch the **live feed**. You can use **Cancel** or **Retry**.
-3. When it finishes, open the run to see the **Review**.
+1. Pick a demo in the **Demo scenario** dropdown (for example `Booking — date picker`).
+2. Click **Use the “…” demo**. This serves that demo's app and submits its clip.
+3. Watch the **live feed**. You can use **Cancel** or **Retry**.
+4. When it finishes, open the run to see the **Review**.
 
 ---
 
@@ -105,12 +105,12 @@ it again (step 1).
 
 In the **New run** box:
 
-1. Click **Try the sample**. This fills two fields for you:
-   - **Clip** = `demos/scenarios/booking/clip.mp4`
-   - **App URL** = `http://127.0.0.1:8000/sampleapp/`
+1. Pick a demo in the **Demo** dropdown, then click **Use this demo**. This fills:
+   - **Clip** = the demo's recording
+   - **App URL** = the demo app served by gui2 (under `/demoapps/`)
 2. Click **Record & reproduce**.
 
-You do not need to start the demo app. gui2 serves it for you at `/sampleapp/`.
+You do not need to start the demo app. gui2 serves it for you.
 
 ### 5. Watch the run
 
@@ -215,8 +215,8 @@ To get the full run (fix + proof + pull request), point TakeTwo at a real reposi
 
 - **Port 8000 is busy** → use another port: `--port 8011`.
 - **The Readiness line is missing** → the server is old. Restart it.
-- **`Try the sample` does not fill the fields** → type them by hand:
-  Clip = `demos/scenarios/booking/clip.mp4`, App URL = `http://127.0.0.1:8000/sampleapp/`.
+- **The Demo dropdown is empty** → the scenarios are missing; check `demos/scenarios/`.
+- **Nothing fills after `Use this demo`** → that scenario's `clip.mp4` is missing.
 - **Playwright error** → run:
   ```powershell
   & $PY -m pip install -r requirements.txt

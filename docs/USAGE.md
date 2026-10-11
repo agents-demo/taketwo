@@ -54,8 +54,8 @@ difference is the shell they run in.
 
 **What either GUI does:**
 - **Runs** — submit a run: **upload a clip** (or paste a path), set repository / base branch / app URL,
-  toggle **Agentic**, or **Try the sample** in one tap. A **live multi-step feed** (per-stage progress +
-  timings) runs with **Cancel** / **Retry**; past runs show as cards with a thumbnail.
+  toggle **Agentic**, or pick a bundled **demo** and click **Use this demo**. A **live multi-step feed**
+  (per-stage progress + timings) runs with **Cancel** / **Retry**; past runs show as cards with a thumbnail.
 - **Review** — the proof **video hero** (or the before/after **compare slider**), the score/verdict/steps,
   the diff (+ suspected cause and regression test), a **Usage** panel (model calls, tokens, latency, tool
   activity), a **pipeline timeline**, the captured console trace, **Approve / Request changes** (with a note
@@ -133,7 +133,7 @@ Start with `uvicorn taketwo.surfaces.gui2:app`. Key routes:
 | POST | `/replay` | run synchronously, return the outcome |
 | POST | `/replay/async` | enqueue a job → `{job_id}` |
 | POST | `/upload` | upload a clip (multipart) → `{path}` to submit |
-| GET | `/sample` | one-tap sample `{clip, app_url}` (served at `/sampleapp/`) |
+| GET | `/scenarios` | bundled demo scenarios `{name, title, clip, app_url}` (apps served under `/demoapps/`) |
 | GET | `/jobs` | all jobs (live "in flight" count) |
 | GET | `/jobs/{id}` | job status + progress (stage, pct, timings) |
 | POST | `/jobs/{id}/cancel` | cancel a queued/running job |

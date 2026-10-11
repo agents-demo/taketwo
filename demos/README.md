@@ -32,7 +32,7 @@ $PY = "C:\Workspace\openjiuwen\jiuwenswarm\.venv\Scripts\python.exe"
 & $PY -m taketwo.surfaces.cli record demos\scenarios\booking\clip.mp4 --app http://localhost:3000
 ```
 
-Or open either GUI and hit **Try the sample**.
+Or open either GUI and pick a demo in the **demo dropdown**, then click **Use this demo**.
 
 ## Add a scenario
 

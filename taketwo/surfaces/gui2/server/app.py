@@ -31,9 +31,9 @@ app.include_router(runs.router)
 app.include_router(media.router)
 app.include_router(ingest.router)
 
-# Serve the bundled sample app so "Try the sample" works end-to-end from the browser.
-if config.SAMPLE_APP.is_dir():
-    app.mount("/sampleapp", StaticFiles(directory=str(config.SAMPLE_APP), html=True), name="sampleapp")
+# Serve the bundled demo apps so the in-browser demo picker works end-to-end.
+if config.SCENARIOS_DIR.is_dir():
+    app.mount("/demoapps", StaticFiles(directory=str(config.SCENARIOS_DIR), html=True), name="demoapps")
 
 
 @app.get("/health")

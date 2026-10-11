@@ -1,4 +1,4 @@
-"""Ingest: upload a clip, the one-tap sample, and the GitHub webhook."""
+"""Ingest: upload a clip, list the demo scenarios, and the GitHub webhook."""
 
 from __future__ import annotations
 
@@ -33,12 +33,31 @@ def upload(file: UploadFile = File(...)) -> dict:  # noqa: B008  (FastAPI depend
     return {"path": str(dest), "name": dest.name}
 
 
-@router.get("/sample")
-def sample(request: Request) -> dict:
-    """Paths for the one-tap sample: the bundled clip and the served sample app URL."""
-    clip = config.SAMPLE_CLIP
-    app_url = f"{str(request.base_url).rstrip('/')}/sampleapp/" if config.SAMPLE_APP.is_dir() else ""
-    return {"clip": str(clip) if clip.exists() else "", "app_url": app_url}
+@router.get("/scenarios")
+def scenarios(request: Request) -> dict:
+    """The bundled demo scenarios: name, title, clip path, and served app URL."""
+    base = str(request.base_url).rstrip("/")
+    out: list[dict] = []
+    root = config.SCENARIOS_DIR
+    if root.is_dir():
+        for path in sorted(root.iterdir()):
+            if not (path / "app" / "index.html").is_file():
+                continue
+            title = path.name
+            try:
+                title = json.loads((path / "scenario.json").read_text(encoding="utf-8")).get("title") or path.name
+            except Exception:
+                pass
+            clip = path / "clip.mp4"
+            out.append(
+                {
+                    "name": path.name,
+                    "title": title,
+                    "clip": str(clip) if clip.exists() else "",
+                    "app_url": f"{base}/demoapps/{path.name}/app/",
+                }
+            )
+    return {"scenarios": out}
 
 
 @router.post("/webhook")

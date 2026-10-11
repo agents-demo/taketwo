@@ -1,7 +1,8 @@
-"""Sample clip + sample-app helpers for the one-tap demo (the booking scenario)."""
+"""Demo-scenario helpers for the one-tap run (reads ``demos/scenarios/``)."""
 
 from __future__ import annotations
 
+import json
 import sys
 
 import streamlit as st
@@ -9,27 +10,46 @@ import streamlit as st
 from taketwo.surfaces.gui1 import config
 
 
-def sample_path() -> str:
-    """The demo recording (``demos/scenarios/booking/clip.mp4``), or ``""`` if missing."""
-    return str(config.SAMPLE_CLIP) if config.SAMPLE_CLIP.exists() else ""
+def scenario_names() -> list[str]:
+    root = config.SCENARIOS_DIR
+    if not root.is_dir():
+        return []
+    return sorted(p.name for p in root.iterdir() if (p / "app" / "index.html").is_file())
 
 
-def live_sample_path() -> str:
-    return sample_path()
+def scenario_title(name: str) -> str:
+    try:
+        data = json.loads((config.SCENARIOS_DIR / name / "scenario.json").read_text(encoding="utf-8"))
+        return data.get("title") or name
+    except Exception:
+        return name
 
 
-def sample_app_url(port: int = 8130) -> str:
-    """Serve ``demos/scenarios/booking/app`` locally once and return its URL."""
-    cached = st.session_state.get("_sample_app")
-    if cached is not None:
-        return getattr(cached, "url", "")
-    if not config.SAMPLE_APP.exists():
-        return ""
+def scenario_clip(name: str) -> str:
+    path = config.SCENARIOS_DIR / name / "clip.mp4"
+    return str(path) if path.exists() else ""
+
+
+def serve_scenario(name: str, port: int = 8130) -> str:
+    """Serve a scenario's app locally and return its URL (one demo app at a time, cached)."""
+    current = st.session_state.get("_demo_app_name")
+    app = st.session_state.get("_demo_app")
+    if app is not None and current == name:
+        return getattr(app, "url", "")
+
     from taketwo.integrations import appserver
 
-    command = f'"{sys.executable}" -m http.server {port} --directory "{config.SAMPLE_APP}"'
+    if app is not None:
+        appserver.stop(app)
+        st.session_state.pop("_demo_app", None)
+
+    app_dir = config.SCENARIOS_DIR / name / "app"
+    if not app_dir.is_dir():
+        return ""
+    command = f'"{sys.executable}" -m http.server {port} --directory "{app_dir}"'
     app = appserver.start(command, config._ROOT, f"http://localhost:{port}")
     if app is not None:
-        st.session_state["_sample_app"] = app
+        st.session_state["_demo_app"] = app
+        st.session_state["_demo_app_name"] = name
         return app.url
     return ""

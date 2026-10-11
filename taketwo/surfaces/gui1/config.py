@@ -10,8 +10,7 @@ _ROOT = Path(__file__).resolve().parents[3]  # repo root
 ASSETS = _HERE / "assets"
 LOGO = ASSETS / "taketwo.svg"
 EMPTY_ART = ASSETS / "empty.svg"
-SAMPLE_APP = _ROOT / "demos" / "scenarios" / "booking" / "app"
-SAMPLE_CLIP = _ROOT / "demos" / "scenarios" / "booking" / "clip.mp4"
+SCENARIOS_DIR = _ROOT / "demos" / "scenarios"
 
 TAGLINE = "A screen recording in. A reproduction, a fix, and before/after proof out."
 

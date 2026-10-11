@@ -1,4 +1,4 @@
-"""The "new run" form (upload or one-tap sample) and the submit queue."""
+"""The "new run" form (upload or pick a demo) and the submit queue."""
 
 from __future__ import annotations
 
@@ -11,7 +11,7 @@ from taketwo.surfaces.gui1 import config, samples
 
 def queue(video_path: str, repo: str, branch: str, app_url: str, agentic: bool) -> None:
     if not video_path:
-        st.error(f"Upload a recording, or use the demo clip at {config.SAMPLE_CLIP}.")
+        st.error("Upload a recording, or pick a demo scenario.")
         return
     submission = {"video_path": video_path, "repo": repo, "base_branch": branch, "app_url": app_url, "agentic": agentic}
     job_id = get_runner().submit(**submission)
@@ -20,12 +20,19 @@ def queue(video_path: str, repo: str, branch: str, app_url: str, agentic: bool) 
 
 
 def new_run() -> None:
+    pick = ""
+    demo = None
     with st.container(border=True):
         st.subheader("Drop a recording", icon=":material/upload:")
         st.caption("A screen recording or screenshots — shaky is fine.")
         upload = st.file_uploader("Recording", type=config.ACCEPTED, label_visibility="collapsed")
         if upload is not None:
             st.video(upload, alt="Preview of the recording you are about to submit")
+
+        names = samples.scenario_names()
+        if names:
+            pick = st.selectbox("Demo scenario", names, format_func=samples.scenario_title, key="demo_pick")
+            demo = st.button(f"Use the “{samples.scenario_title(pick)}” demo", icon=":material/science:")
 
         cols = st.columns([1, 1, 1, 1, 1])
         repo = cols[0].text_input("Repository", placeholder="owner/name")
@@ -34,16 +41,15 @@ def new_run() -> None:
         agentic = cols[3].toggle("Agentic")
         submitted = cols[4].button("Record & reproduce", icon=":material/play_arrow:", type="primary")
 
-        sample = st.button("Try the sample bug — no setup", icon=":material/science:")
         st.caption("Typically ~5–15 model calls · 1–5 min, depending on the clip and the app.")
 
     if submitted:
-        video_path = samples.sample_path()
+        video_path = samples.scenario_clip(pick) if pick else ""
         if upload is not None:
             target = runtime.DATA_DIR / f"upload_{upload.name}"
             target.write_bytes(upload.getbuffer())
             video_path = str(target)
         queue(video_path, repo, branch, app_url, agentic)
-    elif sample:
-        # Demo with no setup: point at a locally served sample app so it reproduces live.
-        queue(samples.live_sample_path(), repo, branch, app_url or samples.sample_app_url(), agentic)
+    elif demo:
+        # Demo with no setup: serve the chosen scenario's app and submit its clip.
+        queue(samples.scenario_clip(pick), repo, branch, app_url or samples.serve_scenario(pick), agentic)
