@@ -11,7 +11,7 @@ from taketwo.surfaces.gui1 import config, samples
 
 def queue(video_path: str, repo: str, branch: str, app_url: str, agentic: bool) -> None:
     if not video_path:
-        st.error("Upload a recording, or run `python scripts/make_sample_bug.py` for the sample clip.")
+        st.error("Upload a recording, or run `python scripts/samples/make_sample_bug.py` for the sample clip.")
         return
     submission = {"video_path": video_path, "repo": repo, "base_branch": branch, "app_url": app_url, "agentic": agentic}
     job_id = get_runner().submit(**submission)

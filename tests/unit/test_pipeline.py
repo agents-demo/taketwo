@@ -3,13 +3,13 @@
 from __future__ import annotations
 
 from taketwo import core
+from taketwo.core import agent_reply
 from taketwo.core.bootstrap import run
 from taketwo.domain import evaluate
 from taketwo.domain import repro as repro_mod
 from taketwo.domain import timeline as timeline_mod
 from taketwo.domain import verify as verify_mod
 from taketwo.domain.submission import job_id
-from taketwo.core import agent_reply
 
 
 def test_submission_job_id_prefers_repo():
@@ -113,8 +113,8 @@ def test_understand_uses_the_agent_when_present(tmp_path, monkeypatch):
 
 def test_agent_ask_retries_transient(monkeypatch):
     import taketwo.integrations.agents as backend
-    from taketwo.core.bootstrap import run as run_sync
     from taketwo.core import agent_reply
+    from taketwo.core.bootstrap import run as run_sync
 
     calls = {"n": 0}
 

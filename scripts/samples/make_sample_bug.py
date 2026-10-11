@@ -7,7 +7,7 @@ Writes, under ``runtime/data``:
   - ``sample_bug_proposed.patch``    the fix the sandbox would produce
   - ``sample_bug_proposed.test``     the regression test
 
-    python scripts/make_sample_bug.py
+    python scripts/samples/make_sample_bug.py
 """
 
 from __future__ import annotations
@@ -16,7 +16,7 @@ import json
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from taketwo.core.bootstrap import setup  # noqa: E402
 from taketwo.integrations.storage import runtime  # noqa: E402
@@ -33,7 +33,7 @@ TIMELINE = {
 }
 
 # A live variant: same steps, but NO repro sidecar, so the pipeline reproduces it in a
-# real browser against examples/sample_app (served locally).
+# real browser against samples/sample_app (served locally).
 LIVE_TIMELINE = {
     "steps": [
         {"action": "click", "target": "#dateField", "timestamp": 1.2, "confidence": 0.9},

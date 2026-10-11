@@ -4,7 +4,7 @@ Runs the deterministic pipeline several times over copies of the sample fixtures
 mix of verdicts: odd clips are 'fixed' (sidecar + verification result), even clips are
 left 'unclear' (timeline only) so the feed shows both states.
 
-    python scripts/seed_feed.py [count]
+    python scripts/samples/seed_feed.py [count]
 """
 
 from __future__ import annotations
@@ -13,7 +13,7 @@ import shutil
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from taketwo import core  # noqa: E402
 from taketwo.core.bootstrap import run, setup  # noqa: E402
@@ -25,7 +25,7 @@ BASE = "sample_bug"
 def _ensure_base() -> Path:
     data = runtime.DATA_DIR
     if not (data / f"{BASE}.mov").exists():
-        import make_sample_bug
+        from scripts.samples import make_sample_bug
 
         make_sample_bug.main()
     return data

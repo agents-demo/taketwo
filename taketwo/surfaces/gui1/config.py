@@ -4,11 +4,13 @@ from __future__ import annotations
 
 from pathlib import Path
 
-_ROOT = Path(__file__).resolve().parents[3]
+_HERE = Path(__file__).resolve().parent
+_ROOT = Path(__file__).resolve().parents[3]  # repo root
 
-LOGO = _ROOT / "assets" / "taketwo.svg"
-EMPTY_ART = _ROOT / "assets" / "empty.svg"
-SAMPLE_APP = _ROOT / "examples" / "sample_app"
+ASSETS = _HERE / "assets"
+LOGO = ASSETS / "taketwo.svg"
+EMPTY_ART = ASSETS / "empty.svg"
+SAMPLE_APP = _ROOT / "samples" / "sample_app"
 
 TAGLINE = "A screen recording in. A reproduction, a fix, and before/after proof out."
 

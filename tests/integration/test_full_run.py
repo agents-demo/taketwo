@@ -1,7 +1,7 @@
 """Full-pipeline integration test (needs a model endpoint + a running app).
 
 Skipped unless ``TAKETWO_APP_URL`` and model credentials are present, so the offline
-suite stays green. The sandboxed runner (``pipeline/jobs/runner.py``) drives the same
+suite stays green. The sandboxed runner (``core/jobs/runner.py``) drives the same
 scenario in CI with a Docker image.
 """
 
@@ -28,8 +28,8 @@ requires = pytest.mark.skipif(
 
 @requires
 def test_reproduces_sample_bug(tmp_path):
+    from taketwo import core
     from taketwo.core.bootstrap import run
-    from taketwo.core import pipeline
 
     video = tmp_path / "bug.mov"
     video.write_bytes(b"placeholder")

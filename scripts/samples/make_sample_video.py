@@ -1,10 +1,10 @@
 """Build a *real* sample proof — actual browser screenshots of the bug, before and after.
 
-Serves ``examples/sample_app`` (buggy) and a fixed copy, drives them with Playwright,
+Serves ``samples/sample_app`` (buggy) and a fixed copy, drives them with Playwright,
 captures the state after selecting a date, and stitches a before/after proof image + video
 into the sample's artifacts (replacing the flat placeholders).
 
-    python scripts/make_sample_video.py
+    python scripts/samples/make_sample_video.py
 """
 
 from __future__ import annotations
@@ -14,17 +14,16 @@ import sys
 import tempfile
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from _harness import free_port, playwright_available, serve  # noqa: E402
-
+from scripts._harness import free_port, playwright_available, serve  # noqa: E402
 from taketwo.core.bootstrap import setup  # noqa: E402
-from taketwo.integrations import appserver  # noqa: E402
 from taketwo.core.stages.prove import stitch  # noqa: E402
+from taketwo.integrations import appserver  # noqa: E402
 from taketwo.integrations.storage import runtime  # noqa: E402
 
-ROOT = Path(__file__).resolve().parents[1]
-APP = ROOT / "examples" / "sample_app"
+ROOT = Path(__file__).resolve().parents[2]
+APP = ROOT / "samples" / "sample_app"
 BUG = "const value = input.value;"
 FIX = "const value = button.textContent;"
 STEM = "sample_bug"
@@ -52,7 +51,7 @@ def main() -> int:
 
     data = runtime.DATA_DIR
     if not (data / f"{STEM}.mov").exists():
-        import make_sample_bug
+        from scripts.samples import make_sample_bug
 
         make_sample_bug.main()
 

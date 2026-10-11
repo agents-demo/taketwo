@@ -1,11 +1,11 @@
 """Live end-to-end dogfood: reproduce a real browser bug with no fixtures.
 
-Serves ``examples/sample_app`` (buggy) and a fixed copy, drives the real Playwright
+Serves ``samples/sample_app`` (buggy) and a fixed copy, drives the real Playwright
 reproduce + re-run path, and writes a before/after proof image and video.
 
     pip install -r requirements.txt
     python -m playwright install chromium
-    python scripts/dogfood.py
+    python scripts/check/dogfood.py
 """
 
 from __future__ import annotations
@@ -15,17 +15,16 @@ import sys
 import tempfile
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from _harness import free_port, live_reproduce, playwright_available, rerun, serve  # noqa: E402
-
+from scripts._harness import free_port, live_reproduce, playwright_available, rerun, serve  # noqa: E402
 from taketwo.core.bootstrap import run, setup  # noqa: E402
-from taketwo.integrations import appserver  # noqa: E402
 from taketwo.core.stages.prove import stitch  # noqa: E402
+from taketwo.integrations import appserver  # noqa: E402
 from taketwo.integrations.storage import runtime  # noqa: E402
 
-ROOT = Path(__file__).resolve().parents[1]
-APP = ROOT / "examples" / "sample_app"
+ROOT = Path(__file__).resolve().parents[2]
+APP = ROOT / "samples" / "sample_app"
 BUG = "const value = input.value;"
 FIX = "const value = button.textContent;"
 STEPS = [

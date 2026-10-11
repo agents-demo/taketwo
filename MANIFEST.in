@@ -1,2 +1,2 @@
-recursive-include taketwo/interfaces/app/build *
-recursive-include assets *.svg
+recursive-include taketwo/surfaces/gui2/client/build *
+recursive-include taketwo/surfaces/gui1/assets *.svg

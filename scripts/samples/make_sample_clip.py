@@ -1,10 +1,10 @@
 """Synthesize a short recording of the buggy interaction (for the vision path).
 
-Serves ``examples/sample_app`` and captures staged screenshots with Playwright, then writes
+Serves ``samples/sample_app`` and captures staged screenshots with Playwright, then writes
 them to an mp4 with **no timeline sidecar** — so ``understand`` has to sample frames and
 call the vision model.
 
-    python scripts/make_sample_clip.py
+    python scripts/samples/make_sample_clip.py
 """
 
 from __future__ import annotations
@@ -13,16 +13,15 @@ import io
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from _harness import free_port, playwright_available, serve  # noqa: E402
-
+from scripts._harness import free_port, playwright_available, serve  # noqa: E402
 from taketwo.core.bootstrap import setup  # noqa: E402
 from taketwo.integrations import appserver  # noqa: E402
 from taketwo.integrations.storage import runtime  # noqa: E402
 
-ROOT = Path(__file__).resolve().parents[1]
-APP = ROOT / "examples" / "sample_app"
+ROOT = Path(__file__).resolve().parents[2]
+APP = ROOT / "samples" / "sample_app"
 
 
 def _frames(url: str) -> list:

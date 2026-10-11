@@ -152,20 +152,20 @@ Start with `uvicorn taketwo.surfaces.gui2:app`. Key routes:
 ## 7. Demo & dev scripts
 
 ```powershell
-& $PY scripts\make_sample_bug.py        # synthetic fixtures (clip + sidecars) for the offline demo
-& $PY scripts\make_sample_video.py      # rebuild the sample proof from REAL browser frames (needs Playwright)
-& $PY scripts\serve_sample_app.py       # serve examples/sample_app at http://localhost:3000
-& $PY scripts\seed_feed.py 5            # create several runs so the feed is swipeable
-& $PY scripts\seed_reproduced.py       # two fully reproduced scenarios (date picker + login) with proof
-& $PY scripts\dogfood.py                # live end-to-end: reproduce a real bug → before/after proof
-& $PY scripts\benchmark.py              # reproduce-rate over seeded apps (generalization)
-& $PY scripts\evaluate_repros.py        # offline quality gate (tests/eval/expected.json)
+& $PY scripts\samples\make_sample_bug.py        # synthetic fixtures (clip + sidecars) for the offline demo
+& $PY scripts\samples\make_sample_video.py      # rebuild the sample proof from REAL browser frames (needs Playwright)
+& $PY scripts\samples\serve_sample_app.py       # serve samples/sample_app at http://localhost:3000
+& $PY scripts\samples\seed_feed.py 5            # create several runs so the feed is swipeable
+& $PY scripts\samples\seed_reproduced.py       # two fully reproduced scenarios (date picker + login) with proof
+& $PY scripts\check\dogfood.py                # live end-to-end: reproduce a real bug → before/after proof
+& $PY scripts\check\benchmark.py              # reproduce-rate over seeded apps (generalization)
+& $PY scripts\check\evaluate_repros.py        # offline quality gate (tests/eval/expected.json)
 ```
 
 Typical first run:
 
 ```powershell
-& $PY scripts\make_sample_bug.py
+& $PY scripts\samples\make_sample_bug.py
 & $PY -m taketwo.surfaces.cli record runtime/data/sample_bug.mov
 & $PY -m uvicorn taketwo.surfaces.gui2:app --port 8000
 # http://localhost:8000/gui2/
@@ -220,7 +220,7 @@ runtime/
 - **`Playwright not installed` / no browser** → `pip install -r requirements.txt` && `python -m playwright install chromium`.
 - **`Missing required environment variables`** → fill `API_KEY`/`API_BASE`/`MODEL_NAME` in `.env`
   (or run offline against the sample fixtures).
-- **App looks empty** → run `scripts\seed_feed.py 5` (or `make_sample_bug.py`) to create runs.
+- **App looks empty** → run `scripts\samples\seed_feed.py 5` (or `make_sample_bug.py`) to create runs.
 - **Changed the SvelteKit app but nothing changed** → `cd taketwo\surfaces\app; npm run build`.
 - **`APP_START_COMMAND` set but the fix re-run shows the bug** → the app didn't restart; check
   `PATCHED_APP_URL` and that the command serves the patched checkout.

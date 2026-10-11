@@ -1,6 +1,6 @@
 """Serve the sample buggy app so a reproduction can run against a real page.
 
-    python scripts/serve_sample_app.py [port]      # default: http://localhost:3000
+    python scripts/samples/serve_sample_app.py [port]      # default: http://localhost:3000
 
 Then:  taketwo record <clip> --app http://localhost:3000
 """
@@ -13,7 +13,7 @@ import sys
 from functools import partial
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1] / "examples" / "sample_app"
+ROOT = Path(__file__).resolve().parents[2] / "samples" / "sample_app"
 
 
 def main(port: int = 3000) -> int:

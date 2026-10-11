@@ -3,7 +3,7 @@
 Each scenario has its own buggy app, so the feed shows genuine "Fixed" runs with a
 before/after video — no model calls needed (deterministic fixtures).
 
-    python scripts/seed_reproduced.py
+    python scripts/samples/seed_reproduced.py
 """
 
 from __future__ import annotations
@@ -14,22 +14,21 @@ import sys
 import tempfile
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from _harness import free_port, playwright_available, serve  # noqa: E402
-
+from scripts._harness import free_port, playwright_available, serve  # noqa: E402
 from taketwo import core  # noqa: E402
 from taketwo.core.bootstrap import run, setup  # noqa: E402
-from taketwo.integrations import appserver  # noqa: E402
 from taketwo.core.stages.prove import stitch  # noqa: E402
+from taketwo.integrations import appserver  # noqa: E402
 from taketwo.integrations.storage import runtime  # noqa: E402
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 
 SCENARIOS = [
     {
         "stem": "repro_date",
-        "app": ROOT / "examples" / "sample_app",
+        "app": ROOT / "samples" / "sample_app",
         "bug": "const value = input.value;",
         "fix": "const value = button.textContent;",
         "clicks": ["#dateField", "button.day"],
@@ -42,7 +41,7 @@ SCENARIOS = [
     },
     {
         "stem": "repro_login",
-        "app": ROOT / "examples" / "sample_form",
+        "app": ROOT / "samples" / "sample_form",
         "bug": "const email = field.value;",
         "fix": "const email = document.getElementById('user').value;",
         "clicks": ["#go"],

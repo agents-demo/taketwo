@@ -137,8 +137,8 @@ CORS-enabled).
 
 ## Tools & scripts
 
-- `scripts/make_sample_bug.py` — synthetic fixtures (offline demo + a `_live` variant).
-- `scripts/serve_sample_app.py` — serve `examples/sample_app` for a live reproduction.
-- `scripts/dogfood.py` — live end-to-end: reproduce a real browser bug → before/after proof.
-- `scripts/benchmark.py` — reproduce rate over seeded apps (generalization signal).
-- `scripts/evaluate_repros.py` — offline quality gate against `tests/eval/expected.json`.
+- `scripts/samples/make_sample_bug.py` — synthetic fixtures (offline demo + a `_live` variant).
+- `scripts/samples/serve_sample_app.py` — serve `samples/sample_app` for a live reproduction.
+- `scripts/check/dogfood.py` — live end-to-end: reproduce a real browser bug → before/after proof.
+- `scripts/check/benchmark.py` — reproduce rate over seeded apps (generalization signal).
+- `scripts/check/evaluate_repros.py` — offline quality gate against `tests/eval/expected.json`.
