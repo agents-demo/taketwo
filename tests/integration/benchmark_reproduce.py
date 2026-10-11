@@ -15,7 +15,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from scripts._harness import free_port, live_reproduce, playwright_available, serve  # noqa: E402
+from harness import free_port, live_reproduce, playwright_available, serve  # noqa: E402
+
 from taketwo.core.bootstrap import run, setup  # noqa: E402
 from taketwo.integrations import appserver  # noqa: E402
 

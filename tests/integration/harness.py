@@ -1,7 +1,7 @@
-"""Shared helpers for the live end-to-end scripts (Playwright + a served app).
+"""Shared helpers for the live browser checks (Playwright + a served app + the reproduce stage).
 
-Not a product module: dev tooling under ``scripts/``. Requires the browser extra
-(``pip install -r requirements.txt && python -m playwright install chromium``).
+Lives beside the live checks under ``tests/integration/``; imported by
+``benchmark_reproduce.py`` and ``check_reproduce.py``.
 """
 
 from __future__ import annotations
@@ -11,7 +11,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from taketwo.core.run_session import start_session  # noqa: E402
 from taketwo.core.stages.reproduce import replay_steps, reproduce  # noqa: E402
@@ -36,7 +36,7 @@ def free_port() -> int:
 
 
 def serve(directory: str | Path, port: int, cwd: str | Path) -> Any:
-    """Serve ``directory`` over HTTP and wait until it responds."""
+    """Serve ``directory`` over HTTP and return the running app handle."""
     command = f'"{sys.executable}" -m http.server {port} --directory "{directory}"'
     return appserver.start(command, cwd, f"http://localhost:{port}")
 
@@ -58,20 +58,3 @@ async def rerun(session: Any, steps: list[dict]) -> str:
     start = len(browser.console)
     await replay_steps.replay(browser, steps)
     return replay_steps.failure_signal(browser.console[start:])
-
-
-def run_steps(page: Any, steps: list[dict]) -> None:
-    """Play a scenario's steps on a sync Playwright page (throws inside a step are ignored)."""
-    for step in steps:
-        action, target = step.get("action"), step.get("target")
-        try:
-            if action == "click" and target:
-                page.click(target)
-            elif action == "fill" and target:
-                page.fill(target, str(step.get("value", "")))
-            elif action == "goto" and target:
-                page.goto(target)
-            elif action == "wait":
-                page.wait_for_timeout(300)
-        except Exception:
-            pass

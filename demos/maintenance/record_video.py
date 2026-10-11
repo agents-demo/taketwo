@@ -10,20 +10,57 @@ timeline sidecar, so ``understand`` has to watch the video).
 from __future__ import annotations
 
 import shutil
+import socket
 import sys
 import tempfile
 from pathlib import Path
+from typing import Any
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2]))  # repo root (scripts._harness)
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))  # demos/ (for _scenario)
 
 from _scenario import app_dir, clip, load  # noqa: E402
 
-from scripts._harness import free_port, playwright_available, run_steps, serve  # noqa: E402
-
 INTRO_MS = 800  # hold on the initial page
 PACE_MS = 1200  # pause after each step
 OUTRO_MS = 800  # hold at the end
+
+
+def _free_port() -> int:
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+        sock.bind(("127.0.0.1", 0))
+        return int(sock.getsockname()[1])
+
+
+def _playwright_available() -> bool:
+    try:
+        import playwright.sync_api  # noqa: F401
+
+        return True
+    except Exception:
+        return False
+
+
+def _serve(directory: Path, cwd: Path) -> Any:
+    from taketwo.integrations import appserver
+
+    port = _free_port()
+    command = f'"{sys.executable}" -m http.server {port} --directory "{directory}"'
+    return appserver.start(command, str(cwd), f"http://localhost:{port}")
+
+
+def _run_step(page: Any, step: dict) -> None:
+    action, target = step.get("action"), step.get("target")
+    try:
+        if action == "click" and target:
+            page.click(target)
+        elif action == "fill" and target:
+            page.fill(target, str(step.get("value", "")))
+        elif action == "goto" and target:
+            page.goto(target)
+        elif action == "wait":
+            page.wait_for_timeout(300)
+    except Exception:
+        pass
 
 
 def _record(url: str, steps: list[dict], work: Path) -> Path:
@@ -40,7 +77,7 @@ def _record(url: str, steps: list[dict], work: Path) -> Path:
         page.goto(url, wait_until="networkidle")
         page.wait_for_timeout(INTRO_MS)
         for step in steps:
-            run_steps(page, [step])
+            _run_step(page, step)
             page.wait_for_timeout(PACE_MS)
         page.wait_for_timeout(OUTRO_MS)
         webm = Path(page.video.path())
@@ -68,14 +105,13 @@ def main(name: str = "booking") -> int:
     from taketwo.integrations import appserver
 
     setup()
-    if not playwright_available():
+    if not _playwright_available():
         print("Playwright not installed.  python -m playwright install chromium")
         return 2
 
     root = Path(__file__).resolve().parents[2]
-    out = clip(name)
+    app = _serve(app_dir(name), root)
     work = Path(tempfile.mkdtemp(prefix=f"taketwo_rec_{name}_"))
-    app = serve(app_dir(name), free_port(), root)
     try:
         if not app:
             print("could not start the demo app")
@@ -84,9 +120,9 @@ def main(name: str = "booking") -> int:
     finally:
         appserver.stop(app)
 
-    frames = _to_mp4(webm, out)
+    frames = _to_mp4(webm, clip(name))
     shutil.rmtree(work, ignore_errors=True)
-    print(f"clip: {out}  ({frames} frames)")
+    print(f"clip: {clip(name)}  ({frames} frames)")
     return 0
 
 

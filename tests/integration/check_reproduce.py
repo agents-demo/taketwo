@@ -13,12 +13,12 @@ import sys
 import tempfile
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2]))  # repo root (scripts._harness)
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))  # repo root (taketwo, harness)
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "demos"))  # demos/ (_scenario)
 
 from _scenario import app_dir, load  # noqa: E402
+from harness import free_port, live_reproduce, playwright_available, rerun, serve  # noqa: E402
 
-from scripts._harness import free_port, live_reproduce, playwright_available, rerun, serve  # noqa: E402
 from taketwo.core.stages.prove import stitch  # noqa: E402
 from taketwo.integrations import appserver  # noqa: E402
 from taketwo.integrations.storage import runtime  # noqa: E402
