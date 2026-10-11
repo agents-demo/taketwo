@@ -70,8 +70,6 @@ async def understand(video_path: str, progress: Progress | None = None, agent: A
     clicks, sheet_path = await asyncio.to_thread(_observe, video_path)
 
     sidecar = _sidecar(video_path)
-    if sidecar:
-        return timeline_mod.normalize(sidecar)
 
     if agent is not None:
         tick(progress, "inferring steps", 30)
@@ -79,10 +77,19 @@ async def understand(video_path: str, progress: Progress | None = None, agent: A
             text = await agent_reply.ask(agent, prompts.build_user(sheet_path, clicks))
             data = agent_reply.extract_json(text)
             if data.get("steps"):
-                return timeline_mod.normalize(data)
+                timeline = timeline_mod.normalize(data)
+                timeline["source"] = "vision"
+                return timeline
         except Exception:
             pass
 
-    return timeline_mod.normalize(
+    if sidecar:
+        timeline = timeline_mod.normalize(sidecar)
+        timeline["source"] = "sidecar"
+        return timeline
+
+    timeline = timeline_mod.normalize(
         {"steps": _steps_from_motion(clicks), "failure": {"summary": "", "timestamp": 0.0, "signal": ""}}
     )
+    timeline["source"] = "motion"
+    return timeline

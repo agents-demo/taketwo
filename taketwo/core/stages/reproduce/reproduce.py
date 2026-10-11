@@ -31,6 +31,17 @@ def _sidecar(video_path: str) -> dict[str, Any] | None:
         return None
 
 
+def _timeline_steps(video_path: str) -> list[dict[str, Any]]:
+    """The steps from a shipped ``<video>.timeline.json`` (the demo's known-good path)."""
+    path = Path(f"{video_path}.timeline.json")
+    if not path.exists():
+        return []
+    try:
+        return json.loads(path.read_text(encoding="utf-8")).get("steps") or []
+    except Exception:
+        return []
+
+
 def _ground_agent(run_session: Any) -> Any:
     """Build the grounding agent (best-effort; ``None`` without a configured model)."""
     try:
@@ -80,10 +91,9 @@ async def reproduce(
         if run_session is not None:
             run_session.browser = session
 
-    steps = timeline.get("steps", [])
-    # A shipped timeline (``<video>.timeline.json``) has exact selectors — trust it and do
-    # not re-ground via the model (which only guesses when steps were inferred from video).
-    trusted = Path(f"{video_path}.timeline.json").exists()
+    steps = list(timeline.get("steps", []))
+    # Shipped timelines have exact selectors — trust them and skip model grounding.
+    trusted = timeline.get("source") == "sidecar"
     if session.live and not trusted:
         steps = await _ground(steps, await session.outline(), run_session)
 
@@ -91,6 +101,15 @@ async def reproduce(
     records = await replay_steps.replay(session, steps)
     new_console = session.console[before_console:]
     signal = replay_steps.failure_signal(new_console)
+
+    # Vision/motion steps can miss the bug; fall back to the demo's shipped timeline if any.
+    if not signal and not trusted:
+        fallback = _timeline_steps(video_path)
+        if fallback:
+            before_console = len(session.console)
+            records = await replay_steps.replay(session, fallback)
+            new_console = session.console[before_console:]
+            signal = replay_steps.failure_signal(new_console)
 
     before_clip = await session.snapshot(runtime.ARTIFACTS_DIR / job / "before.png") if session.live else None
 

@@ -27,7 +27,7 @@ def _demo_tab() -> None:
     pick = st.selectbox("Bundled demo", names, format_func=samples.scenario_label, key="demo_pick")
     if st.button(f"Run the “{samples.scenario_title(pick)}” demo", type="primary", icon=":material/play_arrow:"):
         queue(samples.scenario_clip(pick), "", "main", samples.serve_scenario(pick), False)
-    st.caption("✅ = reproduces deterministically · serves the demo app for you.")
+    st.caption("✅ = has a fallback timeline · the model still reads the recording.")
 
 
 def _own_tab() -> None:

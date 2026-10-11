@@ -187,13 +187,15 @@ In the GUI you also see the **Review** page and the **Scoreboard**.
 
 ## One important thing
 
-**Demos reproduce deterministically.** Each demo clip ships a **timeline**
-(`clip.mp4.timeline.json`) with the exact steps, so `understand` uses those and the browser
-replay hits the bug every time. The **✅** next to a demo in the dropdown means it has this
-timeline. (A **⚠** demo would need the vision model to guess the steps.)
+**Demos use the model, and still reproduce reliably.**
 
-So a demo does **not** use the vision model. To exercise the model, use the **Your own bug**
-tab with your own recording — then `understand` watches the video with the vision model.
+`understand` runs the **vision model** on the recording (it reads a contact sheet of frames) —
+same as for your own clips. If the model's steps miss the bug, TakeTwo falls back to a shipped
+**timeline** (`clip.mp4.timeline.json`) with the exact steps, so the browser replay still hits the
+bug. The **✅** in the demo dropdown means a demo has that fallback (a **⚠** demo has none).
+
+So on a demo you get the real pipeline — vision understand → browser reproduce. (Demos have no
+repository, so there's still no fix/proof/PR; see below.)
 
 The demo apps are single HTML files. They are **not** a git repository. So on a demo you
 get:

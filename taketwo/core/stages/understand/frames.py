@@ -45,13 +45,14 @@ def sample_frames(
     meta: dict[str, Any] = {"path": str(video_path), "kind": "video"}
     try:
         import imageio.v3 as iio
+        from PIL import Image
 
         frames: list = []
         timestamps: list[float] = []
         step = max(1, int(round(1.0 / max(fps, 0.01))))
         for i, frame in enumerate(iio.imiter(video_path)):
             if i % step == 0:
-                frames.append(frame)
+                frames.append(Image.fromarray(frame))  # PIL (the rest of the stage expects it)
                 timestamps.append(i / max(fps, 0.01))
             if len(frames) >= max_frames:
                 break

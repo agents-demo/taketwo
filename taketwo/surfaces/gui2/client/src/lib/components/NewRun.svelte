@@ -98,7 +98,7 @@
       {#if !demos.length}
         <p class="mt-2 text-xs text-bad">No demos found under <code>demos/scenarios/</code>.</p>
       {:else}
-        <p class="mt-2 text-xs text-muted">✅ reproduces deterministically · the demo app is served for you.</p>
+        <p class="mt-2 text-xs text-muted">✅ has a fallback timeline · the model still reads the recording.</p>
       {/if}
     </div>
   {:else}
