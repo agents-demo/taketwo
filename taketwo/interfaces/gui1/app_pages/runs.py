@@ -6,7 +6,7 @@ import streamlit as st
 
 from taketwo.interfaces.gui1 import config, data, session
 from taketwo.interfaces.gui1.app_pages import detail, pages
-from taketwo.interfaces.gui1.components import empty_state, live_job, new_run, runs_table
+from taketwo.interfaces.gui1.components import empty_state, live_job, new_run, readiness, runs_table
 from taketwo.pipeline.jobs import get_runner
 
 
@@ -57,6 +57,7 @@ def page() -> None:
     all_rows = data.rows(None)
     _latest_run(all_rows)
 
+    readiness.strip()
     new_run.new_run()
     live_job.live_job()
     active = get_runner().active()

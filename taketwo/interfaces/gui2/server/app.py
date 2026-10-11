@@ -13,6 +13,7 @@ from fastapi.staticfiles import StaticFiles
 
 from taketwo.interfaces.gui2.server import config
 from taketwo.interfaces.gui2.server.routes import ingest, jobs, media, replay, runs
+from taketwo.readiness import checks as readiness_checks
 
 app = FastAPI(title="TakeTwo")
 
@@ -38,6 +39,12 @@ if config.SAMPLE_APP.is_dir():
 @app.get("/health")
 def health() -> dict:
     return {"ok": True}
+
+
+@app.get("/ready")
+def ready() -> dict:
+    """Environment readiness (model / browser / delivery / sample) for the UI."""
+    return {"checks": readiness_checks()}
 
 
 @app.get("/")

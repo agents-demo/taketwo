@@ -5,6 +5,7 @@
   import NewRun from "$lib/components/NewRun.svelte";
   import LiveJob from "$lib/components/LiveJob.svelte";
   import LatestRun from "$lib/components/LatestRun.svelte";
+  import Readiness from "$lib/components/Readiness.svelte";
   import Stats from "$lib/components/Stats.svelte";
   import Filter from "$lib/components/Filter.svelte";
   import RunCard from "$lib/components/RunCard.svelte";
@@ -40,6 +41,8 @@
 {#if runs.length}
   <LatestRun run={runs[0]} />
 {/if}
+
+<Readiness />
 
 <NewRun onqueued={(id) => (jobId = id)} />
 

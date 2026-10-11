@@ -79,4 +79,5 @@
     >Record &amp; reproduce</button>
     <button onclick={useSample} class="rounded-xl border-2 border-line px-5 py-2.5 text-sm font-semibold">Try the sample</button>
   </div>
+  <p class="mt-2 text-xs text-muted">Typically ~5–15 model calls · 1–5 min, depending on the clip and the app.</p>
 </section>

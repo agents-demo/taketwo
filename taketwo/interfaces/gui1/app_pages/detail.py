@@ -96,7 +96,7 @@ def render(job: str) -> None:
         note = st.text_input("Note", placeholder="Why approve or send back…", label_visibility="collapsed")
         actions = st.container(horizontal=True)
         approve = actions.button(
-            "Approve & merge", type="primary", icon=":material/check_circle:", disabled=not verification.get("verified")
+            "Approve", type="primary", icon=":material/check_circle:", disabled=not verification.get("verified")
         )
         changes = actions.button("Request changes", icon=":material/undo:")
         if approve:
@@ -110,6 +110,7 @@ def render(job: str) -> None:
             st.rerun()
         if not verification.get("verified"):
             st.caption("Approve is disabled until the fix is verified (a browser re-run or tests actually ran).")
+        st.caption("Approval is recorded here (with an audit entry); the draft PR is merged by a human on GitHub.")
 
         pr, issue = delivery.get("pr") or {}, delivery.get("issue") or {}
         links = st.container(horizontal=True)

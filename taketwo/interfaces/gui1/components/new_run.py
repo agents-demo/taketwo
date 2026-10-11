@@ -35,6 +35,7 @@ def new_run() -> None:
         submitted = cols[4].button("Record & reproduce", icon=":material/play_arrow:", type="primary")
 
         sample = st.button("Try the sample bug — no setup", icon=":material/science:")
+        st.caption("Typically ~5–15 model calls · 1–5 min, depending on the clip and the app.")
 
     if submitted:
         video_path = samples.sample_path()

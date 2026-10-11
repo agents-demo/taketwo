@@ -15,10 +15,11 @@
     onclick={() => ondecide?.("approved", note, actor)}
     disabled={!run.verified}
     class="rounded-xl bg-gradient-to-br from-accent to-accent2 px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-40"
-  >Approve &amp; merge</button>
+  >Approve</button>
   <button onclick={() => ondecide?.("changes_requested", note, actor)} class="rounded-xl border-2 border-line px-5 py-2.5 text-sm font-semibold">Request changes</button>
   <span class="ml-auto self-center text-xs text-muted">status: {run.review}</span>
 </div>
+<p class="mt-2 text-xs text-muted">Approval is recorded here (with an audit entry); the draft PR is merged by a human on GitHub.</p>
 {#if !run.verified}
   <p class="mt-2 text-xs text-muted">Approve is disabled until the fix is verified (a browser re-run or tests actually ran).</p>
 {/if}

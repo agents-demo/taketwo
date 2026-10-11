@@ -26,6 +26,7 @@ export const submit = (body) =>
 export const cancel = (id) => api(`/jobs/${encodeURIComponent(id)}/cancel`, { method: "POST" });
 export const retry = (id) => api(`/jobs/${encodeURIComponent(id)}/retry`, { method: "POST" });
 export const jobs = () => api("/jobs");
+export const readiness = () => api("/ready");
 export const sample = () => api("/sample");
 
 export const cardScore = () => "/cards/score";

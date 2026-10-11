@@ -93,7 +93,8 @@ difference is the shell they run in.
    - If you have `APP_START_COMMAND` set, the pipeline can start the app under test itself.
 3. Watch the **live run**: understand → reproduce → repair → prove → deliver.
 4. Open the **Review**: scrub the before/after, read the diff, approve or send back.
-5. **Approve & merge** — a draft PR/issue is opened for a real repo; the approve step is the human gate.
+5. **Approve** — record the human decision (note + reviewer, with an audit entry). The draft PR/issue was
+   opened during the run; the merge itself stays a human step on GitHub.
 
 ---
 
@@ -102,7 +103,7 @@ difference is the shell they run in.
 ```powershell
 & $PY -m taketwo.interfaces.cli record runtime/data/sample_bug.mov   # reproduce + fix a clip
 & $PY -m taketwo.interfaces.cli history                              # recent runs
-& $PY -m taketwo.interfaces.cli show sample_bug                      # a run's issue text
+& $PY -m taketwo.interfaces.cli show                                 # latest run's issue text
 & $PY -m taketwo.interfaces.cli reset                                # clear saved runs
 ```
 

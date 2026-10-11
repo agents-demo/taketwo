@@ -67,6 +67,7 @@ class Strategy:
         if not Path(params.video_path).exists():
             raise FileNotFoundError(f"recording not found: {params.video_path}")
 
+        submission["run"] = submission.get("run") or submission_mod.unique_run(submission)
         params.submission = submission
         params.job = submission_mod.job_id(submission)
         store.set_current_job(params.job)
