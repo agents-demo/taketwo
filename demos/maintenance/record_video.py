@@ -9,6 +9,7 @@ timeline sidecar, so ``understand`` has to watch the video).
 
 from __future__ import annotations
 
+import json
 import shutil
 import socket
 import sys
@@ -121,6 +122,10 @@ def main(name: str = "booking") -> int:
         appserver.stop(app)
 
     frames = _to_mp4(webm, clip(name))
+    # A timeline sidecar makes the demo reproduce deterministically (no vision guess).
+    Path(f"{clip(name)}.timeline.json").write_text(
+        json.dumps({"steps": load(name)["steps"], "failure": {}}, indent=2), encoding="utf-8"
+    )
     shutil.rmtree(work, ignore_errors=True)
     print(f"clip: {clip(name)}  ({frames} frames)")
     return 0

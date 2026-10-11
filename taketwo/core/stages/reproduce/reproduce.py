@@ -81,7 +81,10 @@ async def reproduce(
             run_session.browser = session
 
     steps = timeline.get("steps", [])
-    if session.live:
+    # A shipped timeline (``<video>.timeline.json``) has exact selectors — trust it and do
+    # not re-ground via the model (which only guesses when steps were inferred from video).
+    trusted = Path(f"{video_path}.timeline.json").exists()
+    if session.live and not trusted:
         steps = await _ground(steps, await session.outline(), run_session)
 
     before_console = len(session.console)

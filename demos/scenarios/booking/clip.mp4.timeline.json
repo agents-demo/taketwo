@@ -1,0 +1,7 @@
+{
+  "steps": [
+    {"action": "click", "target": "#dateField", "timestamp": 1.0, "confidence": 0.9},
+    {"action": "click", "target": "button.day", "timestamp": 2.0, "confidence": 0.9}
+  ],
+  "failure": {}
+}

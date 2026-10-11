@@ -30,6 +30,16 @@ def scenario_clip(name: str) -> str:
     return str(path) if path.exists() else ""
 
 
+def scenario_reproducible(name: str) -> bool:
+    """True when the scenario ships a timeline sidecar (reproduces without a vision guess)."""
+    return (config.SCENARIOS_DIR / name / "clip.mp4.timeline.json").exists()
+
+
+def scenario_label(name: str) -> str:
+    mark = "✅ " if scenario_reproducible(name) else "⚠️ "
+    return mark + scenario_title(name)
+
+
 def serve_scenario(name: str, port: int = 8130) -> str:
     """Serve a scenario's app locally and return its URL (one demo app at a time, cached)."""
     current = st.session_state.get("_demo_app_name")

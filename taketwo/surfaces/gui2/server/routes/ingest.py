@@ -55,6 +55,7 @@ def scenarios(request: Request) -> dict:
                     "title": title,
                     "clip": str(clip) if clip.exists() else "",
                     "app_url": f"{base}/demoapps/{path.name}/app/",
+                    "reproducible": Path(f"{clip}.timeline.json").exists(),
                 }
             )
     return {"scenarios": out}

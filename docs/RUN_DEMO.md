@@ -187,6 +187,14 @@ In the GUI you also see the **Review** page and the **Scoreboard**.
 
 ## One important thing
 
+**Demos reproduce deterministically.** Each demo clip ships a **timeline**
+(`clip.mp4.timeline.json`) with the exact steps, so `understand` uses those and the browser
+replay hits the bug every time. The **✅** next to a demo in the dropdown means it has this
+timeline. (A **⚠** demo would need the vision model to guess the steps.)
+
+So a demo does **not** use the vision model. To exercise the model, use the **Your own bug**
+tab with your own recording — then `understand` watches the video with the vision model.
+
 The demo apps are single HTML files. They are **not** a git repository. So on a demo you
 get:
 

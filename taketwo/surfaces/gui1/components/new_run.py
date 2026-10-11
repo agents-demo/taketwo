@@ -24,10 +24,10 @@ def _demo_tab() -> None:
     if not names:
         st.caption("No demos found under demos/scenarios/.")
         return
-    pick = st.selectbox("Bundled demo", names, format_func=samples.scenario_title, key="demo_pick")
+    pick = st.selectbox("Bundled demo", names, format_func=samples.scenario_label, key="demo_pick")
     if st.button(f"Run the “{samples.scenario_title(pick)}” demo", type="primary", icon=":material/play_arrow:"):
         queue(samples.scenario_clip(pick), "", "main", samples.serve_scenario(pick), False)
-    st.caption("Serves the demo app for you — no setup.")
+    st.caption("✅ = reproduces deterministically · serves the demo app for you.")
 
 
 def _own_tab() -> None:

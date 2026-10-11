@@ -1,0 +1,8 @@
+{
+  "steps": [
+    {"action": "click", "target": "#inc", "timestamp": 1.0, "confidence": 0.9},
+    {"action": "click", "target": "#inc", "timestamp": 2.0, "confidence": 0.9},
+    {"action": "click", "target": "#add", "timestamp": 3.0, "confidence": 0.9}
+  ],
+  "failure": {}
+}

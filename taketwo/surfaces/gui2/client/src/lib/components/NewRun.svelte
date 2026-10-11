@@ -87,7 +87,7 @@
     <div class="mt-4">
       <label class="block text-xs text-muted">Bundled demo
         <select bind:value={chosen} class="mt-1 w-full rounded-lg border-2 border-line bg-ink px-3 py-2 text-sm">
-          {#each demos as d (d.name)}<option value={d.name}>{d.title}</option>{/each}
+          {#each demos as d (d.name)}<option value={d.name}>{d.reproducible ? "✅ " : "⚠ "}{d.title}</option>{/each}
         </select>
       </label>
       <button
@@ -98,7 +98,7 @@
       {#if !demos.length}
         <p class="mt-2 text-xs text-bad">No demos found under <code>demos/scenarios/</code>.</p>
       {:else}
-        <p class="mt-2 text-xs text-muted">Serves the demo app for you — no setup.</p>
+        <p class="mt-2 text-xs text-muted">✅ reproduces deterministically · the demo app is served for you.</p>
       {/if}
     </div>
   {:else}

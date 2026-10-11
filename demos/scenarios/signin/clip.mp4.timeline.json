@@ -1,0 +1,8 @@
+{
+  "steps": [
+    {"action": "fill", "target": "#user", "value": "ada@northwind.example", "timestamp": 1.0, "confidence": 0.9},
+    {"action": "fill", "target": "#pass", "value": "secret", "timestamp": 1.5, "confidence": 0.9},
+    {"action": "click", "target": "#go", "timestamp": 2.0, "confidence": 0.9}
+  ],
+  "failure": {}
+}
