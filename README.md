@@ -19,6 +19,7 @@ reproduction, a fix, and a **before/after proof video**. Built on [openjiuwen](h
 5. **Deliver.** Open an issue (steps + evidence) and a draft PR (diff + test + proof).
 
 - **New here?** [QUICKSTART.md](QUICKSTART.md) — the fast path.
+- **Run a demo step by step:** [docs/RUN_DEMO.md](docs/RUN_DEMO.md).
 - **Full guide:** [docs/USAGE.md](docs/USAGE.md) — setup, surfaces, workflow, API, scripts, settings, troubleshooting.
 - **Design:** [docs/architecture.md](docs/architecture.md).
 

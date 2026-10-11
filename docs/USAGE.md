@@ -6,6 +6,8 @@ reproduction, a fix, and a **before/after proof video**. A human maintainer appr
 This guide covers everything a user needs: setup, the surfaces, the workflow, the demo scripts, the
 settings, and troubleshooting.
 
+> Just want to run a demo? See the step-by-step guide: [RUN_DEMO.md](RUN_DEMO.md).
+
 ---
 
 ## 1. What it does
