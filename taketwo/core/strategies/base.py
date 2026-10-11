@@ -88,7 +88,7 @@ class Strategy:
         store.save_repro(params.job, reproduction)
         params.reproduction = reproduction
 
-        fix = await repair(reproduction, params.repo, params.job, progress)
+        fix = await repair(reproduction, params.repo, params.job, progress, video_path=params.video_path)
         store.save_fix(params.job, fix)
         params.fix = fix
 
@@ -100,6 +100,7 @@ class Strategy:
             base_branch=params.base_branch,
             run_session=params.session,
             progress=progress,
+            video_path=params.video_path,
         )
         store.save_proof(params.job, proof)
         params.proof = proof

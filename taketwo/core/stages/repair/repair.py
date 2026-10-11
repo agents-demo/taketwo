@@ -12,7 +12,7 @@ import asyncio
 from pathlib import Path
 from typing import Any
 
-from taketwo.core import agent_reply
+from taketwo.core import agent_reply, scenarios
 from taketwo.core.progress import Progress, tick
 from taketwo.core.stages.repair import localize, prompts
 from taketwo.domain import fix as fix_mod
@@ -41,7 +41,13 @@ def _build_repo_agent(repo_dir: Path) -> Any:
         return None
 
 
-async def repair(reproduction: dict[str, Any], repo: str, job: str, progress: Progress | None = None) -> dict[str, Any]:
+async def repair(
+    reproduction: dict[str, Any],
+    repo: str,
+    job: str,
+    progress: Progress | None = None,
+    video_path: str = "",
+) -> dict[str, Any]:
     """Return a normalized fix (possibly empty when nothing could be fixed)."""
     if reproduction.get("verdict") != "reproduced":
         return fix_mod.normalize({"summary": "no fix: the bug was not reproduced"})
@@ -59,6 +65,19 @@ async def repair(reproduction: dict[str, Any], repo: str, job: str, progress: Pr
                 "files": _files_from_diff(diff),
                 "diff": diff,
                 "test": test,
+                "culprits": culprits,
+            }
+        )
+
+    # Demo scenario without a repo: use the fix the scenario ships for its little app.
+    scenario = scenarios.for_video(video_path)
+    if scenario and scenario.get("patch"):
+        return fix_mod.normalize(
+            {
+                "summary": reproduction.get("evidence", {}).get("summary") or "resolve the reproduced bug",
+                "files": _files_from_diff(scenario["patch"]),
+                "diff": scenario["patch"],
+                "test": scenario.get("test", ""),
                 "culprits": culprits,
             }
         )

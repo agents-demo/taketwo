@@ -7,6 +7,7 @@
     {"action": "click", "target": "#go", "timestamp": 2.0, "confidence": 0.9}
   ],
   "evidence": "TypeError: Cannot read properties of null (reading 'value')",
+  "test": "def test_login_shows_status():\n    sign_in('ada@northwind.example', 'secret')\n    assert page.locator('#status').is_visible()\n",
   "proof": {"find": "const field = null;", "replace": "const field = document.getElementById('user');"},
   "patch": "--- a/src/login.js\n+++ b/src/login.js\n@@\n-  const email = field.value;\n+  const email = document.getElementById('user').value;\n"
 }

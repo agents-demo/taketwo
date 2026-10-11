@@ -12,9 +12,14 @@ from __future__ import annotations
 
 import asyncio
 import json
+import shutil
+import socket
+import sys
+import tempfile
+from pathlib import Path
 from typing import Any
 
-from taketwo.core import config
+from taketwo.core import config, scenarios
 from taketwo.core.progress import Progress, tick
 from taketwo.core.stages.prove import stitch
 from taketwo.domain import compare as compare_mod
@@ -67,6 +72,36 @@ async def _patched_rerun(reproduction: dict, fix: dict, repo: str, base_branch: 
                 pass
 
 
+def _free_port() -> int:
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+        sock.bind(("127.0.0.1", 0))
+        return int(sock.getsockname()[1])
+
+
+async def _demo_rerun(reproduction: dict, scenario: dict, session: Any, video_path: str) -> str | None:
+    """Serve a patched copy of the demo app and re-run the steps (no git repo needed)."""
+    fix = scenario.get("proof") or {}
+    app_dir = Path(video_path).parent / "app"
+    if not (fix.get("find") and fix.get("replace")) or not app_dir.is_dir():
+        return None
+    work = Path(tempfile.mkdtemp(prefix="taketwo_demo_")) / "app"
+    shutil.copytree(app_dir, work)
+    html = work / "index.html"
+    html.write_text(html.read_text(encoding="utf-8").replace(fix["find"], fix["replace"]), encoding="utf-8")
+
+    port = _free_port()
+    command = f'"{sys.executable}" -m http.server {port} --directory "{work}"'
+    app = await asyncio.to_thread(appserver.start, command, str(work.parent), f"http://localhost:{port}")
+    try:
+        if app is None:
+            return None
+        await session.navigate(app.url)
+        return await _rerun(session, reproduction)
+    finally:
+        appserver.stop(app)
+        shutil.rmtree(work.parent, ignore_errors=True)
+
+
 def _run_result(job: str, fix: dict, repo: str, base_branch: str, replayed: str | None) -> dict[str, Any]:
     sidecar = runtime.DATA_DIR / f"{job}_proposed.result.json"
     if sidecar.exists():
@@ -96,6 +131,7 @@ async def prove(
     base_branch: str = "main",
     run_session: Any = None,
     progress: Progress | None = None,
+    video_path: str = "",
 ) -> dict[str, Any]:
     """Return the proof block (empty when there is no fix to prove)."""
     if not fix.get("diff"):
@@ -113,7 +149,11 @@ async def prove(
     replayed: str | None = None
     if session is not None and getattr(session, "live", False):
         # Playwright's async API runs on the event loop, same as everything else here.
-        replayed = await _patched_rerun(reproduction, fix, repo, base_branch, session)
+        scenario = scenarios.for_video(video_path)
+        if scenario:
+            replayed = await _demo_rerun(reproduction, scenario, session, video_path)
+        else:
+            replayed = await _patched_rerun(reproduction, fix, repo, base_branch, session)
         after_clip = await session.snapshot(proof_dir / "after.png") or ""
     elif (proof_dir / "after.png").exists():
         after_clip = str(proof_dir / "after.png")

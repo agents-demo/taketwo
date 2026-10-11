@@ -6,6 +6,7 @@
     {"action": "click", "target": "button.day", "timestamp": 2.0, "confidence": 0.9}
   ],
   "evidence": "TypeError: Cannot read properties of null (reading 'value')",
+  "test": "def test_datepicker_select():\n    select_date('2026-01-15')\n    assert page.locator('#dateField').inner_text() == '15'\n",
   "proof": {"find": "const value = input.value;", "replace": "const value = button.textContent;"},
   "patch": "--- a/src/datepicker.js\n+++ b/src/datepicker.js\n@@\n-  const value = input.value;\n+  const value = input?.value ?? '';\n"
 }

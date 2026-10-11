@@ -187,26 +187,18 @@ In the GUI you also see the **Review** page and the **Scoreboard**.
 
 ## One important thing
 
-**Demos use the model, and still reproduce reliably.**
+**Demos run fully end-to-end — including a fix and a before/after proof — with no repository.**
 
-`understand` runs the **vision model** on the recording (it reads a contact sheet of frames) —
-same as for your own clips. If the model's steps miss the bug, TakeTwo falls back to a shipped
-**timeline** (`clip.mp4.timeline.json`) with the exact steps, so the browser replay still hits the
-bug. The **✅** in the demo dropdown means a demo has that fallback (a **⚠** demo has none).
+- **understand** runs the **vision model** (it reads a contact sheet of frames). If the model's steps
+  miss the bug, TakeTwo falls back to the shipped **timeline** (`clip.mp4.timeline.json`). The **✅**
+  in the demo dropdown means a demo has that fallback (a **⚠** demo has none).
+- **reproduce** replays the steps in a real browser and captures the error + the **before** shot.
+- **repair** uses the fix each demo ships in `scenario.json`, so **prove** can re-run a patched copy
+  of the app → real **after** shot + a before/after **proof video** → **verified**.
+- The only thing you do **not** get is a **pull request** — that needs a real repository +
+  `GITHUB_TOKEN`.
 
-So on a demo you get the real pipeline — vision understand → browser reproduce. (Demos have no
-repository, so there's still no fix/proof/PR; see below.)
-
-The demo apps are single HTML files. They are **not** a git repository. So on a demo you
-get:
-
-- understand (the steps),
-- reproduce (the error + the "before" picture).
-
-You do **not** get a fix, a proof, or a pull request, because there is no repository to
-change.
-
-To get the full run (fix + proof + pull request), point TakeTwo at a real repository:
+To also practice the pull-request flow (or fix your own repository), point TakeTwo at a real repo:
 
 ```powershell
 # In .env, set:
