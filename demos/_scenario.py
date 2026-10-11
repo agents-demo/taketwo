@@ -1,4 +1,4 @@
-"""Locate and load demo scenarios (``demo/scenarios/<name>/``)."""
+"""Locate and load demo scenarios (``demos/scenarios/<name>/``)."""
 
 from __future__ import annotations
 

@@ -249,4 +249,4 @@ def test_deterministic_pipeline_runs_offline(tmp_path):
     assert outcome["reproduction"]["verdict"] in repro_mod.VERDICTS
     assert "result" in outcome and "fix" in outcome and "proof" in outcome
 
-    store.delete_job(outcome["job"])  # don't pollute the runtime store used by the demo/UI
+    store.delete_job(outcome["job"])  # don't pollute the runtime store used by the demos/UI

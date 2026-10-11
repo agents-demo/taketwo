@@ -4,7 +4,7 @@ Self-contained bug demos: a buggy app + a real ~5 s recording for each, so TakeT
 end-to-end with no setup. Adding a demo = adding one folder under `scenarios/`.
 
 ```
-demo/
+demos/
 ├── scenarios/            # one folder per demo
 │   ├── booking/          # date-picker bug
 │   │   ├── app/index.html
@@ -26,15 +26,15 @@ demo/
 $PY = "C:\Workspace\openjiuwen\jiuwenswarm\.venv\Scripts\python.exe"
 
 # 1. serve the app under test
-& $PY demo\serve_scenario.py booking                    # http://localhost:3000
+& $PY demos\serve_scenario.py booking                    # http://localhost:3000
 
 # 2. reproduce + fix it from the recording
-& $PY -m taketwo.surfaces.cli record demo\scenarios\booking\clip.mp4 --app http://localhost:3000
+& $PY -m taketwo.surfaces.cli record demos\scenarios\booking\clip.mp4 --app http://localhost:3000
 ```
 
 Or open either GUI and hit **Try the sample**.
 
 ## Add a scenario
 
-Create `demo/scenarios/<name>/` with `app/index.html`, `clip.mp4`, and a `scenario.json`
+Create `demos/scenarios/<name>/` with `app/index.html`, `clip.mp4`, and a `scenario.json`
 (`title`, `bug`, `steps`, `proof`, `patch`). The scripts pick it up by name — no code changes.

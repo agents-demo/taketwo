@@ -14,7 +14,7 @@ import tempfile
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))  # repo root (scripts._harness)
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "demo"))  # demo/ (_scenario)
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "demos"))  # demos/ (_scenario)
 
 from _scenario import app_dir, load  # noqa: E402
 

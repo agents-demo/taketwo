@@ -4,7 +4,7 @@ Uses Playwright's built-in recorder: it drives the scenario's steps in a real br
 *while recording*, then transcodes the recording to ``scenarios/<name>/clip.mp4`` (no
 timeline sidecar, so ``understand`` has to watch the video).
 
-    python demo/maintenance/record_video.py [scenario]          # default: booking
+    python demos/maintenance/record_video.py [scenario]          # default: booking
 """
 
 from __future__ import annotations
@@ -15,7 +15,7 @@ import tempfile
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))  # repo root (scripts._harness)
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))  # demo/ (for _scenario)
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))  # demos/ (for _scenario)
 
 from _scenario import app_dir, clip, load  # noqa: E402
 

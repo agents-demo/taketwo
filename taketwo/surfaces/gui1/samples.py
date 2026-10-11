@@ -22,7 +22,7 @@ def live_sample_path() -> str:
 
 
 def sample_app_url(port: int = 8130) -> str:
-    """Serve ``demo/scenarios/booking/app`` locally once and return its URL (for the live demo)."""
+    """Serve ``demos/scenarios/booking/app`` locally once and return its URL (for the live demo)."""
     cached = st.session_state.get("_sample_app")
     if cached is not None:
         return getattr(cached, "url", "")

@@ -1,6 +1,6 @@
 """Serve a demo scenario's app for a live reproduction.
 
-    python demo/serve_scenario.py [scenario] [port]     # default: booking 3000
+    python demos/serve_scenario.py [scenario] [port]     # default: booking 3000
 """
 
 from __future__ import annotations

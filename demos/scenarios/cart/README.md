@@ -7,4 +7,4 @@ A product page. **Bug:** the quantity stepper works, but clicking **Add to cart*
 - `clip.mp4` — a ~5 s recording of the bug
 - `scenario.json` — title, bug, steps, proof fix, patch
 
-Run it: `python demo/serve_scenario.py cart` then reproduce `clip.mp4`.
+Run it: `python demos/serve_scenario.py cart` then reproduce `clip.mp4`.

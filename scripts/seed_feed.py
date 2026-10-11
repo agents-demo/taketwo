@@ -1,4 +1,4 @@
-"""Seed the feed with a handful of runs so the deck is swipeable (demo/dev).
+"""Seed the feed with a handful of runs so the deck is swipeable (demos/dev).
 
 Runs the deterministic pipeline several times over copies of the sample fixtures, with a
 mix of verdicts: odd clips are 'fixed' (sidecar + verification result), even clips are
