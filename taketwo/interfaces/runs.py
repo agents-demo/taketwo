@@ -79,6 +79,19 @@ def get_run(job: str) -> dict[str, Any] | None:
     obs = json_store.read_json(runtime.ARTIFACTS_DIR / f"{job}_observability.json", {})
     obs = obs if isinstance(obs, dict) else {}
     found["usage"] = summary.get("usage") or {}
+    found["audit"] = store.get_review(job).get("audit") or []
+    submission = summary.get("submission") or {}
+    repro = store.get_repro(job)
+    fix = store.get_fix(job)
+    found["delivery"] = summary.get("delivery") or {}
+    found["timeline"] = summary.get("timings") or []
+    found["culprits"] = fix.get("culprits") or []
+    found["test"] = fix.get("test") or ""
+    found["console"] = (repro.get("evidence") or {}).get("console") or []
+    found["question"] = repro.get("question") or ""
+    found["when"] = _when(job)
+    found["base_branch"] = submission.get("base_branch", "main")
+    found["video_name"] = Path(submission.get("video_path", "")).name
     calls = obs.get("calls", []) or []
     for call in calls:
         text = " ".join(str(m.get("content", "")) for m in (call.get("input") or []) if isinstance(m, dict))

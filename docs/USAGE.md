@@ -57,10 +57,16 @@ A SvelteKit single-page app served by the API.
 ```
 
 Pages:
-- **Runs** — submit a clip (or repo/app), see past runs as cards with a thumbnail; live job status.
-- **Review** — the before/after **compare slider** (or proof video), the score/verdict/steps, the diff,
-  a **Usage** panel (model calls, tokens, latency, tool activity), **Approve / Request changes**, and an **Ask** box.
-- **Scoreboard** — the reproduce rate, counts, and a per-repo leaderboard.
+- **Runs** — submit a run: **upload a clip** (or paste a path), set repository / base branch / app URL,
+  toggle **Agentic**, or **Try the sample** in one tap. A **live multi-step feed** (per-stage progress +
+  timings) runs with **Cancel** / **Retry**; past runs show as cards with a thumbnail.
+- **Review** — the proof **video hero** (or the before/after **compare slider**), the score/verdict/steps,
+  the diff (+ suspected cause and regression test), a **Usage** panel (model calls, tokens, latency, tool
+  activity), a **pipeline timeline**, the **console** trace, **Approve / Request changes** (with a note and
+  reviewer — recorded in the **audit trail**), PR/issue links, **share** (download proof, proof card PNG,
+  caption), and an **Ask** chat.
+- **Scoreboard** — the reproduce rate, counts, a **trend chart**, a **hall of fame**, per-repo leaderboard,
+  and a downloadable **score card** PNG.
 
 A **☀️/🌙 toggle** in the header switches light/dark (defaults to your OS).
 
@@ -128,13 +134,20 @@ Start with `uvicorn taketwo.interfaces.api:app`. Key routes:
 | GET | `/health` | liveness |
 | POST | `/replay` | run synchronously, return the outcome |
 | POST | `/replay/async` | enqueue a job → `{job_id}` |
-| GET | `/jobs/{id}` | job status + progress |
+| POST | `/upload` | upload a clip (multipart) → `{path}` to submit |
+| GET | `/sample` | one-tap sample `{clip, app_url}` (served at `/sampleapp/`) |
+| GET | `/jobs` | all jobs (live "in flight" count) |
+| GET | `/jobs/{id}` | job status + progress (stage, pct, timings) |
+| POST | `/jobs/{id}/cancel` | cancel a queued/running job |
+| POST | `/jobs/{id}/retry` | requeue a job with the same parameters |
 | GET | `/runs` | all runs (feed) |
-| GET | `/runs/{job}` | one run |
+| GET | `/runs/{job}` | one run (incl. observability + review audit) |
 | GET | `/runs/{job}/ask?q=…` | ask about a run |
-| POST | `/runs/{job}/review/{decision}` | `approved` / `changes_requested` |
+| POST | `/runs/{job}/review/{decision}` | `approved` / `changes_requested` (`note`, `actor`) |
 | GET | `/scoreboard` | reproduce rate + repos |
 | GET | `/media/{job}/{name}` | proof artifacts (`proof.mp4`, `before.png`, `after.png`) |
+| GET | `/cards/score` | downloadable score card PNG |
+| GET | `/cards/{job}/proof` | downloadable proof card PNG |
 | POST | `/webhook` | GitHub webhook (HMAC-verified) |
 | — | `/app/` | the SvelteKit app |
 

@@ -6,11 +6,14 @@
 
 from __future__ import annotations
 
+import shutil
+import uuid
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, File, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, RedirectResponse
+from fastapi.responses import FileResponse, RedirectResponse, Response
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from taketwo.bootstrap import setup
@@ -30,6 +33,16 @@ app.add_middleware(
 
 _HERE = Path(__file__).resolve().parent
 _APP = _HERE / "app" / "build"  # the SvelteKit app (built static assets)
+
+# Uploaded recordings are saved under runtime/data/uploads/<id>/<name>; the pipeline
+# then consumes the returned server-side path like any other clip.
+_ACCEPTED = {".mp4", ".mov", ".webm", ".mkv", ".png", ".jpg", ".jpeg", ".webp"}
+_UPLOADS = runtime.DATA_DIR / "uploads"
+
+# Serve the bundled sample app so "Try the sample" works end-to-end from the browser.
+_SAMPLE_APP = runtime.PROJECT_ROOT / "examples" / "sample_app"
+if _SAMPLE_APP.is_dir():
+    app.mount("/sampleapp", StaticFiles(directory=str(_SAMPLE_APP), html=True), name="sampleapp")
 
 
 class ReplayRequest(BaseModel):
@@ -87,6 +100,40 @@ def replay_async(request: ReplayRequest) -> dict:
     return {"job_id": job_id, "status_url": f"/jobs/{job_id}"}
 
 
+@app.post("/upload")
+def upload(file: UploadFile = File(...)) -> dict:
+    """Save an uploaded recording and return its server-side path (for ``/replay/async``)."""
+    setup()
+    name = Path(file.filename or "").name
+    suffix = Path(name).suffix.lower()
+    if suffix not in _ACCEPTED:
+        raise HTTPException(status_code=400, detail=f"unsupported file type: {suffix or 'unknown'}")
+    dest_dir = _UPLOADS / uuid.uuid4().hex[:12]
+    dest_dir.mkdir(parents=True, exist_ok=True)
+    dest = dest_dir / (name or f"clip{suffix}")
+    with dest.open("wb") as out:
+        shutil.copyfileobj(file.file, out)
+    return {"path": str(dest), "name": dest.name}
+
+
+@app.get("/sample")
+def sample(request: Request) -> dict:
+    """Paths for the one-tap sample: the bundled clip and the served sample app URL."""
+    clip = runtime.DATA_DIR / "sample_bug_live.mov"
+    if not clip.exists():
+        clip = runtime.DATA_DIR / "sample_bug.mov"
+    app_url = f"{str(request.base_url).rstrip('/')}/sampleapp/" if _SAMPLE_APP.is_dir() else ""
+    return {"clip": str(clip) if clip.exists() else "", "app_url": app_url}
+
+
+@app.get("/jobs")
+def jobs() -> dict:
+    """All known jobs (for the live "in flight" count)."""
+    from taketwo.interfaces.runner import get_runner
+
+    return {"jobs": get_runner().jobs()}
+
+
 @app.get("/jobs/{job_id}")
 def job_status(job_id: str) -> dict:
     from taketwo.interfaces.runner import get_runner
@@ -95,6 +142,25 @@ def job_status(job_id: str) -> dict:
     if status.get("status") == "unknown":
         raise HTTPException(status_code=404, detail="unknown job")
     return status
+
+
+@app.post("/jobs/{job_id}/cancel")
+def cancel_job(job_id: str) -> dict:
+    """Cancel a queued/running job."""
+    from taketwo.interfaces.runner import get_runner
+
+    return {"cancelled": get_runner().cancel(job_id)}
+
+
+@app.post("/jobs/{job_id}/retry")
+def retry_job(job_id: str) -> dict:
+    """Requeue a known job with the same parameters."""
+    from taketwo.interfaces.runner import get_runner
+
+    new_id = get_runner().retry(job_id)
+    if new_id is None:
+        raise HTTPException(status_code=404, detail="unknown job")
+    return {"job_id": new_id, "status_url": f"/jobs/{new_id}"}
 
 
 @app.get("/runs")
@@ -135,7 +201,7 @@ def ask(job: str, q: str) -> dict:
 
 
 @app.post("/runs/{job}/review/{decision}")
-def review(job: str, decision: str, note: str = "") -> dict:
+def review(job: str, decision: str, note: str = "", actor: str = "web") -> dict:
     from taketwo.interfaces import runs as runs_mod
     from taketwo.storage import store
 
@@ -143,7 +209,7 @@ def review(job: str, decision: str, note: str = "") -> dict:
         raise HTTPException(status_code=400, detail="invalid decision")
     if runs_mod.get_run(job) is None:
         raise HTTPException(status_code=404, detail="unknown run")
-    store.set_review(job, decision, note, actor="web")
+    store.set_review(job, decision, note, actor=actor or "web")
     return store.get_review(job)
 
 
@@ -157,6 +223,32 @@ def media(job: str, name: str) -> FileResponse:
         raise HTTPException(status_code=404, detail="not found")
     # Artifacts are regenerated in place; never let the browser cache a stale copy.
     return FileResponse(path, headers={"Cache-Control": "no-store, max-age=0"})
+
+
+@app.get("/cards/score")
+def card_score() -> Response:
+    """The branded score card PNG (reproduce rate + counts)."""
+    from taketwo.interfaces import runs as runs_mod
+    from taketwo.reporting import share_card
+
+    png = share_card(runs_mod.list_runs())
+    if not png:
+        raise HTTPException(status_code=404, detail="no runs")
+    return Response(content=png, media_type="image/png", headers={"Cache-Control": "no-store"})
+
+
+@app.get("/cards/{job}/proof")
+def card_proof(job: str) -> Response:
+    """The post-ready proof card PNG (before | after + verdict)."""
+    from taketwo.interfaces import runs as runs_mod
+    from taketwo.reporting import proof_card
+
+    if runs_mod.get_run(job) is None:
+        raise HTTPException(status_code=404, detail="unknown run")
+    png = proof_card(job)
+    if not png:
+        raise HTTPException(status_code=404, detail="no proof image")
+    return Response(content=png, media_type="image/png", headers={"Cache-Control": "no-store"})
 
 
 @app.post("/webhook")

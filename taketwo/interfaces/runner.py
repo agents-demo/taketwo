@@ -104,6 +104,21 @@ class Runner:
                     pass
         return True
 
+    def retry(self, job_id: str) -> str | None:
+        """Requeue a known job with the same parameters; returns the new job id (or ``None``)."""
+        with self._lock:
+            job = self._jobs.get(job_id)
+            if not job:
+                return None
+            params = {
+                "video_path": job["video_path"],
+                "repo": job["repo"],
+                "base_branch": job["base_branch"],
+                "app_url": job["app_url"],
+                "agentic": job["agentic"],
+            }
+        return self.submit(**params)
+
     def shutdown(self, wait: bool = False) -> None:
         """Stop accepting jobs and release the worker threads."""
         self._pool.shutdown(wait=wait, cancel_futures=True)
