@@ -53,9 +53,10 @@ Two inbound adapters over the same engine, exposing the **same features**. Use e
 difference is the shell they run in.
 
 **What either GUI does:**
-- **Runs** — submit a run: **upload a clip** (or paste a path), set repository / base branch / app URL,
-  toggle **Agentic**, or pick a bundled **demo** and click **Use this demo**. A **live multi-step feed**
-  (per-stage progress + timings) runs with **Cancel** / **Retry**; past runs show as cards with a thumbnail.
+- **Runs** — submit a run, in two tabs: **Try a demo** (pick a bundled demo and run it) or
+  **Your own bug** (upload a clip, set repository / base branch / app URL, toggle **Agentic**). A
+  **live multi-step feed** (per-stage progress + timings) runs with **Cancel** / **Retry**; past
+  runs show as cards with a thumbnail.
 - **Review** — the proof **video hero** (or the before/after **compare slider**), the score/verdict/steps,
   the diff (+ suspected cause and regression test), a **Usage** panel (model calls, tokens, latency, tool
   activity), a **pipeline timeline**, the captured console trace, **Approve / Request changes** (with a note

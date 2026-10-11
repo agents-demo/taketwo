@@ -62,10 +62,12 @@ On the **Runs** page, the small **Readiness** line shows:
 
 ### 4. Start a run
 
-1. Pick a demo in the **Demo scenario** dropdown (for example `Booking — date picker`).
-2. Click **Use the “…” demo**. This serves that demo's app and submits its clip.
-3. Watch the **live feed**. You can use **Cancel** or **Retry**.
-4. When it finishes, open the run to see the **Review**.
+The **New run** box has two tabs: **Try a demo** and **Your own bug**.
+
+- **Try a demo** — pick a demo from the dropdown and click **Run the "…" demo**. It serves the
+  demo app and starts the run right away.
+- **Your own bug** — upload a recording (or paste a clip path), set the repository / app URL,
+  and click **Record & reproduce**.
 
 ---
 
@@ -103,14 +105,11 @@ it again (step 1).
 
 ### 4. Start a run
 
-In the **New run** box:
+The **New run** box has two tabs: **Try a demo** and **Your own bug**.
 
-1. Pick a demo in the **Demo** dropdown, then click **Use this demo**. This fills:
-   - **Clip** = the demo's recording
-   - **App URL** = the demo app served by gui2 (under `/demoapps/`)
-2. Click **Record & reproduce**.
-
-You do not need to start the demo app. gui2 serves it for you.
+- **Try a demo** — pick a demo and click **Run this demo**. gui2 serves the demo app for you.
+- **Your own bug** — upload a clip (or paste a path), set the repository / app URL, and click
+  **Record & reproduce**.
 
 ### 5. Watch the run
 
