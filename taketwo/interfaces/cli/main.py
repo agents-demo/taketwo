@@ -1,4 +1,4 @@
-"""Command-line interface for taketwo.
+"""Command-line interface for taketwo: argument parsing and dispatch.
 
 Usage:
     python -m taketwo.interfaces.cli record [video]
@@ -12,91 +12,23 @@ from __future__ import annotations
 import argparse
 import sys
 
-from taketwo.backend import ConfigError
-from taketwo.bootstrap import run as run_async
 from taketwo.bootstrap import setup
-from taketwo.domain import render
-from taketwo.storage import runtime, store
-
-for _stream in (sys.stdout, sys.stderr):
-    try:
-        _stream.reconfigure(encoding="utf-8", errors="replace")
-    except Exception:
-        pass
+from taketwo.interfaces.cli.commands import history, record, reset, show
+from taketwo.storage import runtime
 
 
-def _print_reproduction(repro: dict) -> None:
-    if not repro:
-        return
-    print(f"\nReproduction · {repro.get('verdict', 'unclear')}")
-    steps = repro.get("steps") or []
-    for step in steps[:10]:
-        target = step.get("target") or "?"
-        print(f"  {step.get('index', 0) + 1}. {step.get('action')} {target}")
-    signal = repro.get("evidence", {}).get("summary")
-    if signal:
-        print(f"  signal: {signal}")
-    if repro.get("question"):
-        print(f"  question: {repro['question']}")
-
-
-def cmd_record(video: str, repo: str, base_branch: str, app_url: str, agentic: bool) -> int:
-    from taketwo import pipeline
-
-    strategy = pipeline.resolve(agentic)
-    try:
-        outcome = run_async(
-            strategy.analyze(
-                pipeline.Params(video_path=video, repo=repo, base_branch=base_branch, app_url=app_url)
-            )
-        )
-    except (ConfigError, FileNotFoundError, ValueError) as exc:
-        print(f"error: {exc}")
-        return 2
-
-    print(f"\n[taketwo] {str(outcome.get('result') or '').strip()}")
-    _print_reproduction(outcome.get("reproduction") or {})
-    fix = outcome.get("fix") or {}
-    if fix.get("summary"):
-        print(f"\nFix: {fix['summary']}")
-    proof = outcome.get("proof") or {}
-    if proof.get("proof_path"):
-        print(f"Proof: {proof['proof_path']}")
-    if outcome.get("summary_path"):
-        print(f"summary saved to: {outcome['summary_path']}")
-    return 0
-
-
-def cmd_history() -> int:
-    found = store.jobs()
-    if not found:
-        print("No runs yet. Run `record`.")
-        return 0
-    print(f"Runs ({len(found)}):\n")
-    for job in found[:10]:
-        repro = store.get_repro(job)
-        print(f"  {job} · {repro.get('verdict', '?')} · {repro.get('evidence', {}).get('summary', '')}")
-    return 0
-
-
-def cmd_show(job: str | None) -> int:
-    selected = job or store.latest()
-    if not selected:
-        print("No runs yet.")
-        return 0
-    repro = store.get_repro(selected) or {}
-    print(render.issue_markdown({"repo": selected}, repro))
-    return 0
-
-
-def cmd_reset() -> int:
-    store.reset()
-    print("Cleared saved runs.")
-    return 0
+def _configure_console() -> None:
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(encoding="utf-8", errors="replace")
+        except Exception:
+            pass
 
 
 def main(argv: list[str] | None = None) -> int:
     setup()
+    _configure_console()
+
     parser = argparse.ArgumentParser(prog="taketwo", description="TakeTwo CLI")
     sub = parser.add_subparsers(dest="command", required=True)
 
@@ -115,13 +47,13 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     if args.command == "record":
-        return cmd_record(args.video, args.repo, args.branch, args.app, args.agentic)
+        return record.run(args.video, args.repo, args.branch, args.app, args.agentic)
     if args.command == "history":
-        return cmd_history()
+        return history.run()
     if args.command == "show":
-        return cmd_show(args.job)
+        return show.run(args.job)
     if args.command == "reset":
-        return cmd_reset()
+        return reset.run()
     parser.print_help()
     return 2
 

@@ -4,17 +4,18 @@ from __future__ import annotations
 
 import streamlit as st
 
-from taketwo.interfaces.gui1 import common
+from taketwo.interfaces.gui1 import charts, data, session, share
+from taketwo.interfaces.gui1.components import empty_state, runs_table
 
 
 def page() -> None:
-    common.init_state()
+    session.init_state()
     st.title("Scoreboard", icon=":material/emoji_events:")
     st.caption("The reproduce rate, in the open — and the runs worth showing off.")
 
-    rows = common.rows(None)
+    rows = data.rows(None)
     if not rows:
-        common.empty_state(
+        empty_state.empty_state(
             ":material/emoji_events:", "Nothing scored yet", "Run a reproduction to start the scoreboard."
         )
         return
@@ -22,7 +23,7 @@ def page() -> None:
     total = len(rows)
     verified = sum(1 for r in rows if r["verified"])
     approved = sum(1 for r in rows if r["review"] == "approved")
-    rate = common.reproduce_rate(rows)
+    rate = data.reproduce_rate(rows)
 
     metrics = st.columns(4)
     metrics[0].metric("Reproduce rate", f"{rate:.0%}")
@@ -31,14 +32,14 @@ def page() -> None:
     metrics[3].metric("Runs", total)
     st.progress(rate, text=f"Reproduce rate — {rate:.0%} of clips became a reproduction")
 
-    trend = common.rate_trend(rows)
+    trend = charts.rate_trend(rows)
     if trend is not None:
         st.altair_chart(trend, width="stretch")
 
     st.space("medium")
     st.subheader("Hall of fame", icon=":material/military_tech:")
     top = sorted(rows, key=lambda r: (r["verified"], r["score"]), reverse=True)[:10]
-    common.runs_dataframe(top)
+    runs_table.runs_dataframe(top)
 
     st.space("medium")
     st.subheader("Repos", icon=":material/folder_special:")
@@ -68,9 +69,9 @@ def page() -> None:
     st.space("medium")
     share_col, card_col = st.columns(2)
     with share_col.popover("Share the top run", icon=":material/ios_share:"):
-        common.share(top[0]["run"])
+        share.share(top[0]["run"])
 
-    card = common.share_card(rows)
+    card = share.share_card(rows)
     if card:
         with card_col.popover("Share the score card", icon=":material/insights:"):
             st.image(card, width="stretch", alt="TakeTwo score card with the reproduce rate")
