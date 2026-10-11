@@ -45,7 +45,7 @@ def checks() -> list[dict]:
         {
             "name": "sample",
             "ok": clip.exists(),
-            "detail": "sample clip ready" if clip.exists() else "run: python scripts/samples/make_sample_bug.py",
+            "detail": "sample clip ready" if clip.exists() else "run: python scripts/make_sample_bug.py",
         },
     ]
 

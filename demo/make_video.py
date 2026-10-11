@@ -4,7 +4,7 @@ Serves ``demo/booking`` (buggy) and a fixed copy, drives them with Playwright,
 captures the state after selecting a date, and stitches a before/after proof image + video
 into the sample's artifacts (replacing the flat placeholders).
 
-    python scripts/samples/make_sample_video.py
+    python demo/make_video.py
 """
 
 from __future__ import annotations
@@ -14,7 +14,7 @@ import sys
 import tempfile
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from scripts._harness import free_port, playwright_available, serve  # noqa: E402
 from taketwo.core.bootstrap import setup  # noqa: E402
@@ -22,7 +22,7 @@ from taketwo.core.stages.prove import stitch  # noqa: E402
 from taketwo.integrations import appserver  # noqa: E402
 from taketwo.integrations.storage import runtime  # noqa: E402
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[1]
 APP = ROOT / "demo" / "booking"
 BUG = "const value = input.value;"
 FIX = "const value = button.textContent;"
@@ -51,7 +51,7 @@ def main() -> int:
 
     data = runtime.DATA_DIR
     if not (data / f"{STEM}.mov").exists():
-        from scripts.samples import make_sample_bug
+        from scripts import make_sample_bug
 
         make_sample_bug.main()
 

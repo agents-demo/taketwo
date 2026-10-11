@@ -3,7 +3,7 @@
 Each scenario has its own buggy app, so the feed shows genuine "Fixed" runs with a
 before/after video — no model calls needed (deterministic fixtures).
 
-    python scripts/samples/seed_reproduced.py
+    python demo/seed_reproduced.py
 """
 
 from __future__ import annotations
@@ -14,7 +14,7 @@ import sys
 import tempfile
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from scripts._harness import free_port, playwright_available, serve  # noqa: E402
 from taketwo import core  # noqa: E402
@@ -23,7 +23,7 @@ from taketwo.core.stages.prove import stitch  # noqa: E402
 from taketwo.integrations import appserver  # noqa: E402
 from taketwo.integrations.storage import runtime  # noqa: E402
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[1]
 
 SCENARIOS = [
     {

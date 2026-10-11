@@ -26,9 +26,9 @@ $PY = "C:\Workspace\openjiuwen\jiuwenswarm\.venv\Scripts\python.exe"
 ```powershell
 & $PY -m ruff check .
 & $PY -m pytest -q
-& $PY scripts\check\evaluate_repros.py         # offline quality gate
-& $PY scripts\check\dogfood.py                 # live: reproduce a real browser bug (needs Playwright)
-& $PY scripts\check\benchmark.py               # live: reproduce rate over seeded apps
+& $PY scripts\evaluate_repros.py         # offline quality gate
+& $PY demo\dogfood.py                 # live: reproduce a real browser bug (needs Playwright)
+& $PY scripts\benchmark.py               # live: reproduce rate over seeded apps
 ```
 
 ## Architecture (the one rule that matters)

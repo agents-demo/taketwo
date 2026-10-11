@@ -5,7 +5,7 @@ reproduce + re-run path, and writes a before/after proof image and video.
 
     pip install -r requirements.txt
     python -m playwright install chromium
-    python scripts/check/dogfood.py
+    python demo/dogfood.py
 """
 
 from __future__ import annotations
@@ -15,7 +15,7 @@ import sys
 import tempfile
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from scripts._harness import free_port, live_reproduce, playwright_available, rerun, serve  # noqa: E402
 from taketwo.core.bootstrap import run, setup  # noqa: E402
@@ -23,7 +23,7 @@ from taketwo.core.stages.prove import stitch  # noqa: E402
 from taketwo.integrations import appserver  # noqa: E402
 from taketwo.integrations.storage import runtime  # noqa: E402
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[1]
 APP = ROOT / "demo" / "booking"
 BUG = "const value = input.value;"
 FIX = "const value = button.textContent;"

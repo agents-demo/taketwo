@@ -7,7 +7,7 @@ Writes, under ``runtime/data``:
   - ``sample_bug_proposed.patch``    the fix the sandbox would produce
   - ``sample_bug_proposed.test``     the regression test
 
-    python scripts/samples/make_sample_bug.py
+    python scripts/make_sample_bug.py
 """
 
 from __future__ import annotations
@@ -16,7 +16,7 @@ import json
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from taketwo.core.bootstrap import setup  # noqa: E402
 from taketwo.integrations.storage import runtime  # noqa: E402

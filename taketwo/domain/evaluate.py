@@ -1,6 +1,6 @@
 """Pure scoring of a reproduction (evidence coverage, grounding).
 
-Used by the UI, the benchmark and ``scripts/check/evaluate_repros.py`` to keep quality
+Used by the UI, the benchmark and ``scripts/evaluate_repros.py`` to keep quality
 visible instead of trusting the agent's word.
 """
 

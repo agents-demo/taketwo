@@ -4,7 +4,7 @@ Serves ``demo/booking`` and captures staged screenshots with Playwright, then wr
 them to an mp4 with **no timeline sidecar** — so ``understand`` has to sample frames and
 call the vision model.
 
-    python scripts/samples/make_sample_clip.py
+    python demo/make_clip.py
 """
 
 from __future__ import annotations
@@ -13,14 +13,14 @@ import io
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from scripts._harness import free_port, playwright_available, serve  # noqa: E402
 from taketwo.core.bootstrap import setup  # noqa: E402
 from taketwo.integrations import appserver  # noqa: E402
 from taketwo.integrations.storage import runtime  # noqa: E402
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[1]
 APP = ROOT / "demo" / "booking"
 
 

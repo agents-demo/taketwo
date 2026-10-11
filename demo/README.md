@@ -15,7 +15,7 @@ is no reason to regenerate them.
 $PY = "C:\Workspace\openjiuwen\jiuwenswarm\.venv\Scripts\python.exe"
 
 # 1. serve the app under test
-& $PY scripts\samples\serve_sample_app.py            # http://localhost:3000
+& $PY demo\serve.py            # http://localhost:3000
 
 # 2. reproduce + fix it from the recording
 & $PY -m taketwo.surfaces.cli record demo\booking\clip.mp4 --app http://localhost:3000
@@ -26,5 +26,5 @@ Or open either GUI and hit **Try the sample**.
 ## Regenerate the clips (optional)
 
 ```powershell
-& $PY scripts\samples\make_sample_clip.py            # booking clip (from real browser frames)
+& $PY demo\make_clip.py            # booking clip (from real browser frames)
 ```
