@@ -1,6 +1,6 @@
 """Quality gate: score stored reproductions against ``tests/eval/expected.json``.
 
-    python scripts/evaluate_repros.py
+    python tests/integration/evaluate_repros.py
 """
 
 from __future__ import annotations
@@ -9,13 +9,13 @@ import json
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from taketwo.core.bootstrap import setup  # noqa: E402
 from taketwo.domain import evaluate  # noqa: E402
 from taketwo.integrations.storage import store  # noqa: E402
 
-EXPECTED_PATH = Path(__file__).resolve().parents[1] / "tests" / "eval" / "expected.json"
+EXPECTED_PATH = Path(__file__).resolve().parents[2] / "tests" / "eval" / "expected.json"
 
 
 def main() -> int:

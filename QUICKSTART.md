@@ -51,7 +51,7 @@ No recording handy? Make a synthetic clip and serve the sample buggy app to repr
 ```powershell
 & $PY -m pytest -q                 # architecture + pipeline tests
 & $PY -m ruff check .
-& $PY scripts\evaluate_repros.py   # quality gate against tests/eval/expected.json
+& $PY tests\integration\evaluate_repros.py   # quality gate against tests/eval/expected.json
 ```
 
 ## 4. gui2 (web app: FastAPI server + SvelteKit SPA)
@@ -74,8 +74,8 @@ npm run dev        # or: npm run build  (writes client/build/, served at /gui2/)
 ## 5. Live checks (need Playwright: `python -m playwright install chromium`)
 
 ```powershell
-& $PY demo\maintenance\check_reproduce.py            # reproduce a real browser bug + before/after proof video
-& $PY scripts\benchmark.py          # reproduce-rate over seeded bugs
+& $PY tests\integration\check_reproduce.py            # reproduce a real browser bug + before/after proof video
+& $PY tests\integration\benchmark_reproduce.py          # reproduce-rate over seeded bugs
 ```
 
 See the full [usage guide](docs/USAGE.md), [README.md](README.md), and [docs/architecture.md](docs/architecture.md).

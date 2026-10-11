@@ -4,7 +4,7 @@ Serves seeded pages (a date picker and a login form), drives the real reproduce 
 live browser using **label-based** steps (exercising the selector fallback ladder), and
 reports the reproduce rate — the "does it generalize" number to watch.
 
-    python scripts/benchmark.py
+    python tests/integration/benchmark_reproduce.py
 """
 
 from __future__ import annotations
@@ -13,13 +13,13 @@ import sys
 import tempfile
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from scripts._harness import free_port, live_reproduce, playwright_available, serve  # noqa: E402
 from taketwo.core.bootstrap import run, setup  # noqa: E402
 from taketwo.integrations import appserver  # noqa: E402
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 
 PICKER = """<!doctype html>
 <html><body>

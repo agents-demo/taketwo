@@ -155,9 +155,9 @@ Start with `uvicorn taketwo.surfaces.gui2:app`. Key routes:
 & $PY scripts\make_sample_bug.py        # synthetic fixtures (clip + sidecars) for the offline demo
 & $PY demo\serve_scenario.py       # serve demo/scenarios/booking/app at http://localhost:3000
 & $PY scripts\seed_feed.py 5            # create several runs so the feed is swipeable
-& $PY demo\maintenance\check_reproduce.py                # live end-to-end: reproduce a real bug → before/after proof
-& $PY scripts\benchmark.py              # reproduce-rate over seeded apps (generalization)
-& $PY scripts\evaluate_repros.py        # offline quality gate (tests/eval/expected.json)
+& $PY tests\integration\check_reproduce.py                # live end-to-end: reproduce a real bug → before/after proof
+& $PY tests\integration\benchmark_reproduce.py              # reproduce-rate over seeded apps (generalization)
+& $PY tests\integration\evaluate_repros.py        # offline quality gate (tests/eval/expected.json)
 ```
 
 Typical first run:

@@ -15,9 +15,8 @@ demo/
 │   └── cart/             # add-to-cart bug  (same shape)
 ├── serve_scenario.py     # ← run this: serve a scenario's app
 ├── _scenario.py          # scenario locator (helper)
-├── maintenance/          # build & check the material (not needed to demo)
-│   ├── record_video.py       # (re)record a scenario's clip
-│   └── check_reproduce.py    # live PASS/FAIL check of a scenario
+├── maintenance/          # build the material (not needed to demo)
+│   └── record_video.py       # (re)record a scenario's clip
 └── README.md
 ```
 
