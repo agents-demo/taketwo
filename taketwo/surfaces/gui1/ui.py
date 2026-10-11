@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import streamlit as st
 
-from taketwo.bootstrap import setup
+from taketwo.core.bootstrap import setup
 from taketwo.surfaces.gui1 import config
 from taketwo.surfaces.gui1.app_pages import pages
 

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from taketwo.bootstrap import setup
+from taketwo.core.bootstrap import setup
 from taketwo.core.stages.understand import prompts
 from taketwo.integrations.agents import VisionParams, build
 from taketwo.integrations.storage import runtime

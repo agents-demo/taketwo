@@ -12,8 +12,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from taketwo import config
-from taketwo.core import agent_reply
+from taketwo.core import agent_reply, config
 from taketwo.core.progress import Progress, tick
 from taketwo.core.stages.understand import cursor, imaging, prompts
 from taketwo.core.stages.understand import frames as frames_mod

@@ -28,7 +28,7 @@ requires = pytest.mark.skipif(
 
 @requires
 def test_reproduces_sample_bug(tmp_path):
-    from taketwo.bootstrap import run
+    from taketwo.core.bootstrap import run
     from taketwo.core import pipeline
 
     video = tmp_path / "bug.mov"

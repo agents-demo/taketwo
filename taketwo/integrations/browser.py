@@ -11,8 +11,6 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-from taketwo import config
-
 
 @dataclass
 class StepResult:
@@ -43,6 +41,7 @@ class BrowserSession:
 
     app_url: str
     headless: bool = True
+    step_timeout: float = 15.0
     live: bool = False
     _page: Any = None
     _context: Any = None
@@ -65,7 +64,7 @@ class BrowserSession:
             self._page = await self._context.new_page()
             self._page.on("console", lambda msg: self.console.append(f"{msg.type}: {msg.text}"))
             self._page.on("pageerror", lambda err: self.console.append(f"pageerror: {err}"))
-            await self._page.goto(self.app_url, wait_until="domcontentloaded", timeout=int(config.step_timeout() * 1000))
+            await self._page.goto(self.app_url, wait_until="domcontentloaded", timeout=int(self.step_timeout * 1000))
             self.live = True
             return True
         except Exception as exc:
@@ -83,7 +82,7 @@ class BrowserSession:
         """
         if not self.live or self._page is None:
             return StepResult(action, target, ok=True, detail="no-browser")
-        timeout = int(config.step_timeout() * 1000)
+        timeout = int(self.step_timeout * 1000)
         try:
             if action == "click":
                 candidates = click_candidates(target) + [alt for alt in (alts or []) if alt]
@@ -110,7 +109,7 @@ class BrowserSession:
         if not self.live or self._page is None or not url:
             return False
         try:
-            await self._page.goto(url, wait_until="domcontentloaded", timeout=int(config.step_timeout() * 1000))
+            await self._page.goto(url, wait_until="domcontentloaded", timeout=int(self.step_timeout * 1000))
             return True
         except Exception:
             return False
@@ -148,8 +147,8 @@ class BrowserSession:
                 pass
 
 
-async def open_session(app_url: str, headless: bool = True) -> BrowserSession:
+async def open_session(app_url: str, headless: bool = True, step_timeout: float = 15.0) -> BrowserSession:
     """Open a browser session for ``app_url`` (degraded when Playwright is absent)."""
-    session = BrowserSession(app_url=app_url, headless=headless)
+    session = BrowserSession(app_url=app_url, headless=headless, step_timeout=step_timeout)
     await session.open()
     return session

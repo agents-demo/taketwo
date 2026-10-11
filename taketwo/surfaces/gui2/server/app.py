@@ -11,9 +11,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
-from taketwo.readiness import checks as readiness_checks
 from taketwo.surfaces.gui2.server import config
 from taketwo.surfaces.gui2.server.routes import ingest, jobs, media, replay, runs
+from taketwo.surfaces.readiness import checks as readiness_checks
 
 app = FastAPI(title="TakeTwo")
 

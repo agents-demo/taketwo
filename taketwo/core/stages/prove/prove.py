@@ -14,7 +14,7 @@ import asyncio
 import json
 from typing import Any
 
-from taketwo import config
+from taketwo.core import config
 from taketwo.core.progress import Progress, tick
 from taketwo.core.stages.prove import stitch
 from taketwo.domain import compare as compare_mod

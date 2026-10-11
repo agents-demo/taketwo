@@ -15,8 +15,8 @@ import time
 import traceback
 from pathlib import Path
 
-from taketwo.bootstrap import run as run_async
-from taketwo.bootstrap import setup
+from taketwo.core.bootstrap import run as run_async
+from taketwo.core.bootstrap import setup
 from taketwo.core.progress import Progress
 
 

@@ -2,7 +2,7 @@
 
 Everything here is about *reaching* model/embedding endpoints: which provider,
 credentials, base URL, model names, timeouts/retries. Application behaviour
-(sampling, feature toggles, budgets) lives in :mod:`taketwo.config`.
+(sampling, feature toggles, budgets) lives in :mod:`taketwo.core.config`.
 """
 
 from __future__ import annotations

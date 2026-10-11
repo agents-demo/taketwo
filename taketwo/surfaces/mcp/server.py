@@ -7,7 +7,7 @@ The tool definitions live in :mod:`taketwo.surfaces.mcp.tools`.
 
 from __future__ import annotations
 
-from taketwo.bootstrap import setup
+from taketwo.core.bootstrap import setup
 
 
 def main() -> None:

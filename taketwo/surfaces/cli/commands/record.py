@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from taketwo.bootstrap import run as run_async
+from taketwo.core.bootstrap import run as run_async
 from taketwo.integrations.agents import ConfigError
 
 

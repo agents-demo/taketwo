@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import streamlit as st
 
-from taketwo import readiness
+from taketwo.surfaces import readiness
 
 
 def strip() -> None:

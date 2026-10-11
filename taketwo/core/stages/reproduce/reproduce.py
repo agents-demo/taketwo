@@ -13,7 +13,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from taketwo.core import agent_reply
+from taketwo.core import agent_reply, config
 from taketwo.core.progress import Progress, tick
 from taketwo.core.stages.reproduce import prompts, replay_steps
 from taketwo.domain import repro as repro_mod
@@ -76,7 +76,7 @@ async def reproduce(
     # thread (this event-loop thread). Do not offload these calls to a worker thread.
     session = getattr(run_session, "browser", None)
     if session is None:
-        session = await browser.open_session(app_url)
+        session = await browser.open_session(app_url, step_timeout=config.step_timeout())
         if run_session is not None:
             run_session.browser = session
 

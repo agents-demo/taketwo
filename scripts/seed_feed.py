@@ -16,7 +16,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from taketwo import core  # noqa: E402
-from taketwo.bootstrap import run, setup  # noqa: E402
+from taketwo.core.bootstrap import run, setup  # noqa: E402
 from taketwo.integrations.storage import runtime  # noqa: E402
 
 BASE = "sample_bug"

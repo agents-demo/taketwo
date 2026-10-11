@@ -12,8 +12,8 @@ import shutil
 from pathlib import Path
 from typing import Any
 
-from taketwo import config
-from taketwo.bootstrap import setup
+from taketwo.core import config
+from taketwo.core.bootstrap import setup
 from taketwo.core.params import Params
 from taketwo.core.progress import Progress, tick
 from taketwo.core.run_session import start_session

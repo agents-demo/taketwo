@@ -5,7 +5,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import Any
 
-from taketwo.bootstrap import setup
+from taketwo.core.bootstrap import setup
 from taketwo.core.stages.repair import prompts, repo_tools
 from taketwo.integrations.agents import TextParams, build
 from taketwo.integrations.storage import runtime

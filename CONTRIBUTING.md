@@ -46,7 +46,7 @@ surfaces  ->  core  ->  integrations  ->  domain
   appserver, storage, reporting.
 - **Stages** live in `core/stages/<name>/`; the workflow + strategies live in `core/`.
 - **`browser.py` is confined to `integrations/`** (the only place Playwright is imported).
-- `__init__.py` is imports/docstring only — no side effects. Wiring happens in `bootstrap.setup()`.
+- `__init__.py` is imports/docstring only — no side effects. Wiring happens in `core/bootstrap.setup()`.
 
 ## Where to add things
 
@@ -54,7 +54,7 @@ surfaces  ->  core  ->  integrations  ->  domain
   and call it from `core/strategies/base.py`.
 - New **capability** (external system): a module under `integrations/`.
 - New **surface**: a package under `surfaces/`; reuse the shared façade `core/service.py`.
-- New **config knob**: application behaviour in `config.py`; endpoint/credentials in
+- New **config knob**: application behaviour in `core/config.py`; endpoint/credentials in
   `integrations/agents/settings.py`.
 
 ## The two GUIs (both under `surfaces/`)

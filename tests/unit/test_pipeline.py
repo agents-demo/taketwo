@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from taketwo import core
-from taketwo.bootstrap import run
+from taketwo.core.bootstrap import run
 from taketwo.domain import evaluate
 from taketwo.domain import repro as repro_mod
 from taketwo.domain import timeline as timeline_mod
@@ -113,7 +113,7 @@ def test_understand_uses_the_agent_when_present(tmp_path, monkeypatch):
 
 def test_agent_ask_retries_transient(monkeypatch):
     import taketwo.integrations.agents as backend
-    from taketwo.bootstrap import run as run_sync
+    from taketwo.core.bootstrap import run as run_sync
     from taketwo.core import agent_reply
 
     calls = {"n": 0}

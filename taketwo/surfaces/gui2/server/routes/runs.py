@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from fastapi import APIRouter, HTTPException
 
-from taketwo.bootstrap import setup
+from taketwo.core.bootstrap import setup
 from taketwo.surfaces.gui2.server import runs as read_model
 from taketwo.surfaces.gui2.server.scoreboard import scoreboard as build_scoreboard
 

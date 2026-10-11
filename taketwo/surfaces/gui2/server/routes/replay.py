@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from fastapi import APIRouter
 
-from taketwo.bootstrap import setup
+from taketwo.core.bootstrap import setup
 from taketwo.surfaces.gui2.server.models import ReplayRequest
 
 router = APIRouter()

@@ -19,7 +19,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from _harness import free_port, live_reproduce, playwright_available, rerun, serve  # noqa: E402
 
-from taketwo.bootstrap import run, setup  # noqa: E402
+from taketwo.core.bootstrap import run, setup  # noqa: E402
 from taketwo.integrations import appserver  # noqa: E402
 from taketwo.core.stages.prove import stitch  # noqa: E402
 from taketwo.integrations.storage import runtime  # noqa: E402

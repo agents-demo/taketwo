@@ -12,7 +12,8 @@ surfaces  ──▶  core  ──▶  integrations  ──▶  domain
 - `core/` — the application / business logic: the workflow, its strategy, the run runtime.
 - `surfaces/` — inbound adapters (the way anything drives TakeTwo).
 
-`config.py`, `bootstrap.py` and `readiness.py` are cross-cutting leaves.
+`core/config.py` (application settings) and `core/bootstrap.py` (runtime wiring) live with `core/`;
+`surfaces/readiness.py` (environment checks for the GUIs) lives with `surfaces/`.
 
 ## Layers
 
@@ -28,9 +29,6 @@ surfaces  ──▶  core  ──▶  integrations  ──▶  domain
 ```
 taketwo/
 ├── __init__.py            # version only (no side effects)
-├── bootstrap.py           # runtime dirs + logging; called by entry points
-├── config.py              # application settings (sampling, thresholds, toggles)
-├── readiness.py           # environment checks (model / browser / delivery / sample)
 ├── domain/                # pure: submission, timeline, repro, fix, verify, render, evaluate, compare
 ├── integrations/          # outbound adapters
 │   ├── agents/            #   openjiuwen: settings, models, agent builder, rails, telemetry
@@ -40,6 +38,8 @@ taketwo/
 │   ├── storage/           #   runtime paths, json_store, job store, repo cache
 │   └── reporting.py       #   issue.md / pr.md + share cards
 ├── core/                  # the workflow + runtime
+│   ├── bootstrap.py       #   runtime dirs + logging; called by entry points
+│   ├── config.py          #   application settings (sampling, thresholds, toggles)
 │   ├── service.py         #   run/ask façade
 │   ├── params.py          #   Params: request + run state
 │   ├── progress.py        #   run progress
@@ -48,7 +48,7 @@ taketwo/
 │   ├── jobs/              #   sandboxed runner + worker
 │   ├── stages/            #   order is data: core.stages.STAGES
 │   └── strategies/        #   deterministic / agentic
-└── surfaces/              # entry points: cli/, mcp/, gui1/, gui2/
+└── surfaces/              # entry points: readiness.py, cli/, mcp/, gui1/, gui2/
 ```
 
 ## The integrations package

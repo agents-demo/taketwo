@@ -6,7 +6,7 @@ concrete strategy module. To add one, subclass ``Strategy`` and register it.
 
 from __future__ import annotations
 
-from taketwo import config
+from taketwo.core import config
 from taketwo.core.strategies.agentic import AgenticStrategy
 from taketwo.core.strategies.base import Strategy
 from taketwo.core.strategies.deterministic import DeterministicStrategy

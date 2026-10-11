@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from taketwo import config
+from taketwo.core import config
 from taketwo.integrations.browser import BrowserSession
 
 

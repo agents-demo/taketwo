@@ -12,7 +12,7 @@ from __future__ import annotations
 import argparse
 import sys
 
-from taketwo.bootstrap import setup
+from taketwo.core.bootstrap import setup
 from taketwo.integrations.storage import runtime
 from taketwo.surfaces.cli.commands import history, record, reset, show
 

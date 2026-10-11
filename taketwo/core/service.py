@@ -10,7 +10,7 @@ from __future__ import annotations
 import json
 from typing import Any
 
-from taketwo.bootstrap import run as run_async
+from taketwo.core.bootstrap import run as run_async
 from taketwo.integrations.storage import store
 
 TOOL_NAME = "reproduce_bug_from_video"
