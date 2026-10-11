@@ -27,7 +27,7 @@ $PY = "C:\Workspace\openjiuwen\jiuwenswarm\.venv\Scripts\python.exe"
 & $PY -m ruff check .
 & $PY -m pytest -q
 & $PY scripts\evaluate_repros.py         # offline quality gate
-& $PY demo\dogfood.py                 # live: reproduce a real browser bug (needs Playwright)
+& $PY demo\scripts\run_live.py                 # live: reproduce a real browser bug (needs Playwright)
 & $PY scripts\benchmark.py               # live: reproduce rate over seeded apps
 ```
 

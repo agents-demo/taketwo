@@ -58,3 +58,20 @@ async def rerun(session: Any, steps: list[dict]) -> str:
     start = len(browser.console)
     await replay_steps.replay(browser, steps)
     return replay_steps.failure_signal(browser.console[start:])
+
+
+def run_steps(page: Any, steps: list[dict]) -> None:
+    """Play a scenario's steps on a sync Playwright page (throws inside a step are ignored)."""
+    for step in steps:
+        action, target = step.get("action"), step.get("target")
+        try:
+            if action == "click" and target:
+                page.click(target)
+            elif action == "fill" and target:
+                page.fill(target, str(step.get("value", "")))
+            elif action == "goto" and target:
+                page.goto(target)
+            elif action == "wait":
+                page.wait_for_timeout(300)
+        except Exception:
+            pass

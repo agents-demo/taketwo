@@ -33,7 +33,7 @@ TIMELINE = {
 }
 
 # A live variant: same steps, but NO repro sidecar, so the pipeline reproduces it in a
-# real browser against demo/booking (served locally).
+# real browser against demo/scenarios/booking/app (served locally).
 LIVE_TIMELINE = {
     "steps": [
         {"action": "click", "target": "#dateField", "timestamp": 1.2, "confidence": 0.9},
