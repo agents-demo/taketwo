@@ -4,10 +4,10 @@ from __future__ import annotations
 
 import streamlit as st
 
-from taketwo.interfaces.gui1 import config, data, session
-from taketwo.interfaces.gui1.app_pages import detail, pages
-from taketwo.interfaces.gui1.components import empty_state, live_job, new_run, readiness, runs_table
 from taketwo.pipeline.jobs import get_runner
+from taketwo.surfaces.gui1 import config, data, session
+from taketwo.surfaces.gui1.app_pages import detail, pages
+from taketwo.surfaces.gui1.components import empty_state, live_job, new_run, readiness, runs_table
 
 
 @st.dialog("Run review", width="large", position="right")

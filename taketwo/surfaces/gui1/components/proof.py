@@ -6,7 +6,7 @@ from pathlib import Path
 
 import streamlit as st
 
-from taketwo.interfaces.gui1.components.compare import before_after
+from taketwo.surfaces.gui1.components.compare import before_after
 
 
 def proof_hero(repro: dict, proof: dict, job: str) -> bool:

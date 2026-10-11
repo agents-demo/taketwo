@@ -1,7 +1,7 @@
 """Enforce the layered dependency direction (architecture as a test).
 
 Dependencies may only point inward:
-    interfaces -> pipeline -> backend -> domain
+    surfaces -> pipeline -> backend -> domain
 with ``storage`` / ``reporting`` / ``config`` as neutral leaves. The pipeline's
 capability adapters (``pipeline/media``, ``pipeline/browser``, ``pipeline/forge``)
 are used only inside the pipeline, so they are not separate top-level layers.
@@ -21,11 +21,11 @@ TOP_LAYERS = {"reporting"}
 #   pipeline = the staged workflow (understand -> reproduce -> repair -> prove -> deliver)
 #              plus its capability adapters (media, browser, forge)
 FORBIDDEN: dict[str, set[str]] = {
-    "domain": {"pipeline", "backend", "storage", "reporting", "interfaces"},
-    "backend": {"domain", "pipeline", "reporting", "interfaces"},
-    "storage": {"domain", "pipeline", "backend", "reporting", "interfaces"},
-    "reporting": {"pipeline", "backend", "interfaces"},
-    "pipeline": {"interfaces"},
+    "domain": {"pipeline", "backend", "storage", "reporting", "surfaces"},
+    "backend": {"domain", "pipeline", "reporting", "surfaces"},
+    "storage": {"domain", "pipeline", "backend", "reporting", "surfaces"},
+    "reporting": {"pipeline", "backend", "surfaces"},
+    "pipeline": {"surfaces"},
 }
 
 

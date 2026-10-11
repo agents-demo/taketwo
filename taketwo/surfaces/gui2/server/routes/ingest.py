@@ -10,10 +10,10 @@ from pathlib import Path
 from fastapi import APIRouter, File, HTTPException, Request, UploadFile
 
 from taketwo.bootstrap import setup
-from taketwo.interfaces.gui2.server import config
 from taketwo.pipeline.forge import auth as forge_auth
 from taketwo.pipeline.forge import verify_signature
 from taketwo.storage import runtime
+from taketwo.surfaces.gui2.server import config
 
 router = APIRouter()
 

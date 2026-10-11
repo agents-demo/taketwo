@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import streamlit as st
 
-from taketwo.interfaces.gui1 import charts, data, session, share
-from taketwo.interfaces.gui1.components import empty_state, runs_table
+from taketwo.surfaces.gui1 import charts, data, session, share
+from taketwo.surfaces.gui1.components import empty_state, runs_table
 
 
 def page() -> None:

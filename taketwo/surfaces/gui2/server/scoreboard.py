@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from taketwo.interfaces.gui2.server.runs import list_runs
+from taketwo.surfaces.gui2.server.runs import list_runs
 
 
 def scoreboard() -> dict[str, Any]:

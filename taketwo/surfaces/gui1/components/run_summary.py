@@ -6,7 +6,7 @@ from pathlib import Path
 
 import streamlit as st
 
-from taketwo.interfaces.gui1 import data, share
+from taketwo.surfaces.gui1 import data, share
 
 
 def render(job: str, repro: dict, proof: dict, review: dict, summary: dict, score: dict) -> None:

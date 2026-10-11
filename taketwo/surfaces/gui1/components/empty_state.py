@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import streamlit as st
 
-from taketwo.interfaces.gui1 import config
+from taketwo.surfaces.gui1 import config
 
 
 def empty_state(icon: str, title: str, body: str) -> None:

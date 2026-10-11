@@ -1,6 +1,6 @@
 """HTTP server for gui2: submit recordings, track jobs, read runs/scoreboard, serve media + the SPA.
 
-    uvicorn taketwo.interfaces.gui2:app
+    uvicorn taketwo.surfaces.gui2:app
     # then open http://localhost:8000/gui2/
 """
 
@@ -11,9 +11,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
-from taketwo.interfaces.gui2.server import config
-from taketwo.interfaces.gui2.server.routes import ingest, jobs, media, replay, runs
 from taketwo.readiness import checks as readiness_checks
+from taketwo.surfaces.gui2.server import config
+from taketwo.surfaces.gui2.server.routes import ingest, jobs, media, replay, runs
 
 app = FastAPI(title="TakeTwo")
 

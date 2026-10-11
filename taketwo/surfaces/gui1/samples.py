@@ -6,8 +6,8 @@ import sys
 
 import streamlit as st
 
-from taketwo.interfaces.gui1 import config
 from taketwo.storage import runtime
+from taketwo.surfaces.gui1 import config
 
 
 def sample_path() -> str:

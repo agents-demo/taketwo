@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import streamlit as st
 
-from taketwo.interfaces.gui1 import config, samples
 from taketwo.pipeline.jobs import get_runner
 from taketwo.storage import runtime
+from taketwo.surfaces.gui1 import config, samples
 
 
 def queue(video_path: str, repo: str, branch: str, app_url: str, agentic: bool) -> None:

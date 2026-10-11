@@ -4,7 +4,7 @@ TakeTwo is layered (hexagonal). Dependencies point **inward** only, enforced by
 `tests/unit/test_architecture.py` (an AST check), not by convention.
 
 ```
-interfaces  ──▶  pipeline  ──▶  backend  ──▶  domain
+surfaces  ──▶  pipeline  ──▶  backend  ──▶  domain
                      │
                      └────▶  storage / reporting / config   (neutral leaves)
 ```
@@ -22,7 +22,7 @@ that uses them. All of these are pipeline-only, so none is a separate top-level 
 | Pipeline | `pipeline/` | The staged workflow (understand → reproduce → repair → prove → deliver), run by two strategies, plus its capability adapter `forge/`, the run/ask façade `service.py`, and the sandboxed runner `jobs/`; the browser lives inside the reproduce stage. | backend, storage, domain, reporting, config |
 | Storage | `storage/` | Runtime path layout, JSON helpers, per-job store, repo cache. | config |
 | Reporting | `reporting.py` | Outbound artifacts: `issue.md`, `pr.md`, proof manifest. | domain, storage |
-| Interfaces | `interfaces/` | Adapters (one folder per entry point): CLI, MCP, gui1 (Streamlit), gui2 (SvelteKit SPA + its FastAPI server). | anything |
+| Surfaces | `surfaces/` | Adapters (one folder per entry point): CLI, MCP, gui1 (Streamlit), gui2 (SvelteKit SPA + its FastAPI server). | anything |
 
 ## Package map
 
@@ -37,7 +37,7 @@ taketwo/
 ├── pipeline/              # the staged workflow + its capability adapters;
 │                          #   service.py (run/ask façade), jobs/ (sandboxed runner + worker)
 ├── storage/               # runtime, json_store, jobs, cache
-└── interfaces/            # entry points: cli/, mcp/, gui1/ (Streamlit), gui2/ (FastAPI server + SvelteKit SPA)
+└── surfaces/            # entry points: cli/, mcp/, gui1/ (Streamlit), gui2/ (FastAPI server + SvelteKit SPA)
 ```
 
 ## The backend package
@@ -108,11 +108,11 @@ recording ─▶ pipeline.stages.understand  (frames + cursor + contact sheet)  
           ─▶ pipeline.stages.deliver     (forge + reporting)                  ─▶ issue + draft PR
 ```
 
-## Interfaces: two GUIs
+## Surfaces: two GUIs
 
 Both are inbound adapters over the same engine, with the same features; keep them independent.
 
-**gui1** (`interfaces/gui1/`) — a **Streamlit** app:
+**gui1** (`surfaces/gui1/`) — a **Streamlit** app:
 
 - `ui.py` — entry point: page config, logo, `st.navigation`.
 - `app_pages/pages.py` — the `st.Page` registry (single source of truth for nav + links).
@@ -125,10 +125,10 @@ Both are inbound adapters over the same engine, with the same features; keep the
 
 Theming is native via `.streamlit/config.toml` (no injected CSS). The engine it drives is unchanged.
 
-**gui2** (`interfaces/gui2/`) — the **web app**: a FastAPI server (`server/app.py`) that exposes the
+**gui2** (`surfaces/gui2/`) — the **web app**: a FastAPI server (`server/app.py`) that exposes the
 JSON endpoints and serves the bundled **SvelteKit** SPA (`client/`) at `/gui2/` (adapter-static, base
 `/gui2`; the `spa()` route falls back to `index.html` for client routes). Run it with
-`uvicorn taketwo.interfaces.gui2:app`; develop the SPA with `npm run dev` in `client/` (5173,
+`uvicorn taketwo.surfaces.gui2:app`; develop the SPA with `npm run dev` in `client/` (5173,
 CORS-enabled). The read model lives in `server/runs.py`.
 
 ## Tools & scripts

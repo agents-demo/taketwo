@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import streamlit as st
 
-from taketwo.interfaces.gui1.app_pages import detail, runs, scoreboard
+from taketwo.surfaces.gui1.app_pages import detail, runs, scoreboard
 
 RUNS = st.Page(runs.page, title="Runs", icon=":material/history:", url_path="runs", default=True)
 DETAIL = st.Page(detail.page, title="Run review", icon=":material/fact_check:", url_path="run")

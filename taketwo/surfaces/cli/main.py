@@ -1,10 +1,10 @@
 """Command-line interface for taketwo: argument parsing and dispatch.
 
 Usage:
-    python -m taketwo.interfaces.cli record [video]
-    python -m taketwo.interfaces.cli history
-    python -m taketwo.interfaces.cli show [job]
-    python -m taketwo.interfaces.cli reset
+    python -m taketwo.surfaces.cli record [video]
+    python -m taketwo.surfaces.cli history
+    python -m taketwo.surfaces.cli show [job]
+    python -m taketwo.surfaces.cli reset
 """
 
 from __future__ import annotations
@@ -13,8 +13,8 @@ import argparse
 import sys
 
 from taketwo.bootstrap import setup
-from taketwo.interfaces.cli.commands import history, record, reset, show
 from taketwo.storage import runtime
+from taketwo.surfaces.cli.commands import history, record, reset, show
 
 
 def _configure_console() -> None:

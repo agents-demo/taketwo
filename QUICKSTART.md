@@ -23,17 +23,17 @@ $PY = "C:\Workspace\openjiuwen\jiuwenswarm\.venv\Scripts\python.exe"
 **gui1 (Streamlit, recommended)** — opens http://localhost:8501:
 
 ```powershell
-& $PY -m streamlit run taketwo/interfaces/gui1/ui.py
+& $PY -m streamlit run taketwo/surfaces/gui1/ui.py
 ```
 
 **CLI** — record a bug, then reproduce + fix it:
 
 ```powershell
 # record a bug from a video against a repo/app
-& $PY -m taketwo.interfaces.cli record runtime/data/sample_bug.mov --repo owner/name --app http://localhost:3000
+& $PY -m taketwo.surfaces.cli record runtime/data/sample_bug.mov --repo owner/name --app http://localhost:3000
 
 # past runs
-& $PY -m taketwo.interfaces.cli history
+& $PY -m taketwo.surfaces.cli history
 ```
 
 No recording handy? Make a synthetic clip and serve the sample buggy app to reproduce against:
@@ -43,7 +43,7 @@ No recording handy? Make a synthetic clip and serve the sample buggy app to repr
 & $PY scripts\serve_sample_app.py      # serves examples/sample_app at http://localhost:3000
 
 # in another terminal:
-& $PY -m taketwo.interfaces.cli record runtime/data/sample_bug.mov --app http://localhost:3000
+& $PY -m taketwo.surfaces.cli record runtime/data/sample_bug.mov --app http://localhost:3000
 ```
 
 ## 3. Offline checks (no model calls)
@@ -59,14 +59,14 @@ No recording handy? Make a synthetic clip and serve the sample buggy app to repr
 Built assets are committed, so the server serves the UI directly:
 
 ```powershell
-& $PY -m uvicorn taketwo.interfaces.gui2:app --port 8000
+& $PY -m uvicorn taketwo.surfaces.gui2:app --port 8000
 # open http://localhost:8000/gui2/   (Runs · Review · Scoreboard)
 ```
 
 To develop the SPA (hot reload on http://localhost:5173, calling the server on 8000):
 
 ```powershell
-cd taketwo\interfaces\gui2\client
+cd taketwo\surfaces\gui2\client
 npm install
 npm run dev        # or: npm run build  (writes client/build/, served at /gui2/)
 ```

@@ -35,7 +35,7 @@ all = [
 ]
 
 [project.scripts]
-taketwo = "taketwo.interfaces.cli:main"
+taketwo = "taketwo.surfaces.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["."]

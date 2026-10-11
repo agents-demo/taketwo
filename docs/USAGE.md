@@ -3,7 +3,7 @@
 Turn a bug report that is just a **shaky screen recording** and the words *"it's broken"* into a
 reproduction, a fix, and a **before/after proof video**. A human maintainer approves the merge.
 
-This guide covers everything a user needs: setup, the interfaces, the workflow, the demo scripts, the
+This guide covers everything a user needs: setup, the surfaces, the workflow, the demo scripts, the
 settings, and troubleshooting.
 
 ---
@@ -66,22 +66,22 @@ difference is the shell they run in.
 **Run gui1** (Streamlit) → http://localhost:8501:
 
 ```powershell
-& $PY -m streamlit run taketwo/interfaces/gui1/ui.py
+& $PY -m streamlit run taketwo/surfaces/gui1/ui.py
 ```
 
 **Run gui2** (web app: FastAPI server + SvelteKit SPA) → http://localhost:8000/gui2/:
 
 ```powershell
-& $PY -m uvicorn taketwo.interfaces.gui2:app --port 8000
+& $PY -m uvicorn taketwo.surfaces.gui2:app --port 8000
 ```
 
 > Developing the SPA with hot reload:
 > ```powershell
-> cd taketwo\interfaces\gui2\client
+> cd taketwo\surfaces\gui2\client
 > npm install
 > npm run dev      # http://localhost:5173  (CORS is enabled on the server)
 > ```
-> Built assets live in `taketwo/interfaces/gui2/client/build/` and are what the server serves at `/gui2/`.
+> Built assets live in `taketwo/surfaces/gui2/client/build/` and are what the server serves at `/gui2/`.
 > Rebuild after editing source with `npm run build`.
 
 ---
@@ -101,10 +101,10 @@ difference is the shell they run in.
 ## 5. Command line
 
 ```powershell
-& $PY -m taketwo.interfaces.cli record runtime/data/sample_bug.mov   # reproduce + fix a clip
-& $PY -m taketwo.interfaces.cli history                              # recent runs
-& $PY -m taketwo.interfaces.cli show                                 # latest run's issue text
-& $PY -m taketwo.interfaces.cli reset                                # clear saved runs
+& $PY -m taketwo.surfaces.cli record runtime/data/sample_bug.mov   # reproduce + fix a clip
+& $PY -m taketwo.surfaces.cli history                              # recent runs
+& $PY -m taketwo.surfaces.cli show                                 # latest run's issue text
+& $PY -m taketwo.surfaces.cli reset                                # clear saved runs
 ```
 
 Run the analysis in its own process (used by the UI, useful in scripts):
@@ -116,14 +116,14 @@ Run the analysis in its own process (used by the UI, useful in scripts):
 MCP (exposes `reproduce_bug_from_video` to MCP clients):
 
 ```powershell
-& $PY -m taketwo.interfaces.mcp.server
+& $PY -m taketwo.surfaces.mcp.server
 ```
 
 ---
 
 ## 6. HTTP API
 
-Start with `uvicorn taketwo.interfaces.gui2:app`. Key routes:
+Start with `uvicorn taketwo.surfaces.gui2:app`. Key routes:
 
 | Method | Path | Purpose |
 |---|---|---|
@@ -166,8 +166,8 @@ Typical first run:
 
 ```powershell
 & $PY scripts\make_sample_bug.py
-& $PY -m taketwo.interfaces.cli record runtime/data/sample_bug.mov
-& $PY -m uvicorn taketwo.interfaces.gui2:app --port 8000
+& $PY -m taketwo.surfaces.cli record runtime/data/sample_bug.mov
+& $PY -m uvicorn taketwo.surfaces.gui2:app --port 8000
 # http://localhost:8000/gui2/
 ```
 
@@ -221,7 +221,7 @@ runtime/
 - **`Missing required environment variables`** → fill `API_KEY`/`API_BASE`/`MODEL_NAME` in `.env`
   (or run offline against the sample fixtures).
 - **App looks empty** → run `scripts\seed_feed.py 5` (or `make_sample_bug.py`) to create runs.
-- **Changed the SvelteKit app but nothing changed** → `cd taketwo\interfaces\app; npm run build`.
+- **Changed the SvelteKit app but nothing changed** → `cd taketwo\surfaces\app; npm run build`.
 - **`APP_START_COMMAND` set but the fix re-run shows the bug** → the app didn't restart; check
   `PATCHED_APP_URL` and that the command serves the patched checkout.
 

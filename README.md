@@ -19,22 +19,22 @@ reproduction, a fix, and a **before/after proof video**. Built on [openjiuwen](h
 5. **Deliver.** Open an issue (steps + evidence) and a draft PR (diff + test + proof).
 
 - **New here?** [QUICKSTART.md](QUICKSTART.md) — the fast path.
-- **Full guide:** [docs/USAGE.md](docs/USAGE.md) — setup, interfaces, workflow, API, scripts, settings, troubleshooting.
+- **Full guide:** [docs/USAGE.md](docs/USAGE.md) — setup, surfaces, workflow, API, scripts, settings, troubleshooting.
 - **Design:** [docs/architecture.md](docs/architecture.md).
 
 ## Two GUIs
 
 Same engine, two identical surfaces:
 
-- **gui1** — a **Streamlit** dashboard (`interfaces/gui1/`):
-  `& $PY -m streamlit run taketwo/interfaces/gui1/ui.py` → `http://localhost:8501`.
-- **gui2** — the web app (`interfaces/gui2/`): a FastAPI server (`server/`) serving a SvelteKit SPA
+- **gui1** — a **Streamlit** dashboard (`surfaces/gui1/`):
+  `& $PY -m streamlit run taketwo/surfaces/gui1/ui.py` → `http://localhost:8501`.
+- **gui2** — the web app (`surfaces/gui2/`): a FastAPI server (`server/`) serving a SvelteKit SPA
   (`client/`) at `/gui2/` (`http://localhost:8000/gui2/`).
 
 ## Layout
 
 ```
-interfaces -> pipeline -> backend -> domain      (forge, storage, reporting, config are leaves)
+surfaces -> pipeline -> backend -> domain      (forge, storage, reporting, config are leaves)
 ```
 
 `tests/unit/test_architecture.py` enforces the direction. `backend/` is the only place that imports
