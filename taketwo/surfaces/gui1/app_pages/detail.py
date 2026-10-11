@@ -27,7 +27,10 @@ def render(job: str) -> None:
     if not proof.proof_hero(repro, proof_data, job):
         source = next((runtime.ARTIFACTS_DIR / job).glob("source.*"), None)
         if source is not None:
-            st.caption("Source recording — no proof yet (this run didn't reproduce).")
+            if repro.get("verdict") == "reproduced":
+                st.caption("Reproduced — no proof yet (a fix + proof need a repository).")
+            else:
+                st.caption("Source recording — no proof yet (this run didn't reproduce).")
             st.video(str(source))
 
     run_summary.render(job, repro, proof_data, review, summary, score)

@@ -19,5 +19,9 @@
   {/if}
 </div>
 {#if !(run.has_before && run.has_after) && !run.has_video}
-  <p class="mt-1 text-xs text-muted">Source recording — no proof yet (this run didn't reproduce).</p>
+  <p class="mt-1 text-xs text-muted">
+    {run.verdict === "reproduced"
+      ? "Reproduced — no proof yet (a fix + proof need a repository)."
+      : "Source recording — no proof yet (this run didn't reproduce)."}
+  </p>
 {/if}
