@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Any
 
 from taketwo.domain import evaluate
-from taketwo.storage import runtime, store
+from taketwo.integrations.storage import runtime, store
 
 
 def read_json(path: str | Path) -> dict:

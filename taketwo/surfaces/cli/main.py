@@ -13,7 +13,7 @@ import argparse
 import sys
 
 from taketwo.bootstrap import setup
-from taketwo.storage import runtime
+from taketwo.integrations.storage import runtime
 from taketwo.surfaces.cli.commands import history, record, reset, show
 
 

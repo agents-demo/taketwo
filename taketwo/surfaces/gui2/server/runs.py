@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from taketwo.domain import evaluate
-from taketwo.storage import json_store, runtime, store
+from taketwo.integrations.storage import json_store, runtime, store
 
 
 def _when(job: str) -> str:

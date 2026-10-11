@@ -1,10 +1,13 @@
 """Enforce the layered dependency direction (architecture as a test).
 
 Dependencies may only point inward:
-    surfaces -> pipeline -> backend -> domain
-with ``storage`` / ``reporting`` / ``config`` as neutral leaves. The pipeline's
-capability adapters (``pipeline/media``, ``pipeline/browser``, ``pipeline/forge``)
-are used only inside the pipeline, so they are not separate top-level layers.
+
+    surfaces -> core -> integrations -> domain
+
+``domain`` is the pure center (stdlib only). ``integrations`` are the outbound
+adapters (openjiuwen/agents, browser, forge, appserver, storage, reporting).
+``core`` is the application/business logic (workflow, strategies, jobs, service).
+``surfaces`` are the inbound adapters (gui1, gui2, cli, mcp).
 """
 
 from __future__ import annotations
@@ -14,25 +17,18 @@ from pathlib import Path
 
 PKG = Path(__file__).resolve().parents[2] / "taketwo"
 
-# Layers that are single modules at the package root (not sub-packages).
-TOP_LAYERS = {"reporting"}
-
-# For each layer, the app layers it must NOT import.
-#   pipeline = the staged workflow (understand -> reproduce -> repair -> prove -> deliver)
-#              plus its capability adapters (media, browser, forge)
+# For each layer, the layers it must NOT import (dependencies point inward only).
 FORBIDDEN: dict[str, set[str]] = {
-    "domain": {"pipeline", "backend", "storage", "reporting", "surfaces"},
-    "backend": {"domain", "pipeline", "reporting", "surfaces"},
-    "storage": {"domain", "pipeline", "backend", "reporting", "surfaces"},
-    "reporting": {"pipeline", "backend", "surfaces"},
-    "pipeline": {"surfaces"},
+    "domain": {"integrations", "core", "surfaces"},
+    "integrations": {"core", "surfaces"},
+    "core": {"surfaces"},
 }
 
 
 def _layer_of(path: Path) -> str | None:
     rel = path.relative_to(PKG)
     if len(rel.parts) == 1:
-        return rel.stem if rel.stem in TOP_LAYERS else None
+        return None  # top-level modules (config, bootstrap, readiness) are leaves
     return rel.parts[0]
 
 
@@ -63,22 +59,24 @@ def test_layer_dependencies_point_inward():
 
 
 def test_stages_constant_matches_stage_packages():
-    from taketwo.pipeline.stages import STAGES
+    from taketwo.core.stages import STAGES
 
-    stages_dir = PKG / "pipeline" / "stages"
+    stages_dir = PKG / "core" / "stages"
     found = {p.name for p in stages_dir.iterdir() if p.is_dir() and (p / "__init__.py").exists()}
     assert found == set(STAGES), f"STAGES {STAGES} does not match packages {sorted(found)}"
 
 
-def test_openjiuwen_confined_to_backend():
+def test_openjiuwen_confined_to_agents_integration():
+    """openjiuwen may only be imported from ``integrations/agents``."""
     violations: list[str] = []
     for path in PKG.rglob("*.py"):
-        if "backend" in path.relative_to(PKG).parts:
+        rel = path.relative_to(PKG)
+        if rel.parts[:2] == ("integrations", "agents"):
             continue
         for name in _imports(path):
             if name.split(".")[0] == "openjiuwen":
-                violations.append(f"{path.relative_to(PKG)} imports {name}")
-    assert not violations, "openjiuwen must stay inside backend:\n" + "\n".join(violations)
+                violations.append(f"{rel} imports {name}")
+    assert not violations, "openjiuwen must stay inside integrations/agents:\n" + "\n".join(violations)
 
 
 def test_domain_is_pure():

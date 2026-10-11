@@ -31,7 +31,7 @@ def scoreboard() -> dict:
 
 @router.get("/runs/{job}/ask")
 def ask(job: str, q: str) -> dict:
-    from taketwo.pipeline import service
+    from taketwo.core import service
 
     if not q.strip():
         raise HTTPException(status_code=400, detail="empty question")
@@ -43,7 +43,7 @@ def ask(job: str, q: str) -> dict:
 
 @router.post("/runs/{job}/review/{decision}")
 def review(job: str, decision: str, note: str = "", actor: str = "web") -> dict:
-    from taketwo.storage import store
+    from taketwo.integrations.storage import store
 
     if decision not in ("approved", "changes_requested", "pending"):
         raise HTTPException(status_code=400, detail="invalid decision")

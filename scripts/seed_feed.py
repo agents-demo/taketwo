@@ -15,9 +15,9 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from taketwo import pipeline  # noqa: E402
+from taketwo import core  # noqa: E402
 from taketwo.bootstrap import run, setup  # noqa: E402
-from taketwo.storage import runtime  # noqa: E402
+from taketwo.integrations.storage import runtime  # noqa: E402
 
 BASE = "sample_bug"
 
@@ -48,7 +48,7 @@ def main(count: int = 5) -> int:
                 shutil.copyfile(data / f"{BASE}_proposed{suffix}", data / f"{stem}_proposed{suffix}")
 
         try:
-            run(pipeline.resolve().analyze(pipeline.Params(video_path=str(video))))
+            run(core.resolve().analyze(core.Params(video_path=str(video))))
             made += 1
             print(f"seeded {stem}: {'fixed' if fixed else 'unclear'}")
         except Exception as exc:  # noqa: BLE001

@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from taketwo.backend import ConfigError
 from taketwo.bootstrap import run as run_async
+from taketwo.integrations.agents import ConfigError
 
 
 def _print_reproduction(repro: dict) -> None:
@@ -22,13 +22,13 @@ def _print_reproduction(repro: dict) -> None:
 
 
 def run(video: str, repo: str, base_branch: str, app_url: str, agentic: bool) -> int:
-    from taketwo import pipeline
+    from taketwo import core
 
-    strategy = pipeline.resolve(agentic)
+    strategy = core.resolve(agentic)
     try:
         outcome = run_async(
             strategy.analyze(
-                pipeline.Params(video_path=video, repo=repo, base_branch=base_branch, app_url=app_url)
+                core.Params(video_path=video, repo=repo, base_branch=base_branch, app_url=app_url)
             )
         )
     except (ConfigError, FileNotFoundError, ValueError) as exc:

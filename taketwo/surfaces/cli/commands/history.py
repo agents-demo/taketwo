@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from taketwo.storage import store
+from taketwo.integrations.storage import store
 
 
 def run() -> int:

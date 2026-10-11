@@ -10,14 +10,14 @@ import asyncio
 from collections.abc import Coroutine
 from typing import Any, TypeVar
 
-from .storage import runtime
+from taketwo.integrations.storage import runtime
 
 _T = TypeVar("_T")
 
 
 def setup() -> None:
     runtime.setup()
-    from taketwo.backend import configure_logging
+    from taketwo.integrations.agents import configure_logging
 
     configure_logging(str(runtime.LOG_DIR))
 

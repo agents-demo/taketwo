@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import streamlit as st
 
-from taketwo.pipeline.jobs import get_runner
-from taketwo.storage import runtime
+from taketwo.core.jobs import get_runner
+from taketwo.integrations.storage import runtime
 from taketwo.surfaces.gui1 import config, samples
 
 

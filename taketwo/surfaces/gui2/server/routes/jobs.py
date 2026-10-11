@@ -10,14 +10,14 @@ router = APIRouter()
 @router.get("/jobs")
 def jobs() -> dict:
     """All known jobs (for the live "in flight" count)."""
-    from taketwo.pipeline.jobs import get_runner
+    from taketwo.core.jobs import get_runner
 
     return {"jobs": get_runner().jobs()}
 
 
 @router.get("/jobs/{job_id}")
 def job_status(job_id: str) -> dict:
-    from taketwo.pipeline.jobs import get_runner
+    from taketwo.core.jobs import get_runner
 
     status = get_runner().status(job_id)
     if status.get("status") == "unknown":
@@ -28,7 +28,7 @@ def job_status(job_id: str) -> dict:
 @router.post("/jobs/{job_id}/cancel")
 def cancel_job(job_id: str) -> dict:
     """Cancel a queued/running job."""
-    from taketwo.pipeline.jobs import get_runner
+    from taketwo.core.jobs import get_runner
 
     return {"cancelled": get_runner().cancel(job_id)}
 
@@ -36,7 +36,7 @@ def cancel_job(job_id: str) -> dict:
 @router.post("/jobs/{job_id}/retry")
 def retry_job(job_id: str) -> dict:
     """Requeue a known job with the same parameters."""
-    from taketwo.pipeline.jobs import get_runner
+    from taketwo.core.jobs import get_runner
 
     new_id = get_runner().retry(job_id)
     if new_id is None:

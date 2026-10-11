@@ -6,7 +6,7 @@ import sys
 
 import streamlit as st
 
-from taketwo.storage import runtime
+from taketwo.integrations.storage import runtime
 from taketwo.surfaces.gui1 import config
 
 
@@ -28,7 +28,7 @@ def sample_app_url(port: int = 8130) -> str:
         return getattr(cached, "url", "")
     if not config.SAMPLE_APP.exists():
         return ""
-    from taketwo.pipeline import appserver
+    from taketwo.integrations import appserver
 
     command = f'"{sys.executable}" -m http.server {port} --directory "{config.SAMPLE_APP}"'
     app = appserver.start(command, config._ROOT, f"http://localhost:{port}")

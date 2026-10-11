@@ -11,7 +11,7 @@ import os
 
 from dotenv import load_dotenv
 
-from taketwo.storage import runtime
+from taketwo.integrations.storage import runtime
 
 load_dotenv()
 

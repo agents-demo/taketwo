@@ -13,7 +13,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from taketwo.bootstrap import setup  # noqa: E402
 from taketwo.domain import evaluate  # noqa: E402
-from taketwo.storage import store  # noqa: E402
+from taketwo.integrations.storage import store  # noqa: E402
 
 EXPECTED_PATH = Path(__file__).resolve().parents[1] / "tests" / "eval" / "expected.json"
 

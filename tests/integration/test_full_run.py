@@ -29,14 +29,14 @@ requires = pytest.mark.skipif(
 @requires
 def test_reproduces_sample_bug(tmp_path):
     from taketwo.bootstrap import run
-    from taketwo.pipeline import pipeline
+    from taketwo.core import pipeline
 
     video = tmp_path / "bug.mov"
     video.write_bytes(b"placeholder")
-    strategy = pipeline.resolve()
+    strategy = core.resolve()
     outcome = run(
         strategy.analyze(
-            pipeline.Params(video_path=str(video), app_url=os.environ["TAKETWO_APP_URL"])
+            core.Params(video_path=str(video), app_url=os.environ["TAKETWO_APP_URL"])
         )
     )
     assert outcome["reproduction"]["verdict"] in {"reproduced", "not_reproduced", "unclear"}

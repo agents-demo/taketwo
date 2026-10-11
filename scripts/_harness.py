@@ -13,10 +13,10 @@ from typing import Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from taketwo.pipeline import appserver  # noqa: E402
-from taketwo.pipeline.run_session import start_session  # noqa: E402
-from taketwo.pipeline.stages.reproduce import replay_steps, reproduce  # noqa: E402
-from taketwo.storage import runtime  # noqa: E402
+from taketwo.integrations import appserver  # noqa: E402
+from taketwo.core.run_session import start_session  # noqa: E402
+from taketwo.core.stages.reproduce import replay_steps, reproduce  # noqa: E402
+from taketwo.integrations.storage import runtime  # noqa: E402
 
 
 def playwright_available() -> bool:

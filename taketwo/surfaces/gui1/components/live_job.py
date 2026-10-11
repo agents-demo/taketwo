@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import streamlit as st
 
-from taketwo.pipeline.jobs import get_runner
+from taketwo.core.jobs import get_runner
 
 
 @st.fragment(run_every=2.0)

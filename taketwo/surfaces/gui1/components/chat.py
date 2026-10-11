@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import streamlit as st
 
-from taketwo.pipeline import service
+from taketwo.core import service
 
 
 def chat(job: str) -> None:

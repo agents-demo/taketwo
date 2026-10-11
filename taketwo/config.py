@@ -2,7 +2,7 @@
 
 Only behaviour that shapes *what the app does* lives here (frame sampling, cursor
 thresholds, limits, feature toggles). Anything about reaching model/embedding
-endpoints lives in :mod:`taketwo.backend.settings`.
+endpoints lives in :mod:`taketwo.integrations.agents.settings`.
 """
 
 from __future__ import annotations

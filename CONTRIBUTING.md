@@ -36,28 +36,26 @@ $PY = "C:\Workspace\openjiuwen\jiuwenswarm\.venv\Scripts\python.exe"
 Layers point **inward** only; `tests/unit/test_architecture.py` enforces it:
 
 ```
-surfaces  ->  pipeline  ->  backend  ->  domain
-                     |
-                     +->  storage / reporting / config   (neutral leaves)
+surfaces  ->  core  ->  integrations  ->  domain
 ```
 
-- **Keep openjiuwen inside `backend/`.** Nothing outside imports it. Reach models/agents only
-  through the façade (`build`, `TextParams`/`VisionParams`, `run_agent`, `run_text`).
+- **Keep openjiuwen inside `integrations/agents/`.** Nothing outside imports it. Reach models/agents
+  only through the façade (`build`, `TextParams`/`VisionParams`, `run_agent`, `run_text`).
 - **`domain/` stays pure** — stdlib only, no I/O.
-- **Stages** live in `pipeline/stages/<name>/` and must not import `pipeline`.
-- **Shared within the pipeline** → `pipeline/<x>` (e.g. `forge/`). **Cross-layer** → a neutral
-  leaf (`storage`, `config`, `reporting`). A helper used by one stage stays in that stage.
-- **`browser/` is confined to the reproduce stage** (the only place Playwright is imported).
+- **`integrations/`** are the outbound adapters: agents, browser (Playwright), forge (GitHub),
+  appserver, storage, reporting.
+- **Stages** live in `core/stages/<name>/`; the workflow + strategies live in `core/`.
+- **`browser.py` is confined to `integrations/`** (the only place Playwright is imported).
 - `__init__.py` is imports/docstring only — no side effects. Wiring happens in `bootstrap.setup()`.
 
 ## Where to add things
 
-- New **stage**: `pipeline/stages/<name>/` + register in `pipeline/stages/__init__.py` (`STAGES`)
-  and call it from `pipeline/strategies/base.py`.
-- New **capability** (external system): a module under `pipeline/` (or a stage if single-consumer).
-- New **surface**: a package under `surfaces/`; reuse the shared façade `pipeline/service.py`.
+- New **stage**: `core/stages/<name>/` + register in `core/stages/__init__.py` (`STAGES`)
+  and call it from `core/strategies/base.py`.
+- New **capability** (external system): a module under `integrations/`.
+- New **surface**: a package under `surfaces/`; reuse the shared façade `core/service.py`.
 - New **config knob**: application behaviour in `config.py`; endpoint/credentials in
-  `backend/settings.py`.
+  `integrations/agents/settings.py`.
 
 ## The two GUIs (both under `surfaces/`)
 

@@ -110,7 +110,7 @@ difference is the shell they run in.
 Run the analysis in its own process (used by the UI, useful in scripts):
 
 ```powershell
-& $PY -m taketwo.pipeline.jobs.worker runtime/data/sample_bug.mov --progress progress.json --app http://localhost:8130
+& $PY -m taketwo.core.jobs.worker runtime/data/sample_bug.mov --progress progress.json --app http://localhost:8130
 ```
 
 MCP (exposes `reproduce_bug_from_video` to MCP clients):

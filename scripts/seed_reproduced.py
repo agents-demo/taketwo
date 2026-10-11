@@ -18,11 +18,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from _harness import free_port, playwright_available, serve  # noqa: E402
 
-from taketwo import pipeline  # noqa: E402
+from taketwo import core  # noqa: E402
 from taketwo.bootstrap import run, setup  # noqa: E402
-from taketwo.pipeline import appserver  # noqa: E402
-from taketwo.pipeline.stages.prove import stitch  # noqa: E402
-from taketwo.storage import runtime  # noqa: E402
+from taketwo.integrations import appserver  # noqa: E402
+from taketwo.core.stages.prove import stitch  # noqa: E402
+from taketwo.integrations.storage import runtime  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -122,7 +122,7 @@ def _seed(scenario: dict) -> None:
     stitch.proof(str(out_dir / "before.png"), str(out_dir / "after.png"), str(out_dir / "proof.png"))
     stitch.proof_video(str(out_dir / "before.png"), str(out_dir / "after.png"), str(out_dir / "proof.mp4"))
 
-    outcome = run(pipeline.resolve().analyze(pipeline.Params(video_path=str(video))))
+    outcome = run(core.resolve().analyze(core.Params(video_path=str(video))))
     print(f"{stem}: verdict={outcome['reproduction'].get('verdict')} proof={bool((outcome.get('proof') or {}).get('proof_video'))}")
 
 

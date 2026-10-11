@@ -10,9 +10,9 @@ from pathlib import Path
 from fastapi import APIRouter, File, HTTPException, Request, UploadFile
 
 from taketwo.bootstrap import setup
-from taketwo.pipeline.forge import auth as forge_auth
-from taketwo.pipeline.forge import verify_signature
-from taketwo.storage import runtime
+from taketwo.integrations.forge import auth as forge_auth
+from taketwo.integrations.forge import verify_signature
+from taketwo.integrations.storage import runtime
 from taketwo.surfaces.gui2.server import config
 
 router = APIRouter()
@@ -60,7 +60,7 @@ async def webhook(request: Request) -> dict:
     video_path = payload.get("video_path", "")
     if video_path:
         setup()
-        from taketwo.pipeline.jobs import get_runner
+        from taketwo.core.jobs import get_runner
 
         job_id = get_runner().submit(video_path=video_path, repo=payload.get("repo", ""))
         return {"accepted": True, "job_id": job_id}

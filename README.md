@@ -34,9 +34,9 @@ Same engine, two identical surfaces:
 ## Layout
 
 ```
-surfaces -> pipeline -> backend -> domain      (forge, storage, reporting, config are leaves)
+surfaces -> core -> integrations -> domain
 ```
 
-`tests/unit/test_architecture.py` enforces the direction. `backend/` is the only place that imports
+`tests/unit/test_architecture.py` enforces the direction. `integrations/agents/` is the only place that imports
 openjiuwen. See the architecture doc for the full package map, and [CONTRIBUTING.md](CONTRIBUTING.md)
 to develop.

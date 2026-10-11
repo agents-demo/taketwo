@@ -13,7 +13,7 @@ router = APIRouter()
 @router.post("/replay")
 def replay(request: ReplayRequest) -> dict:
     """Run a reproduction synchronously and return the outcome."""
-    from taketwo.pipeline import service
+    from taketwo.core import service
 
     setup()
     try:
@@ -40,7 +40,7 @@ def replay(request: ReplayRequest) -> dict:
 def replay_async(request: ReplayRequest) -> dict:
     """Enqueue a reproduction in the sandboxed runner; poll it at ``/jobs/{id}``."""
     setup()
-    from taketwo.pipeline.jobs import get_runner
+    from taketwo.core.jobs import get_runner
 
     job_id = get_runner().submit(
         video_path=request.video_path,

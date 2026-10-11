@@ -6,8 +6,8 @@ from pathlib import Path
 
 import streamlit as st
 
-from taketwo.reporting import proof_card, share_card  # noqa: F401  (re-exported for the pages)
-from taketwo.storage import store
+from taketwo.integrations.reporting import proof_card, share_card  # noqa: F401  (re-exported for the pages)
+from taketwo.integrations.storage import store
 
 
 def share(job: str) -> None:

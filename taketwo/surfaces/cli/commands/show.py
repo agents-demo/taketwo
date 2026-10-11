@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from taketwo.domain import render
-from taketwo.storage import store
+from taketwo.integrations.storage import store
 
 
 def run(job: str | None) -> int:

@@ -4,25 +4,24 @@ TakeTwo is layered (hexagonal). Dependencies point **inward** only, enforced by
 `tests/unit/test_architecture.py` (an AST check), not by convention.
 
 ```
-surfaces  ──▶  pipeline  ──▶  backend  ──▶  domain
-                     │
-                     └────▶  storage / reporting / config   (neutral leaves)
+surfaces  ──▶  core  ──▶  integrations  ──▶  domain
 ```
 
-The pipeline owns its **capability adapter** `pipeline/forge` (git/GitHub) and confines the browser to
-the reproduce stage (`pipeline/stages/reproduce/browser.py`); video/image helpers live with the stage
-that uses them. All of these are pipeline-only, so none is a separate top-level layer.
+- `domain/` — the pure center (stdlib only).
+- `integrations/` — outbound adapters to the outside world (agents, browser, forge, appserver, storage, reporting).
+- `core/` — the application / business logic: the workflow, its strategy, the run runtime.
+- `surfaces/` — inbound adapters (the way anything drives TakeTwo).
+
+`config.py`, `bootstrap.py` and `readiness.py` are cross-cutting leaves.
 
 ## Layers
 
 | Layer | Package | Responsibility | May depend on |
 |---|---|---|---|
 | Domain | `domain/` | Pure rules: submission/repro/fix schemas, timeline math, verify, render, evaluate, compare. No I/O, no third-party. | stdlib only |
-| Backend | `backend/` | The single home for openjiuwen: settings, models, agent builder, rails, tools, runner, logs, telemetry. Imports no application module. | stdlib, openjiuwen |
-| Pipeline | `pipeline/` | The staged workflow (understand → reproduce → repair → prove → deliver), run by two strategies, plus its capability adapter `forge/`, the run/ask façade `service.py`, and the sandboxed runner `jobs/`; the browser lives inside the reproduce stage. | backend, storage, domain, reporting, config |
-| Storage | `storage/` | Runtime path layout, JSON helpers, per-job store, repo cache. | config |
-| Reporting | `reporting.py` | Outbound artifacts: `issue.md`, `pr.md`, proof manifest. | domain, storage |
-| Surfaces | `surfaces/` | Adapters (one folder per entry point): CLI, MCP, gui1 (Streamlit), gui2 (SvelteKit SPA + its FastAPI server). | anything |
+| Integrations | `integrations/` | Outbound adapters: `agents/` (openjiuwen), `browser` (Playwright), `forge/` (GitHub), `appserver`, `storage/`, `reporting`. | domain, stdlib, 3rd-party |
+| Core | `core/` | The staged workflow (understand → reproduce → repair → prove → deliver) + strategies, the sandboxed `jobs/` runner, and the run/ask `service`. | integrations, domain |
+| Surfaces | `surfaces/` | Inbound adapters (one folder per entry point): CLI, MCP, gui1 (Streamlit), gui2 (SvelteKit SPA + its FastAPI server). | anything |
 
 ## Package map
 
@@ -31,24 +30,36 @@ taketwo/
 ├── __init__.py            # version only (no side effects)
 ├── bootstrap.py           # runtime dirs + logging; called by entry points
 ├── config.py              # application settings (sampling, thresholds, toggles)
-├── reporting.py           # issue.md / pr.md / proof manifest
+├── readiness.py           # environment checks (model / browser / delivery / sample)
 ├── domain/                # pure: submission, timeline, repro, fix, verify, render, evaluate, compare
-├── backend/               # openjiuwen only: settings, logs, agent/, telemetry/
-├── pipeline/              # the staged workflow + its capability adapters;
-│                          #   service.py (run/ask façade), jobs/ (sandboxed runner + worker)
-├── storage/               # runtime, json_store, jobs, cache
-└── surfaces/            # entry points: cli/, mcp/, gui1/ (Streamlit), gui2/ (FastAPI server + SvelteKit SPA)
+├── integrations/          # outbound adapters
+│   ├── agents/            #   openjiuwen: settings, models, agent builder, rails, telemetry
+│   ├── browser.py         #   Playwright (the only playwright import)
+│   ├── forge/             #   GitHub: repo clone/search/blame + issue/draft PR
+│   ├── appserver.py       #   serve the app under test
+│   ├── storage/           #   runtime paths, json_store, job store, repo cache
+│   └── reporting.py       #   issue.md / pr.md + share cards
+├── core/                  # the workflow + runtime
+│   ├── service.py         #   run/ask façade
+│   ├── params.py          #   Params: request + run state
+│   ├── progress.py        #   run progress
+│   ├── run_session.py     #   run recorder, browser session, media dir
+│   ├── agent_reply.py     #   run an agent (retry/backoff) + parse its strict JSON
+│   ├── jobs/              #   sandboxed runner + worker
+│   ├── stages/            #   order is data: core.stages.STAGES
+│   └── strategies/        #   deterministic / agentic
+└── surfaces/              # entry points: cli/, mcp/, gui1/, gui2/
 ```
 
-## The backend package
+## The integrations package
 
-`backend/` is the single home for everything under-the-hood of the agentic system: every openjiuwen
-import, model/agent access, rails, and telemetry. `config.py` holds only *application* settings.
-The façade is small (`build`, `TextParams`/`VisionParams`, `run_agent`, `run_text`, `ConfigError`,
-`configure_logging`); everything else is internal.
+`integrations/agents/` is the single home for everything under-the-hood of the agentic system: every
+openjiuwen import, model/agent access, rails, and telemetry. The façade is small (`build`,
+`TextParams`/`VisionParams`, `run_agent`, `run_text`, `ConfigError`, `configure_logging`); everything
+else is internal.
 
 ```
-backend/
+integrations/agents/
 ├── __init__.py            # the façade
 ├── settings.py            # env: endpoints, keys, model names, timeouts, embeddings, budget/tracing
 ├── logs.py                # route openjiuwen logging to a directory
@@ -61,26 +72,25 @@ backend/
 └── telemetry/             # usage, traces, recorder
 ```
 
-## The pipeline package
+## The core package
 
-The pipeline runs five stages in one of two interchangeable strategies. The strategies share a base
+The workflow runs five stages in one of two interchangeable strategies. The strategies share a base
 class (template method): `analyze` prepares the run (validate submission + start session), calls the
-mode-specific `_run`, then finalizes (usage, job summary, exports). Callers obtain a strategy from
-the `pipeline` package — they never import a concrete module.
+mode-specific `_run`, then finalizes (usage, job summary, exports). Callers obtain a strategy from the
+`core` package — they never import a concrete module.
 
 ```
-pipeline/
+core/
 ├── __init__.py            # orchestrator façade: resolve(), get_strategy(), Params, Strategy
-├── progress.py            # run progress (neutral leaf)
+├── progress.py            # run progress
 ├── agent_reply.py         # run an agent (retry/backoff) + parse its strict JSON (understand, repair)
 ├── params.py              # Params: request + run state
 ├── run_session.py         # run recorder, browser session, vision agent, media dir
-├── appserver.py           # start/stop the app under test (prologue + prove)
-├── forge/                 # adapter: repo clone/search/blame + publish/PR
-├── stages/                # order is data: pipeline.STAGES (not folder numbers)
+├── service.py             # run/ask façade used by the surfaces
+├── jobs/                  # sandboxed runner (runner.py) + worker.py
+├── stages/                # order is data: core.STAGES (not folder numbers)
 │   ├── understand/        # 01 recording -> timeline + failure hypothesis
 │   ├── reproduce/         # 02 timeline  -> reproduced run + evidence + before clip
-│   │   └── browser.py     #    the stage's Playwright session (only playwright import)
 │   ├── repair/            # 03 evidence  -> localized cause (strings + console traces) + patch + test
 │   ├── prove/             # 04 patch     -> after clip + before/after proof video
 │   └── deliver/           # 05 artifacts -> issue + draft PR
@@ -91,21 +101,20 @@ pipeline/
 
 - **No import side effects.** `__init__.py` is imports/docstring only; `bootstrap.setup()` creates
   runtime dirs and configures logging (called by every entry point and by `conftest.py`).
-- **One façade per framework.** openjiuwen is confined to `backend/`; GitHub is a pipeline adapter
-  (`pipeline/forge`) and the browser is confined to the reproduce stage
-  (`pipeline/stages/reproduce/browser`, the only place Playwright is imported).
-- **Single source of paths.** All generated state lives under `runtime/` via `storage.runtime`.
+- **One façade per framework.** openjiuwen is confined to `integrations/agents/`; Playwright is
+  confined to `integrations/browser.py`; GitHub lives in `integrations/forge/`.
+- **Single source of paths.** All generated state lives under `runtime/` via `integrations.storage.runtime`.
 - **Schema at the boundary.** `domain.*.normalize/validate` runs where artifacts are stored.
-- **Never auto-merge.** The pipeline opens a *draft* PR; approval is a human step.
+- **Never auto-merge.** Delivery opens a *draft* PR; approval is a human step.
 
 ## Data flow
 
 ```
-recording ─▶ pipeline.stages.understand  (frames + cursor + contact sheet)   ─▶ timeline.json
-          ─▶ pipeline.stages.reproduce   (browser: replay + console + record)─▶ repro.json + before.png
-          ─▶ pipeline.stages.repair      (forge: search/blame + console trace)─▶ fix.diff + test
-          ─▶ pipeline.stages.prove       (serve patched app + re-run + stitch)─▶ proof.mp4
-          ─▶ pipeline.stages.deliver     (forge + reporting)                  ─▶ issue + draft PR
+recording ─▶ core.stages.understand  (frames + cursor + contact sheet)   ─▶ timeline.json
+          ─▶ core.stages.reproduce   (browser: replay + console + record)─▶ repro.json + before.png
+          ─▶ core.stages.repair      (forge: search/blame + console trace)─▶ fix.diff + test
+          ─▶ core.stages.prove       (serve patched app + re-run + stitch)─▶ proof.mp4
+          ─▶ core.stages.deliver     (forge + reporting)                  ─▶ issue + draft PR
 ```
 
 ## Surfaces: two GUIs
@@ -115,21 +124,16 @@ Both are inbound adapters over the same engine, with the same features; keep the
 **gui1** (`surfaces/gui1/`) — a **Streamlit** app:
 
 - `ui.py` — entry point: page config, logo, `st.navigation`.
-- `app_pages/pages.py` — the `st.Page` registry (single source of truth for nav + links).
-- `app_pages/runs.py` — submit (upload or one-tap live sample), a live `st.status(type="step")`
-  job feed with cancel/retry, the runs table + drawer.
-- `app_pages/detail.py` — proof hero (autoplay video / drag-compare), fix, evidence timeline,
-  review + audit, and a grounded follow-up chat.
-- `app_pages/scoreboard.py` — public reproduce rate, hall of fame, per-repo leaderboard.
-- `common.py` / `compare.py` — shared helpers and the CCv2 components (compare slider, share cards).
+- `app_pages/` — the pages: `pages.py` (registry), `runs.py`, `detail.py`, `scoreboard.py`.
+- `components/` — one widget per file (empty_state, proof, compare, execution, chat, live_job, new_run, readiness, run_summary, runs_table).
+- `config.py` / `data.py` / `samples.py` / `session.py` / `share.py` / `charts.py` — helpers.
+- Theme lives in `.streamlit/config.toml`.
 
-Theming is native via `.streamlit/config.toml` (no injected CSS). The engine it drives is unchanged.
-
-**gui2** (`surfaces/gui2/`) — the **web app**: a FastAPI server (`server/app.py`) that exposes the
-JSON endpoints and serves the bundled **SvelteKit** SPA (`client/`) at `/gui2/` (adapter-static, base
+**gui2** (`surfaces/gui2/`) — the **web app**: a FastAPI server (`server/`) that exposes the JSON
+endpoints and serves the bundled **SvelteKit** SPA (`client/`) at `/gui2/` (adapter-static, base
 `/gui2`; the `spa()` route falls back to `index.html` for client routes). Run it with
 `uvicorn taketwo.surfaces.gui2:app`; develop the SPA with `npm run dev` in `client/` (5173,
-CORS-enabled). The read model lives in `server/runs.py`.
+CORS-enabled).
 
 ## Tools & scripts
 

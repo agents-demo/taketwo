@@ -2,14 +2,14 @@
 
 from __future__ import annotations
 
-from taketwo import pipeline
+from taketwo import core
 from taketwo.bootstrap import run
 from taketwo.domain import evaluate
 from taketwo.domain import repro as repro_mod
 from taketwo.domain import timeline as timeline_mod
 from taketwo.domain import verify as verify_mod
 from taketwo.domain.submission import job_id
-from taketwo.pipeline import agent_reply
+from taketwo.core import agent_reply
 
 
 def test_submission_job_id_prefers_repo():
@@ -40,7 +40,7 @@ def test_evaluate_scores_grounded_repro_high():
 
 
 def test_service_grounded_answer_from_data():
-    from taketwo.pipeline.service import _answer_from_data
+    from taketwo.core.service import _answer_from_data
 
     context = {
         "reproduction": {
@@ -57,7 +57,7 @@ def test_service_grounded_answer_from_data():
 
 
 def test_store_review_records_audit():
-    from taketwo.storage import store
+    from taketwo.integrations.storage import store
 
     job = "pytest_review_tmp"
     store.set_review(job, "approved", "looks good")
@@ -97,12 +97,12 @@ def test_agent_reply_extracts_json_from_prose():
 
 
 def test_understand_uses_the_agent_when_present(tmp_path, monkeypatch):
-    from taketwo.pipeline.stages.understand import understand
+    from taketwo.core.stages.understand import understand
 
     async def fake_ask(agent, prompt):  # noqa: ARG001
         return 'prose... {"steps": [{"action": "click", "target": "#go", "timestamp": 1.0}], "failure": {}} ...'
 
-    monkeypatch.setattr("taketwo.pipeline.agent_reply.ask", fake_ask)
+    monkeypatch.setattr("taketwo.core.agent_reply.ask", fake_ask)
 
     video = tmp_path / "bug.mov"
     video.write_bytes(b"not a real recording")
@@ -112,9 +112,9 @@ def test_understand_uses_the_agent_when_present(tmp_path, monkeypatch):
 
 
 def test_agent_ask_retries_transient(monkeypatch):
-    import taketwo.backend as backend
+    import taketwo.integrations.agents as backend
     from taketwo.bootstrap import run as run_sync
-    from taketwo.pipeline import agent_reply
+    from taketwo.core import agent_reply
 
     calls = {"n": 0}
 
@@ -130,7 +130,7 @@ def test_agent_ask_retries_transient(monkeypatch):
 
 
 def test_localize_parses_console_frames():
-    from taketwo.pipeline.stages.repair import localize
+    from taketwo.core.stages.repair import localize
 
     repro = {
         "evidence": {
@@ -146,7 +146,7 @@ def test_localize_parses_console_frames():
 
 
 def test_click_candidates_ladder():
-    from taketwo.pipeline.stages.reproduce.browser import click_candidates
+    from taketwo.integrations.browser import click_candidates
 
     assert click_candidates("#dateField") == ["#dateField"]  # css used as-is
     label = click_candidates("15")
@@ -157,7 +157,7 @@ def test_forge_verify_signature():
     import hashlib
     import hmac
 
-    from taketwo.pipeline.forge import verify_signature
+    from taketwo.integrations.forge import verify_signature
 
     body = b'{"action": "opened"}'
     secret = "s3cret"
@@ -171,7 +171,7 @@ def test_forge_verify_signature():
 def test_runner_command_local_and_docker(monkeypatch):
     import sys
 
-    from taketwo.pipeline.jobs import Runner
+    from taketwo.core.jobs import Runner
 
     runner = Runner(max_workers=1)
     job = {
@@ -185,7 +185,7 @@ def test_runner_command_local_and_docker(monkeypatch):
 
     monkeypatch.delenv("SANDBOX_IMAGE", raising=False)
     local = runner._command(job)
-    assert local[0] == sys.executable and local[1:3] == ["-m", "taketwo.pipeline.jobs.worker"]
+    assert local[0] == sys.executable and local[1:3] == ["-m", "taketwo.core.jobs.worker"]
 
     monkeypatch.setenv("SANDBOX_IMAGE", "taketwo:latest")
     docker = runner._command(job)
@@ -195,7 +195,7 @@ def test_runner_command_local_and_docker(monkeypatch):
 def test_forge_run_tests_reports_pass_and_fail(tmp_path):
     import sys
 
-    from taketwo.pipeline.forge import repo as forge_repo
+    from taketwo.integrations.forge import repo as forge_repo
 
     ok = forge_repo.run_tests(tmp_path, f'"{sys.executable}" -c "import sys; sys.exit(0)"')
     bad = forge_repo.run_tests(tmp_path, f'"{sys.executable}" -c "import sys; sys.exit(1)"')
@@ -209,9 +209,9 @@ def test_forge_run_tests_reports_pass_and_fail(tmp_path):
 def test_forge_publish_branch_commits_and_dry_runs(tmp_path, monkeypatch):
     import subprocess
 
-    from taketwo.pipeline.forge import repo as forge_repo
+    from taketwo.integrations.forge import repo as forge_repo
 
-    monkeypatch.setattr("taketwo.pipeline.forge.auth.token", lambda: "")  # force dry-run, never push in tests
+    monkeypatch.setattr("taketwo.integrations.forge.auth.token", lambda: "")  # force dry-run, never push in tests
 
     work = tmp_path / "r"
     work.mkdir()
@@ -238,12 +238,12 @@ def test_forge_publish_branch_commits_and_dry_runs(tmp_path, monkeypatch):
 
 
 def test_deterministic_pipeline_runs_offline(tmp_path):
-    from taketwo.storage import store
+    from taketwo.integrations.storage import store
 
     video = tmp_path / "bug.mov"
     video.write_bytes(b"not a real recording")
-    strategy = pipeline.resolve()
-    outcome = run(strategy.analyze(pipeline.Params(video_path=str(video))))
+    strategy = core.resolve()
+    outcome = run(strategy.analyze(core.Params(video_path=str(video))))
 
     assert outcome["job"]
     assert outcome["reproduction"]["verdict"] in repro_mod.VERDICTS

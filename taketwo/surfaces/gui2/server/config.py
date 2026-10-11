@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from taketwo.storage import runtime
+from taketwo.integrations.storage import runtime
 
 _HERE = Path(__file__).resolve().parent
 

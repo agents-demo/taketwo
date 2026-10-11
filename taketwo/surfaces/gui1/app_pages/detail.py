@@ -7,7 +7,7 @@ from pathlib import Path
 import streamlit as st
 
 from taketwo.domain import evaluate
-from taketwo.storage import runtime, store
+from taketwo.integrations.storage import runtime, store
 from taketwo.surfaces.gui1 import charts, data, session
 from taketwo.surfaces.gui1.components import chat, empty_state, execution, proof, run_summary
 from taketwo.surfaces.gui1.components.compare import before_after
