@@ -1,6 +1,6 @@
 # Demo pack
 
-Self-contained bug demos: a buggy app + a ready recording for each, so TakeTwo runs
+Self-contained bug demos: a buggy app + a real ~5 s recording for each, so TakeTwo runs
 end-to-end with no setup. Adding a demo = adding one folder under `scenarios/`.
 
 ```
@@ -8,13 +8,14 @@ demo/
 ├── scenarios/            # one folder per demo
 │   ├── booking/          # date-picker bug
 │   │   ├── app/index.html
-│   │   ├── clip.mp4
+│   │   ├── clip.mp4      # ~5 s screen recording
 │   │   ├── scenario.json # title, bug, steps, proof fix, patch
 │   │   └── README.md
-│   └── signin/           # login bug  (same shape)
+│   ├── signin/           # login bug  (same shape)
+│   └── cart/             # add-to-cart bug  (same shape)
 ├── scripts/              # the drivers — each takes a scenario name
 │   ├── serve_app.py          # serve a scenario's app
-│   ├── record_clip.py        # (re)record its clip
+│   ├── record_clip.py        # (re)record its clip (real video)
 │   ├── make_proof.py         # build a real before/after proof
 │   ├── seed_scenarios.py     # seed reproduced runs for the feed
 │   └── run_live.py           # live end-to-end

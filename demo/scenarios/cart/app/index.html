@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Northwind — Espresso machine</title>
+    <style>
+      :root { color-scheme: light; }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0; min-height: 100vh; display: grid; place-items: center; font-family: "Segoe UI", system-ui, sans-serif;
+        background: radial-gradient(120% 120% at 15% 0%, #ecfeff, #f8fafc 60%); color: #0f172a;
+      }
+      .app { width: 400px; background: #fff; border-radius: 18px; box-shadow: 0 24px 60px rgba(15,23,42,.18); overflow: hidden; }
+      .bar { display: flex; gap: 6px; align-items: center; padding: 12px 14px; background: #0f172a; }
+      .dot { width: 11px; height: 11px; border-radius: 50%; }
+      .r { background: #ff5f57; } .y { background: #febc2e; } .g { background: #28c840; }
+      .url { margin-left: 10px; flex: 1; background: #1e293b; color: #94a3b8; font-size: 12px; padding: 6px 12px; border-radius: 8px; }
+      .body { padding: 22px; }
+      h1 { font-size: 20px; margin: 0 0 2px; }
+      p.sub { margin: 0 0 18px; color: #64748b; font-size: 13px; }
+      .qty { display: flex; align-items: center; gap: 12px; margin: 6px 0 16px; }
+      .qty button { width: 40px; height: 40px; border: 1.5px solid #cbd5e1; border-radius: 10px; background: #f8fafc; font-size: 20px; cursor: pointer; }
+      .qty span { min-width: 32px; text-align: center; font-size: 20px; font-weight: 700; }
+      #add { width: 100%; padding: 12px; border: none; border-radius: 10px; background: #0891b2; color: #fff; font-weight: 600; font-size: 15px; cursor: pointer; }
+      #add:hover { background: #0e7490; }
+      .status { margin-top: 14px; padding: 12px 14px; border-radius: 10px; background: #ecfeff; color: #0e7490; font-weight: 600; font-size: 14px; opacity: 0; transition: opacity .2s; }
+      .status.show { opacity: 1; }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <div class="bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="url">northwind.example/product</span></div>
+      <div class="body">
+        <h1>Espresso machine</h1>
+        <p class="sub">$249 · free shipping</p>
+        <div class="qty">
+          <button id="dec" aria-label="Decrease quantity">&minus;</button>
+          <span id="qty">1</span>
+          <button id="inc" aria-label="Increase quantity">+</button>
+        </div>
+        <button id="add">Add to cart</button>
+        <div id="status" class="status"></div>
+      </div>
+    </div>
+    <script>
+      let n = 1;
+      const q = document.getElementById("qty");
+      document.getElementById("inc").onclick = () => { n += 1; q.textContent = n; };
+      document.getElementById("dec").onclick = () => { n = Math.max(1, n - 1); q.textContent = n; };
+
+      // The seeded bug: `#cart` does not exist, so `cart` is null and touching it throws
+      // "TypeError: Cannot read properties of null (reading 'classList')".
+      const cart = document.getElementById("cart");
+
+      document.getElementById("add").onclick = () => {
+        cart.classList.add("show");          // <-- TypeError here
+        cart.textContent = n + " in cart";
+      };
+    </script>
+  </body>
+</html>
