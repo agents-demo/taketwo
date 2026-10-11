@@ -40,7 +40,7 @@ No recording handy? Make a synthetic clip and serve the sample buggy app to repr
 
 ```powershell
 & $PY scripts\samples\make_sample_bug.py       # writes runtime/data/sample_bug.mov + fixtures
-& $PY scripts\samples\serve_sample_app.py      # serves samples/sample_app at http://localhost:3000
+& $PY scripts\samples\serve_sample_app.py      # serves demo/booking at http://localhost:3000
 
 # in another terminal:
 & $PY -m taketwo.surfaces.cli record runtime/data/sample_bug.mov --app http://localhost:3000

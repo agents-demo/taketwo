@@ -13,7 +13,7 @@ import sys
 from functools import partial
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[2] / "samples" / "sample_app"
+ROOT = Path(__file__).resolve().parents[2] / "demo" / "booking"
 
 
 def main(port: int = 3000) -> int:

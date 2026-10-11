@@ -154,7 +154,7 @@ Start with `uvicorn taketwo.surfaces.gui2:app`. Key routes:
 ```powershell
 & $PY scripts\samples\make_sample_bug.py        # synthetic fixtures (clip + sidecars) for the offline demo
 & $PY scripts\samples\make_sample_video.py      # rebuild the sample proof from REAL browser frames (needs Playwright)
-& $PY scripts\samples\serve_sample_app.py       # serve samples/sample_app at http://localhost:3000
+& $PY scripts\samples\serve_sample_app.py       # serve demo/booking at http://localhost:3000
 & $PY scripts\samples\seed_feed.py 5            # create several runs so the feed is swipeable
 & $PY scripts\samples\seed_reproduced.py       # two fully reproduced scenarios (date picker + login) with proof
 & $PY scripts\check\dogfood.py                # live end-to-end: reproduce a real bug → before/after proof

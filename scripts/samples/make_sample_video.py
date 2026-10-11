@@ -1,6 +1,6 @@
 """Build a *real* sample proof — actual browser screenshots of the bug, before and after.
 
-Serves ``samples/sample_app`` (buggy) and a fixed copy, drives them with Playwright,
+Serves ``demo/booking`` (buggy) and a fixed copy, drives them with Playwright,
 captures the state after selecting a date, and stitches a before/after proof image + video
 into the sample's artifacts (replacing the flat placeholders).
 
@@ -23,7 +23,7 @@ from taketwo.integrations import appserver  # noqa: E402
 from taketwo.integrations.storage import runtime  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
-APP = ROOT / "samples" / "sample_app"
+APP = ROOT / "demo" / "booking"
 BUG = "const value = input.value;"
 FIX = "const value = button.textContent;"
 STEM = "sample_bug"

@@ -28,7 +28,7 @@ ROOT = Path(__file__).resolve().parents[2]
 SCENARIOS = [
     {
         "stem": "repro_date",
-        "app": ROOT / "samples" / "sample_app",
+        "app": ROOT / "demo" / "booking",
         "bug": "const value = input.value;",
         "fix": "const value = button.textContent;",
         "clicks": ["#dateField", "button.day"],
@@ -41,7 +41,7 @@ SCENARIOS = [
     },
     {
         "stem": "repro_login",
-        "app": ROOT / "samples" / "sample_form",
+        "app": ROOT / "demo" / "signin",
         "bug": "const email = field.value;",
         "fix": "const email = document.getElementById('user').value;",
         "clicks": ["#go"],

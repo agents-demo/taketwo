@@ -1,6 +1,6 @@
 """Live end-to-end dogfood: reproduce a real browser bug with no fixtures.
 
-Serves ``samples/sample_app`` (buggy) and a fixed copy, drives the real Playwright
+Serves ``demo/booking`` (buggy) and a fixed copy, drives the real Playwright
 reproduce + re-run path, and writes a before/after proof image and video.
 
     pip install -r requirements.txt
@@ -24,7 +24,7 @@ from taketwo.integrations import appserver  # noqa: E402
 from taketwo.integrations.storage import runtime  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
-APP = ROOT / "samples" / "sample_app"
+APP = ROOT / "demo" / "booking"
 BUG = "const value = input.value;"
 FIX = "const value = button.textContent;"
 STEPS = [
