@@ -1,4 +1,4 @@
-# TakeTwo — an agentic console for "video in, proof out".
+# TakeTwo — gui1 theme for "video in, proof out".
 # Light + dark themes. When both variants are defined Streamlit follows the user's
 # system preference and lets them switch under the app menu (⋮ → Settings → Theme).
 # (To lock a single mode instead, define only [theme] with no .light/.dark variants.)

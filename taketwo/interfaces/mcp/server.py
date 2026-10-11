@@ -28,7 +28,7 @@ def main() -> None:
         app_url: str = "",
     ) -> dict:
         """Reproduce a bug from a screen recording and return the reproduction + fix."""
-        from taketwo.interfaces import service
+        from taketwo.pipeline import service
 
         outcome = service.replay_video_sync(video_path, repo=repo, base_branch=base_branch, app_url=app_url)
         return {

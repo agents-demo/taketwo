@@ -1,7 +1,7 @@
 """Full-pipeline integration test (needs a model endpoint + a running app).
 
 Skipped unless ``TAKETWO_APP_URL`` and model credentials are present, so the offline
-suite stays green. The sandboxed runner (``interfaces/runner.py``) drives the same
+suite stays green. The sandboxed runner (``pipeline/jobs/runner.py``) drives the same
 scenario in CI with a Docker image.
 """
 

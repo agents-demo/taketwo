@@ -17,7 +17,7 @@ $PY = "C:\Workspace\openjiuwen\jiuwenswarm\.venv\Scripts\python.exe"
 ## Run
 
 ```powershell
-& $PY -m streamlit run taketwo/interfaces/web/ui.py     # web console
+& $PY -m streamlit run taketwo/interfaces/gui1/ui.py     # gui1
 & $PY -m taketwo.interfaces.cli record                  # CLI
 ```
 
@@ -55,17 +55,18 @@ interfaces  ->  pipeline  ->  backend  ->  domain
 - New **stage**: `pipeline/stages/<name>/` + register in `pipeline/stages/__init__.py` (`STAGES`)
   and call it from `pipeline/strategies/base.py`.
 - New **capability** (external system): a module under `pipeline/` (or a stage if single-consumer).
-- New **interface**: a module under `interfaces/`; reuse `interfaces/service.py`.
+- New **interface**: a package under `interfaces/`; reuse the shared façade `pipeline/service.py`.
 - New **config knob**: application behaviour in `config.py`; endpoint/credentials in
   `backend/settings.py`.
 
-## Front-ends (both under `interfaces/`)
+## The two GUIs (both under `interfaces/`)
 
-- **`interfaces/reels/`** — the consumer proof feed (vanilla HTML/CSS/JS, no build). Served by the API
-  at `/app/`; reads `/scoreboard`, `/runs`, `/jobs`, `/media`. Edit `index.html` / `styles.css` / `app.js`.
-- **`interfaces/web/`** — the Streamlit console: `ui.py` (entry) → `app_pages/pages.py` (registry) →
+- **`interfaces/gui1/`** — the Streamlit GUI: `ui.py` (entry) → `app_pages/pages.py` (registry) →
   `app_pages/{runs,detail,scoreboard}.py`, shared helpers in `common.py`, components in `compare.py`.
   Theme lives in `.streamlit/config.toml`.
+- **`interfaces/gui2/`** — the web app: `server/` (FastAPI `app.py` + read model `runs.py`) serving
+  `client/` (the SvelteKit SPA, built into `client/build/`) at `/gui2/`. Edit `client/src/` and rebuild
+  with `npm run build` inside `client/`.
 
 ## Commits & PRs
 

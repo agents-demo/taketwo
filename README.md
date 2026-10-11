@@ -22,13 +22,14 @@ reproduction, a fix, and a **before/after proof video**. Built on [openjiuwen](h
 - **Full guide:** [docs/USAGE.md](docs/USAGE.md) — setup, interfaces, workflow, API, scripts, settings, troubleshooting.
 - **Design:** [docs/architecture.md](docs/architecture.md).
 
-## Two front-ends
+## Two GUIs
 
-Same engine, two surfaces:
+Same engine, two identical surfaces:
 
-- **App** — a **SvelteKit** web app (`interfaces/app/`), served by the API at `/app/`
-  (`http://localhost:8000/app/`). Runs, review, scoreboard, with the before/after compare.
-- **Console** — a Streamlit dashboard for maintainers/operators (submit, review, scoreboard).
+- **gui1** — a **Streamlit** dashboard (`interfaces/gui1/`):
+  `& $PY -m streamlit run taketwo/interfaces/gui1/ui.py` → `http://localhost:8501`.
+- **gui2** — the web app (`interfaces/gui2/`): a FastAPI server (`server/`) serving a SvelteKit SPA
+  (`client/`) at `/gui2/` (`http://localhost:8000/gui2/`).
 
 ## Layout
 

@@ -40,7 +40,7 @@ def test_evaluate_scores_grounded_repro_high():
 
 
 def test_service_grounded_answer_from_data():
-    from taketwo.interfaces import service
+    from taketwo.pipeline.service import _answer_from_data
 
     context = {
         "reproduction": {
@@ -52,8 +52,8 @@ def test_service_grounded_answer_from_data():
         "proof": {},
         "review": {},
     }
-    assert "#go" in service._answer_from_data("job", "what steps did you take?", context)
-    assert "boom" in service._answer_from_data("job", "summarize", context)
+    assert "#go" in _answer_from_data("job", "what steps did you take?", context)
+    assert "boom" in _answer_from_data("job", "summarize", context)
 
 
 def test_store_review_records_audit():
@@ -171,7 +171,7 @@ def test_forge_verify_signature():
 def test_runner_command_local_and_docker(monkeypatch):
     import sys
 
-    from taketwo.interfaces.runner import Runner
+    from taketwo.pipeline.jobs import Runner
 
     runner = Runner(max_workers=1)
     job = {
@@ -185,7 +185,7 @@ def test_runner_command_local_and_docker(monkeypatch):
 
     monkeypatch.delenv("SANDBOX_IMAGE", raising=False)
     local = runner._command(job)
-    assert local[0] == sys.executable and local[1:3] == ["-m", "taketwo.interfaces.worker"]
+    assert local[0] == sys.executable and local[1:3] == ["-m", "taketwo.pipeline.jobs.worker"]
 
     monkeypatch.setenv("SANDBOX_IMAGE", "taketwo:latest")
     docker = runner._command(job)

@@ -45,55 +45,50 @@ its deterministic path (fixtures) so you can explore the UI.
 
 ---
 
-## 3. The two interfaces (same engine)
+## 3. The two GUIs (same engine, same features)
 
-### 3a. App — the modern web UI (recommended)
+Two inbound adapters over the same engine, exposing the **same features**. Use either; the only
+difference is the shell they run in.
 
-A SvelteKit single-page app served by the API.
-
-```powershell
-& $PY -m uvicorn taketwo.interfaces.api:app --port 8000
-# open http://localhost:8000/app/
-```
-
-Pages:
+**What either GUI does:**
 - **Runs** — submit a run: **upload a clip** (or paste a path), set repository / base branch / app URL,
   toggle **Agentic**, or **Try the sample** in one tap. A **live multi-step feed** (per-stage progress +
   timings) runs with **Cancel** / **Retry**; past runs show as cards with a thumbnail.
 - **Review** — the proof **video hero** (or the before/after **compare slider**), the score/verdict/steps,
   the diff (+ suspected cause and regression test), a **Usage** panel (model calls, tokens, latency, tool
-  activity), a **pipeline timeline**, the **console** trace, **Approve / Request changes** (with a note and
-  reviewer — recorded in the **audit trail**), PR/issue links, **share** (download proof, proof card PNG,
+  activity), a **pipeline timeline**, the captured console trace, **Approve / Request changes** (with a note
+  and reviewer — recorded in the **audit trail**), PR/issue links, **share** (download proof, proof card PNG,
   caption), and an **Ask** chat.
 - **Scoreboard** — the reproduce rate, counts, a **trend chart**, a **hall of fame**, per-repo leaderboard,
   and a downloadable **score card** PNG.
+- Light/dark follows your OS (gui2 also has a header ☀️/🌙 toggle).
 
-A **☀️/🌙 toggle** in the header switches light/dark (defaults to your OS).
-
-> Developing the app with hot reload:
-> ```powershell
-> cd taketwo\interfaces\app
-> npm install
-> npm run dev      # http://localhost:5173  (CORS is enabled on the API)
-> ```
-> Built assets live in `taketwo/interfaces/app/build/` and are what the API serves at `/app/`.
-> Rebuild after editing source with `npm run build`.
-
-### 3b. Console — the Streamlit dashboard (dense / operators)
+**Run gui1** (Streamlit) → http://localhost:8501:
 
 ```powershell
-& $PY -m streamlit run taketwo/interfaces/web/ui.py
-# opens http://localhost:8501
+& $PY -m streamlit run taketwo/interfaces/gui1/ui.py
 ```
 
-Submit, watch a live multi-step job, review with tabs (Proof / Fix / Evidence / Review), chat about a
-run, and see a scoreboard. Light/dark follows your OS.
+**Run gui2** (web app: FastAPI server + SvelteKit SPA) → http://localhost:8000/gui2/:
+
+```powershell
+& $PY -m uvicorn taketwo.interfaces.gui2:app --port 8000
+```
+
+> Developing the SPA with hot reload:
+> ```powershell
+> cd taketwo\interfaces\gui2\client
+> npm install
+> npm run dev      # http://localhost:5173  (CORS is enabled on the server)
+> ```
+> Built assets live in `taketwo/interfaces/gui2/client/build/` and are what the server serves at `/gui2/`.
+> Rebuild after editing source with `npm run build`.
 
 ---
 
 ## 4. End-to-end workflow
 
-1. Open the **App** (or Console).
+1. Open **gui1** or **gui2**.
 2. **Submit**: give a recording path (or upload), and optionally `owner/name` + the app URL.
    - If you have `APP_START_COMMAND` set, the pipeline can start the app under test itself.
 3. Watch the **live run**: understand → reproduce → repair → prove → deliver.
@@ -114,7 +109,7 @@ run, and see a scoreboard. Light/dark follows your OS.
 Run the analysis in its own process (used by the UI, useful in scripts):
 
 ```powershell
-& $PY -m taketwo.interfaces.worker runtime/data/sample_bug.mov --progress progress.json --app http://localhost:8130
+& $PY -m taketwo.pipeline.jobs.worker runtime/data/sample_bug.mov --progress progress.json --app http://localhost:8130
 ```
 
 MCP (exposes `reproduce_bug_from_video` to MCP clients):
@@ -127,7 +122,7 @@ MCP (exposes `reproduce_bug_from_video` to MCP clients):
 
 ## 6. HTTP API
 
-Start with `uvicorn taketwo.interfaces.api:app`. Key routes:
+Start with `uvicorn taketwo.interfaces.gui2:app`. Key routes:
 
 | Method | Path | Purpose |
 |---|---|---|
@@ -149,7 +144,7 @@ Start with `uvicorn taketwo.interfaces.api:app`. Key routes:
 | GET | `/cards/score` | downloadable score card PNG |
 | GET | `/cards/{job}/proof` | downloadable proof card PNG |
 | POST | `/webhook` | GitHub webhook (HMAC-verified) |
-| — | `/app/` | the SvelteKit app |
+| — | `/gui2/` | the SvelteKit SPA |
 
 ---
 
@@ -171,8 +166,8 @@ Typical first run:
 ```powershell
 & $PY scripts\make_sample_bug.py
 & $PY -m taketwo.interfaces.cli record runtime/data/sample_bug.mov
-& $PY -m uvicorn taketwo.interfaces.api:app --port 8000
-# http://localhost:8000/app/
+& $PY -m uvicorn taketwo.interfaces.gui2:app --port 8000
+# http://localhost:8000/gui2/
 ```
 
 ---

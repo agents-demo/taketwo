@@ -20,10 +20,10 @@ $PY = "C:\Workspace\openjiuwen\jiuwenswarm\.venv\Scripts\python.exe"
 
 ## 2. Run
 
-**Web UI (recommended)** — opens http://localhost:8501:
+**gui1 (Streamlit, recommended)** — opens http://localhost:8501:
 
 ```powershell
-& $PY -m streamlit run taketwo/interfaces/web/ui.py
+& $PY -m streamlit run taketwo/interfaces/gui1/ui.py
 ```
 
 **CLI** — record a bug, then reproduce + fix it:
@@ -54,21 +54,21 @@ No recording handy? Make a synthetic clip and serve the sample buggy app to repr
 & $PY scripts\evaluate_repros.py   # quality gate against tests/eval/expected.json
 ```
 
-## 4. App (SvelteKit web UI)
+## 4. gui2 (web app: FastAPI server + SvelteKit SPA)
 
-Built assets are committed, so the API serves it directly:
+Built assets are committed, so the server serves the UI directly:
 
 ```powershell
-& $PY -m uvicorn taketwo.interfaces.api:app --port 8000
-# open http://localhost:8000/app/   (Runs · Review · Scoreboard)
+& $PY -m uvicorn taketwo.interfaces.gui2:app --port 8000
+# open http://localhost:8000/gui2/   (Runs · Review · Scoreboard)
 ```
 
-To develop it (hot reload on http://localhost:5173, calling the API on 8000):
+To develop the SPA (hot reload on http://localhost:5173, calling the server on 8000):
 
 ```powershell
-cd taketwo\interfaces\app
+cd taketwo\interfaces\gui2\client
 npm install
-npm run dev        # or: npm run build  (writes build/, served at /app/)
+npm run dev        # or: npm run build  (writes client/build/, served at /gui2/)
 ```
 
 ## 5. Live checks (need Playwright: `python -m playwright install chromium`)
