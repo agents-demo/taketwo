@@ -3,7 +3,7 @@
 Serves the buggy app and a patched copy, drives the real reproduce + re-run path, and
 writes a before/after proof. No fixtures, no sidecars — the browser is real.
 
-    python demo/scripts/run_live.py [scenario]             # default: booking
+    python demo/maintenance/check_reproduce.py [scenario]             # default: booking
 """
 
 from __future__ import annotations
@@ -13,7 +13,8 @@ import sys
 import tempfile
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))  # repo root (scripts._harness)
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))  # demo/ (for _scenario)
 
 from _scenario import app_dir, load  # noqa: E402
 

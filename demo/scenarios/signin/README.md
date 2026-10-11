@@ -7,4 +7,4 @@ A login form. **Bug:** clicking **Sign in** throws
 - `clip.mp4` — a recording of the bug
 - `scenario.json` — title, bug, steps, proof fix, patch
 
-Run it: `python demo/scripts/serve_app.py signin` then reproduce `clip.mp4`.
+Run it: `python demo/serve_scenario.py signin` then reproduce `clip.mp4`.

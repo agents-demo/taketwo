@@ -1,6 +1,6 @@
 """Serve a demo scenario's app for a live reproduction.
 
-    python demo/scripts/serve_app.py [scenario] [port]     # default: booking 3000
+    python demo/serve_scenario.py [scenario] [port]     # default: booking 3000
 """
 
 from __future__ import annotations
@@ -9,11 +9,8 @@ import http.server
 import socketserver
 import sys
 from functools import partial
-from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-
-from _scenario import app_dir  # noqa: E402
+from _scenario import app_dir
 
 
 def main(scenario: str = "booking", port: int = 3000) -> int:

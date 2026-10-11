@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-SCENARIOS = Path(__file__).resolve().parents[1] / "scenarios"
+SCENARIOS = Path(__file__).resolve().parent / "scenarios"
 
 
 def names() -> list[str]:

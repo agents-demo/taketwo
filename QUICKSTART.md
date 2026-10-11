@@ -40,7 +40,7 @@ No recording handy? Make a synthetic clip and serve the sample buggy app to repr
 
 ```powershell
 & $PY scripts\make_sample_bug.py       # writes runtime/data/sample_bug.mov + fixtures
-& $PY demo\scripts\serve_app.py      # serves demo/scenarios/booking/app at http://localhost:3000
+& $PY demo\serve_scenario.py      # serves demo/scenarios/booking/app at http://localhost:3000
 
 # in another terminal:
 & $PY -m taketwo.surfaces.cli record runtime/data/sample_bug.mov --app http://localhost:3000
@@ -74,10 +74,8 @@ npm run dev        # or: npm run build  (writes client/build/, served at /gui2/)
 ## 5. Live checks (need Playwright: `python -m playwright install chromium`)
 
 ```powershell
-& $PY demo\scripts\run_live.py            # reproduce a real browser bug + before/after proof video
+& $PY demo\maintenance\check_reproduce.py            # reproduce a real browser bug + before/after proof video
 & $PY scripts\benchmark.py          # reproduce-rate over seeded bugs
-& $PY demo\scripts\make_proof.py  # rebuild the sample's proof from real browser frames
-& $PY demo\scripts\seed_scenarios.py    # seed two reproduced scenarios (with proof)
 ```
 
 See the full [usage guide](docs/USAGE.md), [README.md](README.md), and [docs/architecture.md](docs/architecture.md).

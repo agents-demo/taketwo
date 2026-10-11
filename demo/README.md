@@ -13,12 +13,11 @@ demo/
 │   │   └── README.md
 │   ├── signin/           # login bug  (same shape)
 │   └── cart/             # add-to-cart bug  (same shape)
-├── scripts/              # the drivers — each takes a scenario name
-│   ├── serve_app.py          # serve a scenario's app
-│   ├── record_clip.py        # (re)record its clip (real video)
-│   ├── make_proof.py         # build a real before/after proof
-│   ├── seed_scenarios.py     # seed reproduced runs for the feed
-│   └── run_live.py           # live end-to-end
+├── serve_scenario.py     # ← run this: serve a scenario's app
+├── _scenario.py          # scenario locator (helper)
+├── maintenance/          # build & check the material (not needed to demo)
+│   ├── record_video.py       # (re)record a scenario's clip
+│   └── check_reproduce.py    # live PASS/FAIL check of a scenario
 └── README.md
 ```
 
@@ -28,7 +27,7 @@ demo/
 $PY = "C:\Workspace\openjiuwen\jiuwenswarm\.venv\Scripts\python.exe"
 
 # 1. serve the app under test
-& $PY demo\scripts\serve_app.py booking                    # http://localhost:3000
+& $PY demo\serve_scenario.py booking                    # http://localhost:3000
 
 # 2. reproduce + fix it from the recording
 & $PY -m taketwo.surfaces.cli record demo\scenarios\booking\clip.mp4 --app http://localhost:3000
